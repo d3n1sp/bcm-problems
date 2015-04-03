@@ -7,4 +7,4 @@
 ### Run
 
 
-       lhead@central:/srv/foamrun/2015/Experiment$ make clean && make run_with_mpi
+       lhead@central:/srv/foamrun/2015/bcm-problems$ make clean && make mpirun
