@@ -25,6 +25,11 @@ $(RUN): $(RUNOBJS) $(MYLIBS)
 
 clean:
 	-rm *.o
+	-rm $(RUN)
+	make -C ../Bcmlib clean
+	make -C ../qd clean
+	make -C ../Bslib clean
+	make -C ../lapacksm clean
 
 run:
 	./$(RUN)
