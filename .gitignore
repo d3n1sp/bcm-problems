@@ -1,0 +1,9 @@
+*.o
+*.a
+Test_var3/BsSolver_0.dat
+Test_var3/BsSolver_1.dat
+Test_var3/BsSolver_2.dat
+Test_var3/BsSolver_3.dat
+Test_var3/lame2d-par_comput
+Test_var3/var3_results/
+*~
