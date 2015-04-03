@@ -4,3 +4,6 @@ mpirun:
 
 clean:
 	make -C Test_var3 clean
+
+distclean:
+	git clean -d -f -x
