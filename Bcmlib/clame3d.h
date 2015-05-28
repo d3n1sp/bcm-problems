@@ -5,6 +5,7 @@
 #define ___CLame3D___
 
 #include "ccomput3d.h"
+#define ___3BODY_ESHELBY___
 
 ////////////////////////////////////////////////////////
 //...class of blocks partition for double plane problem;
@@ -21,9 +22,9 @@ public:
 		}
       virtual ~CLame3D (void);
 protected:
-static int NUM_SHEAR, NUM_SHIFT, NUM_GEOMT, MAX_PHASE, NUM_HESS;
+static int NUM_SHEAR, NUM_SHIFT, NUM_HESS;
 		double *** TT,*** TH,  * C0, * C1, * C2, * A1, * B1, * A2, * B2;
-		int  block_shape_init(Block<double> & B, int id_free);
+		int  block_shape_init(Block<double> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1_classic_x(double * P, int i, int m);
 		void jump1_classic_y(double * P, int i, int m);
@@ -36,15 +37,27 @@ static int NUM_SHEAR, NUM_SHIFT, NUM_GEOMT, MAX_PHASE, NUM_HESS;
 		void jump1_sphere_z_3body(double * P, int i, int m);
 		void jump1_x		  (double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump1_sphere_x_2body(P, i, m); else jump1_classic_x(P, i, m);
+#else
 				jump1_sphere_x_3body(P, i, m); else jump1_classic_x(P, i, m);
+#endif
 		}
 		void jump1_y(double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump1_sphere_y_2body(P, i, m); else jump1_classic_y(P, i, m);
+#else
 				jump1_sphere_y_3body(P, i, m); else jump1_classic_y(P, i, m);
+#endif
 		}
 		void jump1_z(double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump1_sphere_z_2body(P, i, m); else jump1_classic_z(P, i, m);
+#else
 				jump1_sphere_z_3body(P, i, m); else jump1_classic_z(P, i, m);
+#endif
 		}
 		void jump2_classic_x(double * P, int i, int m);
 		void jump2_classic_y(double * P, int i, int m);
@@ -57,15 +70,27 @@ static int NUM_SHEAR, NUM_SHIFT, NUM_GEOMT, MAX_PHASE, NUM_HESS;
 		void jump2_sphere_z_3body(double * P, int i, int m);
 		void jump2_x		  (double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump2_sphere_x_2body(P, i, m); else jump2_classic_x(P, i, m);
+#else
 				jump2_sphere_x_3body(P, i, m); else jump2_classic_x(P, i, m);
+#endif
 		}
 		void jump2_y(double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump2_sphere_y_2body(P, i, m); else jump2_classic_y(P, i, m);
+#else
 				jump2_sphere_y_3body(P, i, m); else jump2_classic_y(P, i, m);
+#endif
 		}
 		void jump2_z(double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump2_sphere_z_2body(P, i, m); else jump2_classic_z(P, i, m);
+#else
 				jump2_sphere_z_3body(P, i, m); else jump2_classic_z(P, i, m);
+#endif
 		}
 		void jump4_classic_x(double * P, int i, int m);
 		void jump4_classic_y(double * P, int i, int m);
@@ -78,34 +103,46 @@ static int NUM_SHEAR, NUM_SHIFT, NUM_GEOMT, MAX_PHASE, NUM_HESS;
 		void jump4_sphere_z_3body(double * P, int i, int m);
 		void jump4_x		  (double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump4_sphere_x_2body(P, i, m); else jump4_classic_x(P, i, m);
+#else
 				jump4_sphere_x_3body(P, i, m); else jump4_classic_x(P, i, m);
+#endif
 		}
 		void jump4_y(double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump4_sphere_y_2body(P, i, m); else jump4_classic_y(P, i, m);
+#else
 				jump4_sphere_y_3body(P, i, m); else jump4_classic_y(P, i, m);
+#endif
 		}
 		void jump4_z(double * P, int i, int m) {
 			if ((B[i].type & ERR_CODE) == CLAYER_BLOCK && B[i].mp[0] == ID_MAP(2, SPHEROID_GENUS)) 
+#ifdef ___2BODY_ESHELBY___
+				jump4_sphere_z_2body(P, i, m); else jump4_classic_z(P, i, m);
+#else
 				jump4_sphere_z_3body(P, i, m); else jump4_classic_z(P, i, m);
+#endif
 		}
 		void hessian_deriv_N (double * P, int i);
 		void jump_make_local (int i, int m);
 		void jump_make_common(int i, int m);
 //...forming block matrix elements;
-		int  gram1	  (CGrid * nd, int i, int id_local);
-		int  gram2	  (CGrid * nd, int i, int id_local);
-		int  gram2peri(CGrid * nd, int i, int id_local);
-		int  gram3	  (CGrid * nd, int i, int id_local);
-		int  gram4	  (CGrid * nd, int i, int id_local);
-		int  transfer1(CGrid * nd, int i, int k, int id_local);
-		int  transfer2(CGrid * nd, int i, int k, int id_local);
-		int  trans_esh(CGrid * nd, int i, int k, int id_local);
-		int  transfer3(CGrid * nd, int i, int k, int id_local) { return transfer4(nd, i, k, id_local);};
-		int  transfer4(CGrid * nd, int i, int k, int id_local);
-		int  rigidy1  (CGrid * nd, int i, double * K);
-		int  rigidy2  (CGrid * nd, int i, double * K);
-		int  rigidy5  (CGrid * nd, int i, double * K);
-		int  computing_header(Num_Comput Num);
+		Num_State gram1	  (CGrid * nd, int i, int id_local);
+		Num_State gram2	  (CGrid * nd, int i, int id_local);
+		Num_State gram2peri(CGrid * nd, int i, int id_local);
+		Num_State gram3	  (CGrid * nd, int i, int id_local);
+		Num_State gram4	  (CGrid * nd, int i, int id_local);
+		Num_State transfer1(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer2(CGrid * nd, int i, int k, int id_local);
+		Num_State trans_esh(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer3(CGrid * nd, int i, int k, int id_local) { return transfer4(nd, i, k, id_local);};
+		Num_State transfer4(CGrid * nd, int i, int k, int id_local);
+		Num_State rigidy1  (CGrid * nd, int i, double * K);
+		Num_State rigidy2  (CGrid * nd, int i, double * K);
+		Num_State rigidy5  (CGrid * nd, int i, double * K);
+		Num_State computing_header(Num_Comput Num);
 public:
 //...collocation rigidy matrix;
 		int  rigidy1_collocat(CGrid * nd, int i, double * K);
@@ -142,7 +179,7 @@ public:
 		double TakeEshelby_volm_two (double ff);
 		double TakeEshelby_shear_two(double ff, double eps = EE, int max_iter = 100);
 		double TakeEshelby_shear_sys(double ff, double eps = EE, int max_iter = 100);
-		double TakeEshelby_shear_det(double ff);
+		double TakeEshelby_shear_det(double ff, double alpha = -1);
 		double TakeEshelby_shear    (double ff, double nju1, double nju2, double E1, double E2);
 };
 

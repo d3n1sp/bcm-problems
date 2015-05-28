@@ -19,7 +19,7 @@ public:
 		};
 protected:
 static int NUM_SHEAR, NUM_SHIFT, NUM_ADHES, MAX_PHASE, NUM_HESS, regul;
-		int  block_shape_init(Block<double> & B, int id_free);
+		int  block_shape_init(Block<double> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1_common_x	(double * P, int i, int m);
 		void jump1_compress_x(double * P, int i, int m);
@@ -43,16 +43,16 @@ static int NUM_SHEAR, NUM_SHIFT, NUM_ADHES, MAX_PHASE, NUM_HESS, regul;
 		void jump_make_local (int i, int m);
 		void jump_make_common(int i, int m);
 //...forming block matrix elements;
-		int  gram1    (CGrid * nd, int i, int id_local){ return gram4(nd, i, id_local);};
-		int  gram2    (CGrid * nd, int i, int id_local){ return gram3(nd, i, id_local);};
-		int  gram3    (CGrid * nd, int i, int id_local);
-		int  gram4    (CGrid * nd, int i, int id_local);
-		int  transfer1(CGrid * nd, int i, int k, int id_local){ return transfer4(nd, i, k, id_local);};
-		int  transfer2(CGrid * nd, int i, int k, int id_local){ return transfer3(nd, i, k, id_local);};
-		int  transfer3(CGrid * nd, int i, int k, int id_local);
-		int  transfer4(CGrid * nd, int i, int k, int id_local);
-		int  rigidy1  (CGrid * nd, int i, double * K);
-		int  computing_header(Num_Comput Num);
+		Num_State gram1    (CGrid * nd, int i, int id_local){ return gram4(nd, i, id_local);};
+		Num_State gram2    (CGrid * nd, int i, int id_local){ return gram3(nd, i, id_local);};
+		Num_State gram3    (CGrid * nd, int i, int id_local);
+		Num_State gram4    (CGrid * nd, int i, int id_local);
+		Num_State transfer1(CGrid * nd, int i, int k, int id_local){ return transfer4(nd, i, k, id_local);};
+		Num_State transfer2(CGrid * nd, int i, int k, int id_local){ return transfer3(nd, i, k, id_local);};
+		Num_State transfer3(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer4(CGrid * nd, int i, int k, int id_local);
+		Num_State rigidy1  (CGrid * nd, int i, double * K);
+		Num_State computing_header(Num_Comput Num);
 public:
 //...параметры задачи;
 		void set_fasa_hmg(double nju1, double nju2, double G1, double G2, double l11, double l12, double l21, double l22, double A, double B);

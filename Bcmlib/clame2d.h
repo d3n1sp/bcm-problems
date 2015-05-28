@@ -16,10 +16,11 @@ public:
 		CLame2D(int num_phase = 8) {
 			param = (Param *)new_struct(size_of_param()*sizeof(Param));
 			NUM_PHASE = num_phase;
+			NUM_GEOMT = 3;
 		}
 protected:
-static int NUM_SHEAR, NUM_SHIFT, NUM_GEOMT, MAX_PHASE;
-		int  block_shape_init(Block<double> & B, int id_free);
+static int NUM_SHEAR, NUM_SHIFT;
+		int  block_shape_init(Block<double> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1_classic_x (double * P, int i, int m);
 		void jump1_classic_y (double * P, int i, int m);
@@ -34,16 +35,16 @@ static int NUM_SHEAR, NUM_SHIFT, NUM_GEOMT, MAX_PHASE;
 		void jump_make_local (int i, int m);
 		void jump_make_common(int i, int m);
 //...forming block matrix elements;
-		int  gram1    (CGrid * nd, int i, int id_local);
-		int  gram2    (CGrid * nd, int i, int id_local);
-		int  gram3    (CGrid * nd, int i, int id_local);
-		int  gram4    (CGrid * nd, int i, int id_local);
-		int  transfer1(CGrid * nd, int i, int k, int id_local);
-		int  transfer2(CGrid * nd, int i, int k, int id_local);
-		int  transfer3(CGrid * nd, int i, int k, int id_local);
-		int  transfer4(CGrid * nd, int i, int k, int id_local){ return transfer3(nd, i, k, id_local);}
-		int  rigidy1  (CGrid * nd, int i, double * K);
-		int  computing_header(Num_Comput Num);
+		Num_State gram1    (CGrid * nd, int i, int id_local);
+		Num_State gram2    (CGrid * nd, int i, int id_local);
+		Num_State gram3    (CGrid * nd, int i, int id_local);
+		Num_State gram4    (CGrid * nd, int i, int id_local);
+		Num_State transfer1(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer2(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer3(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer4(CGrid * nd, int i, int k, int id_local){ return transfer3(nd, i, k, id_local);}
+		Num_State rigidy1  (CGrid * nd, int i, double * K);
+		Num_State computing_header(Num_Comput Num);
 public:
 //...параметры задачи;
 		void set_fasa_hmg(double nju1, double nju2, double G1, double G2) { set_fasa_hmg (nju1, nju2, nju2, G1, G2, G2);}

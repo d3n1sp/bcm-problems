@@ -1,4 +1,6 @@
 #include "stdafx.h"
+
+#include "shapes.h"
 #include "cheat2d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
@@ -10,14 +12,14 @@ int CHeat2D::MAX_PHASE = 3;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CHeat2D::block_shape_init(Block<double> & B, int id_free)
+int CHeat2D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int m;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
-		if ((B.type & ERR_CODE) == CLAYER_BLOCK) B.shape->add_shape(CreateShapeD(MP2D_CLAYER_SHAPE));
-		else												  B.shape->add_shape(CreateShapeD(MP2D_POLY_SHAPE));
+		if ((B.type & ERR_CODE) == CLAYER_BLOCK) B.shape->add_shape(CreateShape<double>(MP2D_CLAYER_SHAPE));
+		else												  B.shape->add_shape(CreateShape<double>(MP2D_POLY_SHAPE));
 
 ////////////////////////
 //...setting parameters;
@@ -96,7 +98,7 @@ void CHeat2D::jump2_compos(double * P, int i, int m)
 
 ////////////////////////////////////////////////////////////////////////////
 //...realization of common jump boundary condition for matrix and inclusion;
-int CHeat2D::gram1(CGrid * nd, int i, int id_local)
+Num_State CHeat2D::gram1(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double hh, p4, f, P[6];
@@ -155,7 +157,7 @@ int CHeat2D::gram1(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...junction data of the periodic boundary condition for all blocks;
-int CHeat2D::gram2(CGrid * nd, int i, int id_local)
+Num_State CHeat2D::gram2(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double AX, AY, f, P[6], 
@@ -236,7 +238,7 @@ int CHeat2D::gram2(CGrid * nd, int i, int id_local)
 				  solver.to_equationHH(i, 0, solver.hh[i][0][m  ],  g1*hh*f);
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m+1], -g2*hh*f);
 				}
-				if (first && solver.mode(REGULARIZATION2) && (id_dir == 1 || id_dir == 2)) {//...регул€ризаци€ матрицы через граничное условие;
+				if (first && solver.mode(REGUL_BOUNDARY) && (id_dir == 1 || id_dir == 2)) {//...регул€ризаци€ матрицы через граничное условие;
 					solver.to_transferTR(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					solver.to_transferTT(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
@@ -258,7 +260,7 @@ int CHeat2D::gram2(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...формирование матрицы √рама дл€ периодической задачи (один блок);
-int CHeat2D::gram2peri(CGrid * nd, int i, int id_local)
+Num_State CHeat2D::gram2peri(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double AX, AY, f, P[6], g1 = .5, f1 = 1., g2 = .5, g0 = -1.;
@@ -328,7 +330,7 @@ int CHeat2D::gram2peri(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////
 //...inclusion of the stitching data to the solver for all blocks;
-int CHeat2D::transfer1(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat2D::transfer1(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double f, P[6], f1 = 1., g1 = .5, g2 = .5, g0 = -1.;
@@ -391,7 +393,7 @@ int CHeat2D::transfer1(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...inclusion conjunction data to the solver for all blocks;
-int CHeat2D::transfer2(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat2D::transfer2(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B && B[i].link && B[i].link[0] > NUM_PHASE) {
       double f, P[6], f0 = -1., f1 = 1., f2 = .5, g1 = .5;
@@ -462,7 +464,7 @@ int CHeat2D::transfer2(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы √рама с учетом функционала энергии;
-int CHeat2D::gram3(CGrid * nd, int i, int id_local)
+Num_State CHeat2D::gram3(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double AX, AY, f, P[6], TX, TY, hh;
@@ -533,7 +535,7 @@ int CHeat2D::gram3(CGrid * nd, int i, int id_local)
 				  solver.to_equationHH(i, 0, solver.hh[i][0][m],  hh*f);
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m], -hh*f);
 				}
-				if (first && solver.mode(REGULARIZATION2) && (id_dir == 1 || id_dir == 2)) {//...регул€ризаци€ матрицы через граничное условие;
+				if (first && solver.mode(REGUL_BOUNDARY) && (id_dir == 1 || id_dir == 2)) {//...регул€ризаци€ матрицы через граничное условие;
 					solver.to_transferTR(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					solver.to_transferTT(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
@@ -561,7 +563,7 @@ int CHeat2D::gram3(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы √рама с учетом функционала энергии;
-int CHeat2D::gram4(CGrid * nd, int i, int id_local)
+Num_State CHeat2D::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double hh, p4, f, P[6];
@@ -613,7 +615,7 @@ int CHeat2D::gram4(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CHeat2D::transfer4(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat2D::transfer4(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double f, P[6];
@@ -672,7 +674,7 @@ int CHeat2D::transfer4(CGrid * nd, int i, int k, int id_local)
 
 ////////////////////////////////////////////////////////
 //...интегрирование параметров потока по границе блоков;
-int CHeat2D::rigidy1(CGrid * nd, int i, double * K)
+Num_State CHeat2D::rigidy1(CGrid * nd, int i, double * K)
 {
 	if (nd) {
 		int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, N_elem = UnPackInts(get_param(NUM_QUAD)), N_max = UnPackInts(get_param(NUM_QUAD), 1), 
@@ -711,7 +713,7 @@ int CHeat2D::rigidy1(CGrid * nd, int i, double * K)
 
 ///////////////////////////////////////////////////////
 //...интегрирование параметров потока по объему блоков;
-int CHeat2D::rigidy2(CGrid * nd, int i, double * K)
+Num_State CHeat2D::rigidy2(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm, l;
@@ -755,7 +757,7 @@ int CHeat2D::rigidy2(CGrid * nd, int i, double * K)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //...дополнительное интегрирование параметров потока дл€ блоков с усложненными функци€ми;
-int CHeat2D::rigidy5(CGrid * nd, int i, double * K)
+Num_State CHeat2D::rigidy5(CGrid * nd, int i, double * K)
 {
    int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, N_elem = UnPackInts(get_param(NUM_QUAD)), N_max = UnPackInts(get_param(NUM_QUAD), 1), 
 			  m = solver.id_norm, l, k;
@@ -779,7 +781,7 @@ int CHeat2D::rigidy5(CGrid * nd, int i, double * K)
 ////////////////////////////////////////
 //...образуем временную дугу окружности;
 		CCells * ce = new(CCells);
-		((CCeBasic *)ce)->get_arc(R1, -M_PI*.25, M_PI*.25);
+		ce->get_arc(R1, -M_PI*.25, M_PI*.25);
 		ce->mp[1] = B[i].mp[1];
 		ce->mp[2] = B[i].mp[2];
 
@@ -937,7 +939,7 @@ void CHeat2D::set_fasa_hmg(double R1, double R2, double K3, double K1, double K2
 
 ///////////////////////////////////////////////////////
 //...counting header for solving electrostatic problem;
-int CHeat2D::computing_header(Num_Comput Num)
+Num_State CHeat2D::computing_header(Num_Comput Num)
 {
 	int N_elem = UnPackInts(get_param(NUM_QUAD)), i, j, k, elem, id_dir, n_rhs = 1;
 	char msg[201];

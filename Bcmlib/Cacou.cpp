@@ -174,7 +174,7 @@ void CAcou3DPoly::release()
 //...parametrization of the multipoles;
 void CAcou3DPoly::parametrization(double * P, int m_dop)
 {
-	//if (id_cmpl == 2) return;
+	if (id_cmpl == 2) return;
 	if (! p) {
 			p = (double *)new_struct((NN_dop = freedom(N+m_dop))*sizeof(double));
 ///////////////////////
@@ -324,7 +324,7 @@ void CAcou3DZoom::release()
 //...parametrization of the multipoles;
 void CAcou3DZoom::parametrization(double * P, int m_dop)
 {
-	//if (id_cmpl == 2) return;
+	if (id_cmpl == 2) return;
 	if (! p) {
 			p = (double *)new_struct((NN_dop = freedom(N+m_dop))*sizeof(double));
 ///////////////////////
@@ -681,7 +681,7 @@ void CAcou3DWave::init2(int id_flag, int N, int dim)
 //...parametrization of the multipoles;
 void CAcou3DWave::parametrization(double * P, int m_dop)
 {
-    //if (id_cmpl == 2) return;
+    if (id_cmpl == 2) return;
     if (! p) {
           p = (double *)new_struct(2*NN*sizeof(double));
     }
@@ -756,7 +756,7 @@ void CAcou3DWave::deriv_Z(double * deriv, double f)
 //...differentiation of the multipoles;
 void CAcou3DWave::deriv_N()
 {
-     //if (id_cmpl == 2) return;
+     if (id_cmpl == 2) return;
      if (id_inverse)
      for (int k = 0; k < M; k++) {
 			double f = param[3]*((cs[0]*cz[k]+cs[1]*sz[k])*sy[k]+cs[2]*cy[k]);
@@ -818,7 +818,7 @@ void CAcou3DBeam::set_shape(double R0, double kk, double kk_dop, double L1, doub
 //...parametrization of the multipoles;
 void CAcou3DBeam::parametrization(double * P, int m_dop)
 {
-	//if (id_cmpl == 2) return;
+	if (id_cmpl == 2) return;
 	if (! p) {
 			p   = (double *)new_struct((NN_dop = freedom(N+m_dop))*sizeof(double));
 			pim = (double *)new_struct( NN_dop*sizeof(double));
@@ -935,7 +935,7 @@ void CAcou3DBeam::parametrization(double * P, int m_dop)
 
 void CAcou3DBeamZ::parametrization(double * P, int m_dop)
 {
-	//if (id_cmpl == 2) return;
+	if (id_cmpl == 2) return;
 	if (! p) {
 			p   = (double *)new_struct((NN_dop = freedom(N))*sizeof(double));
 			pim = (double *)new_struct( NN_dop*sizeof(double));

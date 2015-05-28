@@ -16,8 +16,8 @@
 template <typename T>
 class CHeat1DPoly : public CShape<T> {
 public:
-		int type() { return HT1D_POLY_SHAPE;}
-		int freedom(int  m) { return(2);}
+		Num_Shape    type() { return HT1D_POLY_SHAPE;}
+		int freedom (int m) { return(2);}
 		int size_of_param() { return(3);}
 public:
 //...initialization of multipoles;
@@ -56,7 +56,7 @@ public:
 template <typename T>
 class CHeat2DPoly : public CShape<T> {
 public:
-		int type() { return HT2D_POLY_SHAPE;}
+		Num_Shape    type() { return HT2D_POLY_SHAPE;}
 		int freedom (int m) { return m*2+1; }
 		int size_of_param() { return(2);}
 public:
@@ -98,7 +98,7 @@ public:
 template <typename T>
 class CHeat3DPoly : public CHeat1DPoly<T> {
 public:
-		int type()  { return HT3D_POLY_SHAPE;}
+		Num_Shape   type() { return HT3D_POLY_SHAPE;}
 		int freedom(int m) { return sqr(m+1);}
 public:
 //...initialization and calculation of multipoles;
@@ -611,9 +611,9 @@ protected:
 		T * pim;
 		complex * E1;
 public:
-		int type()          { return HT2D_STREEP_SHAPE;}
-		int size_of_param() { return(5);};
+		Num_Shape   type()  { return HT2D_STREEP_SHAPE;}
 		int freedom(int m)  { return (m+1)*2; }
+		int size_of_param() { return(5);};
 public:
 //...initialization of multipoles;
 		void set_shape(double R0, double kk = 0, double b = 0., double kap = 0, double q = 0, double fo = 0) {
@@ -673,9 +673,9 @@ protected:
 		T * pim;
 		complex * E1;
 public:
-		int type()          { return HT2D_CIRCLE_SHAPE;}
+		Num_Shape    type() { return HT2D_CIRCLE_SHAPE;}
+		int freedom (int m) { return m*2+1; }
 		int size_of_param() { return(5);};
-		int freedom(int m)  { return m*2+1; }
 public:
 //...initialization of multipoles;
 		void set_shape(double R0, double kk = 0, double rad = 0., double kap = 0, double q = 0, double fo = 0) {
@@ -736,7 +736,7 @@ protected:
 		T * pim;
 		complex * E1;
 public:
-		int type() { return HT3D_SPHERE_SHAPE;}
+		Num_Shape    type() { return HT3D_SPHERE_SHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(5);};
 public:

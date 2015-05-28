@@ -16,7 +16,7 @@
 template <typename T>
 class CMapi2DPoly : public CShape<T> {
 public:
-		int type() {return MP2D_POLY_SHAPE;}
+		Num_Shape   type() {return MP2D_POLY_SHAPE;}
 		int freedom(int m) { return m*2+1;}
 public:
 //...calculation of multipoles;
@@ -37,7 +37,7 @@ public:
 template <typename T>
 class CMapi3DPoly : public CShape<T> {
 public:
-		int type() {return MP3D_POLY_SHAPE;}
+		Num_Shape   type() {return MP3D_POLY_SHAPE;}
 		int freedom(int m) { return sqr(m+1);}
 public:
 //...calculation of multipoles;
@@ -63,7 +63,7 @@ class CMapi3DZoom : public CShape<T> {
 protected:
        T * ap;
 public:
-		int type() {return MP3D_ZOOM_SHAPE;}
+		Num_Shape   type() {return MP3D_ZOOM_SHAPE;}
 		int freedom(int m) { return sqr(m+1);}
 public:
 //...initialization of multipoles;
@@ -92,9 +92,9 @@ public:
 template <typename T>
 class CMapi2DCircle : public CShape<T> {
 public:
-		int type()			 { return MP2D_CIRCLE_SHAPE;}
-		int size_of_param(){ return(1);}
-		int freedom(int m) { return(2*m+1);}
+		Num_Shape    type() { return MP2D_CIRCLE_SHAPE;}
+		int freedom (int m) { return(2*m+1);}
+		int size_of_param() { return(1);}
 public:
 //...calculation of multipoles;
 	void parametrization(double * P = NULL, int m = 0){}
@@ -112,9 +112,9 @@ public:
 template <typename T>
 class CMapi3DSphere : public CShape<T> {
 public:
-		int type()			 { return MP3D_SPHERE_SHAPE;}
-		int size_of_param(){ return(1);}
-		int freedom(int m) { return sqr(m+1);}
+		Num_Shape    type() { return MP3D_SPHERE_SHAPE;}
+		int freedom (int m) { return sqr(m+1);}
+		int size_of_param() { return(1);}
 public:
 //...calculation of multipoles;
 		void parametrization		 (double * P = NULL, int m_dop = 0);
@@ -828,9 +828,9 @@ protected:
       T * sk;
 		static double NORMALIZATION_EXPO_LIMIT;
 public:
-		int type()          { return SK2D_POLY_SHAPE;}
-		int freedom (int m) { return m*2+1;}
+		Num_Shape    type() { return SK2D_POLY_SHAPE;}
 		int size_of_param() { return(4);}
+		int freedom (int m) { return m*2+1;}
 		void release() {
 			 delete_struct(sk);
 			 CShape<T>::release();
@@ -870,9 +870,9 @@ class CSkin3DPoly : public CShape<T> {
 protected:
 		T * sk, * E1;
 public:
-		int type()          { return SK3D_POLY_SHAPE;}
-		int freedom (int m) { return sqr(m+1);}
+		Num_Shape    type() { return SK3D_POLY_SHAPE;}
 		int size_of_param() { return(4);};
+		int freedom (int m) { return sqr(m+1);}
 		void release() {
 			 delete_struct(sk);
 			 delete_struct(E1);
@@ -1216,9 +1216,9 @@ protected:
 		T * pim;
 		complex * E1;
 public:
-		int type() {return MP2D_CLAYER_SHAPE;}
-		int freedom(int m) { return m*2+1;}
+		Num_Shape    type() { return MP2D_CLAYER_SHAPE;}
 		int size_of_param() { return(5);}
+		int freedom (int m) { return m*2+1;}
 public:
 //...initialization of multipoles;
 		void set_shape(double R0 = 1., double K1 = 1., double K2 = 1., double K3 = 1., double R1 = 1., double R2 = 1) {
@@ -1257,7 +1257,7 @@ public:
 template <typename T>
 class CMapi3DClayer : public CMapi2DClayer<T> {
 public:
-		int type() {return MP3D_CLAYER_SHAPE;}
+		Num_Shape   type() { return MP3D_CLAYER_SHAPE;}
 		int freedom(int m) { return sqr(m+1);}
 public:
 //...initialization and calculation of multipoles;
@@ -1379,13 +1379,14 @@ void CMapi3DClayer<T>::parametrization(double * P, int m_dop)
 			  swap(F1, F2);
 		}
 		for (this->p[i*i] = F1, m = 1; m <= this->N+m_dop; m++) {
-			 for (F1 = (zm = (hh = zm)*real(z)-zm_i*imag(z)), F1_i = (zm_i = hh*imag(z)+zm_i*real(z)), 
-					F2 = 0., F2_i = 0., i = m; i < this->N+m_dop; i++) {
+			 for (F1 = (zm = (hh = zm)*real(z)-zm_i*imag(z)), F2 = 0., 
+					F1_i = (zm_i = hh*imag(z)+zm_i*real(z)), F2_i = 0., i = m; i < this->N+m_dop; i++) {
 					this->p[i*i+m*2-1] = F1_i;
 					this->p[i*i+m*2]   = F1;
 					F2 = ((h0 = (2.*i+1.)*Z)*F1-(i-m)*F2)*(hh = 1./(i+m+1.)); 
-					F2_i = (h0*F1-(i-m)*F2)*hh; 
-					swap(F1, F2); swap(F1_i, F2_i);
+					F2_i = (h0*F1_i-(i-m)*F2_i)*hh; 
+					swap(F1, F2); 
+					swap(F1_i, F2_i);
 			 }
 			 this->p[i*i+m*2-1] = F1_i;
 			 this->p[i*i+m*2]   = F1;
@@ -1402,7 +1403,7 @@ void CMapi3DClayer<T>::parametrization(double * P, int m_dop)
 					B = (pp-p3*f)/Q*(2.*m+1.)/(m+1.)-1.; this->E1[m] = comp(1., B);
 
 					for (f1 *= R, f2 *= RR, m2 = m*2, i = 0; i <= m2; i++, k++)
-						this->p[k] = f1*this->p[k]+( this->pim[k] = f2*this->p[k]*B);
+						this->p[k] = f1*this->p[k]+(this->pim[k] = f2*this->p[k]*B);
 			}
 		}
 		else

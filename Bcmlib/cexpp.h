@@ -18,7 +18,7 @@ class CSkin3DExpp : public CShape<T> {
 protected:
 		T * sk;
 public:
-		int type()          { return SK3D_EXPP_SHAPE;}
+		Num_Shape    type() { return SK3D_EXPP_SHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(2);}
 public:
@@ -60,7 +60,7 @@ public:
 template <typename T>		
 class CSkin3DZoom : public CSkin3DExpp<T> {
 public:
-		int type()			 { return SK3D_ZOOM_SHAPE;}
+		Num_Shape   type() { return SK3D_ZOOM_SHAPE;}
 		int freedom(int m) { return(sqr(m+1));}
 public:
 //...initialization and calculation of multipoles;
@@ -552,7 +552,7 @@ void CSkin3DZoom<T>::deriv_Z(T * deriv, double f)
 template <typename T>
 class CMapi3DEll : public CShape<T> {
 public:
-		int type() {return MP3D_ELLI_SHAPE;}
+		Num_Shape   type() {return MP3D_ELLI_SHAPE;}
 		int freedom(int m) {return (m+1)*(m+2);}
 public:
 //...calculation of multipoles;
@@ -574,7 +574,7 @@ public:
 template <typename T>
 class CSkin2DEll : public CShape<T> {
 public:
-		int type()          { return SK2D_ELLI_SHAPE;}
+		Num_Shape    type() { return SK2D_ELLI_SHAPE;}
 		int freedom (int m) { return (m+1)*2;}
 		int size_of_param() { return(5);}
 public:
@@ -850,7 +850,7 @@ void CMapi3DEll<T>::deriv_Z(T * deriv, double f)
 template <typename T>
 class CSkin2DBeamZ : public CShape<T> {
 public:
-		int type()          { return SK2D_BEAMZSHAPE;}
+		Num_Shape    type() { return SK2D_BEAMZSHAPE;}
 		int freedom (int m) { return((m+1)*2);}
 		int size_of_param() { return(2);}
 public:
@@ -883,7 +883,7 @@ protected:
 		T * sk, * sz, * pim, * pxim, * pyim, * pzim;
 		T * E1, * E1_i;
 public:
-		int type()          { return SK3D_BEAM_SHAPE;}
+		Num_Shape    type() { return SK3D_BEAM_SHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(6);};
 public:

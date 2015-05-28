@@ -5,7 +5,7 @@
 
 #ifndef ___ABRIDGE_PROFILE_MODE___
 #include "cfitting.h"
-#include "ccebasic.h"
+#include "CCells.h"
 #endif
 #include "unit_mes.h"
 

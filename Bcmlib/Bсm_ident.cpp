@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "cmapi.h"
 #include "clame3d.h"
-#include "ccebasic.h"
+#include "ccells.h"
 #include "cgrid_el.h"
 #include "ccohes2d.h"
 #include "ccohes3d.h"
@@ -16,35 +16,14 @@
 #include "cshapes.h"
 #include "csolver.h"
 
-#define ___nMPI_INIT___
-#define  Message(Msg)    printf("%s", Msg);  printf("\n")
-//----------------------------------------------------------------------------------------
-template <typename T> 
-void Number_of_Blocks	(void * _pBCM, int & _NBlks);
-template <typename T> 
-void Blocks_Partitioning(void * _pBCM, int * _Blks);
-template <typename T> 
-void Blocks_Sparsity		(void * _pBCM, int *& _IA, int *& _JA);
-template <typename T> 
-void Blocks_Row			(void * _pBCM, int _BlkRow, double * _defc);
-template <typename T> 
-void Right_Handside		(void * _pBCM, int _BlkRow, double * _refc);
-template <typename T> 
-void Initial_Guess		(void * _pBCM, int _BlkRow, double * _refc);
-template <typename T> 
-void Store_Solution		(void * _pBCM, int _BlkRow, double * _refc);
-template <typename T> 
-void Blocks_SparsitySym	(void * _pBCM, int *& _IA, int *& _JA);
-template <typename T> 
-void Blocks_RowSym		(void * _pBCM, int _BlkRow, double * _defc);
-template <typename T> 
-//----------------------------------------------------------------------------------------
 #ifdef ___MPI_INIT___
 #include "mpi.h"
 #include "ExchangeMPI.h"
 #include "gsmatrix.h"
 extern CMPIComm comm_mpi;
 #endif
+#define  Message(Msg)    printf("%s", Msg);  printf("\n")
+
 //---------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////////
 //...идентификация когезионных параметров (для когезионной или классической модели);

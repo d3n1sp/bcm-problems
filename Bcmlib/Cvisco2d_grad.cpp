@@ -1,13 +1,9 @@
 #include "stdafx.h"
 
-#include "cgrid_el.h"
+#include "shapes.h"
 #include "cvisco2d_grad.h"
 
-#ifdef ___WINDOWS_LOG_MESSAGE___
-#define  Message(Msg)    theMainFrame->Message(Msg)
-#else
-#define  Message(Msg)    printf(Msg);  printf("\n")
-#endif
+#define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
 
 int CVisco2D_grad::NUM_ADHES = 4;
 int CVisco2D_grad::NUM_SHEAR = 7;
@@ -17,18 +13,18 @@ int CVisco2D_grad::NUM_HESS  = 8;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CVisco2D_grad::block_shape_init(Block<complex> & B, int id_free)
+int CVisco2D_grad::block_shape_init(Block<complex> & B, Num_State id_free)
 {
 	int k, m;
    if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<complex>;
-		B.shape->add_shape(CreateShapeC(MP2D_POLY_SHAPE));
+		B.shape->add_shape(CreateShape<complex>(MP2D_POLY_SHAPE));
 
 		extern int gradient_model;
 		if (gradient_model)	{//...using gradient displacements;
-			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShapeC(SK2D_ELLI_SHAPE));
-			else											   B.shape->add_shape(CreateShapeC(SK2D_POLY_SHAPE/*SK2D_BEAMZ_SHAPE*/));
+			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShape<complex>(SK2D_ELLI_SHAPE));
+			else											   B.shape->add_shape(CreateShape<complex>(SK2D_POLY_SHAPE/*SK2D_BEAMZ_SHAPE*/));
 		}
 
 ////////////////////////
@@ -374,7 +370,7 @@ void CVisco2D_grad::jump_make_common(int i, int m)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии (условие периодического скачка);
-int CVisco2D_grad::gram3(CGrid * nd, int i, int id_local)
+Num_State CVisco2D_grad::gram3(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, f, P[6], TX, TY, hx;
@@ -550,7 +546,7 @@ int CVisco2D_grad::gram3(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии на границе фаз;
-int CVisco2D_grad::transfer3(CGrid * nd, int i, int k, int id_local)
+Num_State CVisco2D_grad::transfer3(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6], Ai, Ak, Bi, Bk;
@@ -714,7 +710,7 @@ int CVisco2D_grad::transfer3(CGrid * nd, int i, int k, int id_local)
 
 ///////////////////////////////////////////////////////////////////////////
 //...inclusion of the boundary condition data to the solver for all blocks;
-int CVisco2D_grad::gram4(CGrid * nd, int i, int id_local)
+Num_State CVisco2D_grad::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, p3, f, P[6];
@@ -816,7 +812,7 @@ int CVisco2D_grad::gram4(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CVisco2D_grad::transfer4(CGrid * nd, int i, int k, int id_local)
+Num_State CVisco2D_grad::transfer4(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6];
@@ -945,7 +941,7 @@ int CVisco2D_grad::transfer4(CGrid * nd, int i, int k, int id_local)
 
 //////////////////////////////////////////////////////////////////////////
 //...интегрирование НДС на заданном наборе узлов для периодической задачи;
-int CVisco2D_grad::rigidy1(CGrid * nd, int i, complex * K)
+Num_State CVisco2D_grad::rigidy1(CGrid * nd, int i, complex * K)
 {
 	if (nd) {
       int l, shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm;
@@ -1050,7 +1046,7 @@ void CVisco2D_grad::set_fasa_hmg(double K1, double K2, double G1, double G2, dou
 
 //////////////////////////////////////////////////////
 //...counting kernel for solving double plane problem;
-int CVisco2D_grad::computing_header(Num_Comput Num)
+Num_State CVisco2D_grad::computing_header(Num_Comput Num)
 {
 	int i, j, k, elem, id_dir, n_rhs = 2;
 	char msg[201];
@@ -1606,12 +1602,12 @@ void CVisco2D_grad::GetEnergyValue(int k, complex * energy)
 //{
 ///////////////////////////////////////
 ////...образуем образец из трех блоков;
-//	CCeBasic * ce; 
+//	CCells * ce; 
 //   init_blocks(3);
 //
 //	B[0].type = ELLI_BLOCK;
 //	B[0].bar	 = new CCells;
-//	ce = new CCeBasic; ce->get_sheet(L-l, H); add_new_cell_maps(ce->mp, FACET_CELL);
+//	ce = new CCells; ce->get_sheet(L-l, H); add_new_cell_maps(ce->mp, FACET_CELL);
 //	B[0].bar->bar_add (ce);
 //	set_block3D(B[0], SPHERE_GENUS, L-l, 0, -(L+l)*.5);
 //	B[0].bar->cells_common(B[0].mp); 
@@ -1623,7 +1619,7 @@ void CVisco2D_grad::GetEnergyValue(int k, complex * energy)
 //
 //	B[1].type = ELLI_BLOCK;
 //	B[1].bar	 = new CCells;
-//	ce = new CCeBasic; ce->get_sheet(l*2., H); add_new_cell_maps(ce->mp, FACET_CELL);
+//	ce = new CCells; ce->get_sheet(l*2., H); add_new_cell_maps(ce->mp, FACET_CELL);
 //	B[1].bar->bar_add (ce);
 //	set_block3D(B[1], SPHERE_GENUS, l);
 //	B[1].bar->cells_common(B[1].mp);
@@ -1637,7 +1633,7 @@ void CVisco2D_grad::GetEnergyValue(int k, complex * energy)
 //
 //	B[2].type = ELLI_BLOCK;
 //	B[2].bar	 = new CCells;
-//	ce = new CCeBasic; ce->get_sheet(L-l, H); add_new_cell_maps(ce->mp, FACET_CELL);
+//	ce = new CCells; ce->get_sheet(L-l, H); add_new_cell_maps(ce->mp, FACET_CELL);
 //	B[2].bar->bar_add (ce);
 //	set_block3D(B[2], SPHERE_GENUS, L-l, 0, (L+l)*.5);
 //	B[2].bar->cells_common(B[2].mp);

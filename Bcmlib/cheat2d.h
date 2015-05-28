@@ -19,25 +19,25 @@ public:
 		};
 protected:
 static int NUM_BASIC, NUM_SHIFT, NUM_GEOMT, MAX_PHASE;
-		 int block_shape_init(Block<double> & B, int id_free);
+		 int block_shape_init(Block<double> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1(double * P, int i, int m);
 		void jump2(double * P, int i, int m);
 		void jump2_compos(double * P, int i, int m);
 //...forming block matrix elements;
-		int  gram1    (CGrid * nd, int i, int id_local);
-		int  gram2    (CGrid * nd, int i, int id_local);
-		int  gram2peri(CGrid * nd, int i, int id_local);
-		int  gram3    (CGrid * nd, int i, int id_local);
-		int  gram4    (CGrid * nd, int i, int id_local);
-		int  transfer1(CGrid * nd, int i, int k, int id_local);
-		int  transfer2(CGrid * nd, int i, int k, int id_local);
-		int  transfer3(CGrid * nd, int i, int k, int id_local) { return transfer4(nd, i, k, id_local);};
-		int  transfer4(CGrid * nd, int i, int k, int id_local);
-		int  rigidy1  (CGrid * nd, int i, double * K);
-		int  rigidy2  (CGrid * nd, int i, double * K);
-		int  rigidy5  (CGrid * nd, int i, double * K);
-		int  computing_header(Num_Comput Num);
+		Num_State gram1    (CGrid * nd, int i, int id_local);
+		Num_State gram2    (CGrid * nd, int i, int id_local);
+		Num_State gram2peri(CGrid * nd, int i, int id_local);
+		Num_State gram3    (CGrid * nd, int i, int id_local);
+		Num_State gram4    (CGrid * nd, int i, int id_local);
+		Num_State transfer1(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer2(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer3(CGrid * nd, int i, int k, int id_local) { return transfer4(nd, i, k, id_local);};
+		Num_State transfer4(CGrid * nd, int i, int k, int id_local);
+		Num_State rigidy1  (CGrid * nd, int i, double * K);
+		Num_State rigidy2  (CGrid * nd, int i, double * K);
+		Num_State rigidy5  (CGrid * nd, int i, double * K);
+		Num_State computing_header(Num_Comput Num);
 public:
 //...параметры задачи;
 		void set_fasa_hmg(double K1, double K2, double K3 = 0.) { set_fasa_hmg(0., 0., K1, K2, K3);}
@@ -49,8 +49,8 @@ public:
 		double TakeEshelby_two(double ff);
 		double TakeEshelby(int nn, double * RR, double * KK);
 //...функция пересчета поля температур в слоистой модели (схема установления);
-		void TakeStabStep(double * T, int NN, double alpha);
-		void TakeStabStep_layer(double * T, int N_SC, int N_CU, int N_cells, double alpha);
+		void TakeStabStep(double * Temp, int NN, double alpha);
+		void TakeStabStep_layer(double * Temp, int N_SC, int N_CU, int N_cells, double alpha);
 };
 
 /////////////////////////////////////////////////

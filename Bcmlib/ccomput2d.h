@@ -13,15 +13,15 @@
 template <typename T>
 class CComput2D : public CDraft<T> {
 protected:
-		void comput1(int opt);//...вычислительная схема формирования блочной матрицы для аналитической модели;
-		void comput2(int opt);//...вычислительная схема формирования блочной матрицы для конечно-элементной модели;
-		void comput3(int opt);//...вычислительная схема (одноблочная, конечно-элементная) для периодической задачи;
-		void comput4(int opt);//...счетная схема для задачи Эшелби -- аппроксимация по границе включения;
-		void comput5(int opt, T * K, Num_Value _FMF, int id_variant);//...вычислительная схема интегрирования эффективных характеристик по границе блока;
-		void comput6(int opt, T * K, Num_Value _FMF, int id_variant);//...вычислительная схема интегрирования эффективных характеристик по объему блока;
+		void comput1(int opt); //...вычислительная схема формирования блочной матрицы для аналитической модели;
+		void comput2(int opt); //...вычислительная схема формирования блочной матрицы для конечно-элементной модели;
+		void comput3(int opt); //...вычислительная схема (одноблочная, конечно-элементная) для периодической задачи;
+		void comput4(int opt); //...счетная схема для задачи Эшелби -- аппроксимация по границе включения;
+		void comput5(int opt, T * K, Num_Value _FMF, int id_variant); //...вычислительная схема интегрирования эффективных характеристик по границе блока;
+		void comput6(int opt, T * K, Num_Value _FMF, int id_variant); //...вычислительная схема интегрирования эффективных характеристик по объему блока;
 		void comput7(int opt, T * K);  //...вычислительная схема дополнительных коррекций интегрируемой величины;
-		int  comput_kernel1(Num_Comput Num);//...вычислительная схема для блочной структуры; 
-		int  comput_kernel2(Num_Comput Num);//...вычислительная схема для блочной структуры с продолжением по времени;
+		Num_State comput_kernel1(Num_Comput Num); //...вычислительная схема для блочной структуры; 
+		Num_State comput_kernel2(Num_Comput Num); //...вычислительная схема для блочной структуры с продолжением по времени;
 //...testing output of block matrix;
 		void test_block_matrix (int variant = ERR_STATE);
 };
@@ -62,7 +62,7 @@ void CComput2D<T>::comput1(int opt)
 	LOOP_OPT(loop, opt, k) //...активируем геометрию блочной строки;
 		for (j = 0; j < this->solver.JR[k][0]; j++) {
 			this->bar_activate(this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]], NULL_STATE, NULL_STATE);
-			//this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]].bar->cells_out("CCeBasic");
+			//this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]].bar->cells_out("CCells");
 		}
 
 	for (k = 0; k < this->N; k++) SkeletonBounding(this->B[k], par, NULL_STATE);
@@ -242,7 +242,7 @@ void CComput2D<T>::comput2(int opt)
 	LOOP_OPT(loop, opt, k) //...активируем геометрию блочной строки;
 		for (j = 0; j < this->solver.JR[k][0]; j++) {
 			this->bar_activate(this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]], NULL_STATE, NULL_STATE);
-			//this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]].bar->cells_out("CCeBasic");
+			//this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]].bar->cells_out("CCells");
 		}
 
 ////////////////////////////////
@@ -1020,7 +1020,7 @@ void CComput2D<T>::comput7(int opt, T * K)
 /////////////////////////////////////////
 //...счетная схема для блочной структуры;
 template <typename T>
-int CComput2D<T>::comput_kernel1(Num_Comput Num)
+Num_State CComput2D<T>::comput_kernel1(Num_Comput Num)
 {
 	if (this->computing_header(Num) != OK_STATE) 
 		return ERR_STATE;
@@ -1076,7 +1076,7 @@ int CComput2D<T>::comput_kernel1(Num_Comput Num)
 /////////////////////////////////////////////////////////////////////////////
 //...счетная схема для блочной структуры с параметром продолжения по времени;
 template <typename T>
-int CComput2D<T>::comput_kernel2(Num_Comput Num)
+Num_State CComput2D<T>::comput_kernel2(Num_Comput Num)
 {
 	if (this->computing_header(Num) != OK_STATE) 
 		return ERR_STATE;

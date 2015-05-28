@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "cgrid_el.h"
+#include "shapes.h"
 #include "ccohes2d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
@@ -14,18 +14,18 @@ int CCohes2D::regul = 1;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CCohes2D::block_shape_init(Block<double> & B, int id_free)
+int CCohes2D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int k, m;
    if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
-		B.shape->add_shape(CreateShapeD(MP2D_POLY_SHAPE));
+		B.shape->add_shape(CreateShape<double>(MP2D_POLY_SHAPE));
 
 		extern int gradient_model;
 		if (gradient_model)	{//...using gradient displacements;
-			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShapeD(SK2D_ELLI_SHAPE));
-			else											   B.shape->add_shape(CreateShapeD(SK2D_POLY_SHAPE/*SK2D_BEAMZ_SHAPE*/));
+			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShape<double>(SK2D_ELLI_SHAPE));
+			else											   B.shape->add_shape(CreateShape<double>(SK2D_POLY_SHAPE/*SK2D_BEAMZ_SHAPE*/));
 		}
 
 ////////////////////////
@@ -366,7 +366,7 @@ void CCohes2D::jump_make_common(int i, int m)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии (условие периодического скачка);
-int CCohes2D::gram3(CGrid * nd, int i, int id_local)
+Num_State CCohes2D::gram3(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, f, P[6], TX, TY, hx;
@@ -541,7 +541,7 @@ int CCohes2D::gram3(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии на границе фаз;
-int CCohes2D::transfer3(CGrid * nd, int i, int k, int id_local)
+Num_State CCohes2D::transfer3(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6], Ai, Ak, Bi, Bk;
@@ -705,7 +705,7 @@ int CCohes2D::transfer3(CGrid * nd, int i, int k, int id_local)
 
 ///////////////////////////////////////////////////////////////////////////
 //...inclusion of the boundary condition data to the solver for all blocks;
-int CCohes2D::gram4(CGrid * nd, int i, int id_local)
+Num_State CCohes2D::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, p3, f, P[6];
@@ -807,7 +807,7 @@ int CCohes2D::gram4(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CCohes2D::transfer4(CGrid * nd, int i, int k, int id_local)
+Num_State CCohes2D::transfer4(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6];
@@ -936,7 +936,7 @@ int CCohes2D::transfer4(CGrid * nd, int i, int k, int id_local)
 
 //////////////////////////////////////////////////////////////////////////
 //...интегрирование НДС на заданном наборе узлов для периодической задачи;
-int CCohes2D::rigidy1(CGrid * nd, int i, double * K)
+Num_State CCohes2D::rigidy1(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int l, shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm;
@@ -1035,7 +1035,7 @@ void CCohes2D::set_fasa_hmg(double nju1, double nju2, double G1, double G2, doub
 
 //////////////////////////////////////////////////////
 //...counting kernel for solving double plane problem;
-int CCohes2D::computing_header(Num_Comput Num)
+Num_State CCohes2D::computing_header(Num_Comput Num)
 {
 	int i, j, k, elem, id_dir, n_rhs = 2;
 	char msg[201];
@@ -1620,12 +1620,12 @@ void CCohes2D::TakeLayerModel(double L, double H, double l, double nju1, double 
 
 /////////////////////////////////////
 //...образуем образец из трех блоков;
-	CCeBasic * ce; 
+	CCells * ce; 
    init_blocks(3);
 
 	B[0].type = ELLI_BLOCK;
 	B[0].bar	 = new CCells;
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P2, P3, P4, ZERO_STATE);
 	B[0].bar->bar_add(ce);
 	set_block3D(B[0], SPHERE_GENUS, L-l, 0, -L);
@@ -1636,7 +1636,7 @@ void CCohes2D::TakeLayerModel(double L, double H, double l, double nju1, double 
 
 	B[1].type = ELLI_BLOCK;
 	B[1].bar	 = new CCells;
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P5, P6, P7, P8, ZERO_STATE);
 	B[1].bar->bar_add(ce);
 	set_block3D(B[1], SPHERE_GENUS, l);
@@ -1650,7 +1650,7 @@ void CCohes2D::TakeLayerModel(double L, double H, double l, double nju1, double 
 
 	B[2].type = ELLI_BLOCK;
 	B[2].bar	 = new CCells;
-	ce = new CCeBasic; P1[0] = -P1[0]; P2[0] = -P2[0]; P3[0] = -P3[0]; P4[0] = -P4[0];
+	ce = new CCells; P1[0] = -P1[0]; P2[0] = -P2[0]; P3[0] = -P3[0]; P4[0] = -P4[0];
 	ce->get_quad_facet(P2, P1, P4, P3, ZERO_STATE);
 	B[2].bar->bar_add(ce);
 	set_block3D(B[2], SPHERE_GENUS, L-l, 0, L);

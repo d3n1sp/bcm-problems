@@ -8,7 +8,7 @@
 
 /////////////////////////////////////////////////////
 //...class of blocks partition for acoustics problem;
-class CAcou3D : public CComput3D<double> {
+class CAcou3D : public CComput3D<complex> {
 public:
 		Num_Draft type   () { return ACOU3D_DRAFT;}
 		int size_of_param() { return(19);};
@@ -22,7 +22,7 @@ public:
       virtual ~CAcou3D (void);
 protected:
 static int NUM_KAPPA, NUM_SHEAR, NUM_HESS;
-		int  block_shape_init(Block<double> & B, int id_free);
+		int  block_shape_init(Block<complex> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1				(double * P, int i, int m);
 		void jump2				(double * P, int i, int m);

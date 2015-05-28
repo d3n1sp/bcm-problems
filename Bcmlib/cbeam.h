@@ -7,18 +7,18 @@
 #include "cshapes.h"
 
 /////////////////////////////////////////////////////
-//						   //
+//																	//
 //       BEAM AND ROUNDED WEDGE MULTIPOLES         //
-//						   //
+//																	//
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 //...class of beams polynomial multipoles (sopromat);
 template <typename T>
 class CBeamShape : public CShape<T> {
 public:
-		int type() {return BEAM_POLY_SHAPE;}
-		int freedom(int m) { return(4); };
-		int size_of_param(){ return(11);};
+		Num_Shape	 type() { return BEAM_POLY_SHAPE;}
+		int size_of_param() { return(11);};
+		int freedom (int m) { return(4); };
 public:
 //...calculation of multipoles;
 		void parametrization     (double * P = NULL, int m_dop = 0);
@@ -144,9 +144,9 @@ protected:
 		double gamma(double z);
 		static const double c0[15];
 public:
-		int type()         { return MP2D_CORNER_SHAPE;}
-		int freedom(int m) { return m*2+1; }
-		int size_of_param(){ return(4);};
+		Num_Shape    type() { return MP2D_CORNER_SHAPE;}
+		int size_of_param() { return(4);};
+		int freedom (int m) { return m*2+1; }
 public:
 //...initialization of multipoles;
 		void init1(int N, int dim) { init3(N, 0, 0, dim);}

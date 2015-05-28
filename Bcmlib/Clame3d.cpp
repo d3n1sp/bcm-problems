@@ -1,15 +1,12 @@
 #include "stdafx.h"
 
-#include "cgrid_el.h"
+#include "shapes.h"
 #include "clame3d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
 
-
-int CLame3D::NUM_GEOMT = 4;
 int CLame3D::NUM_SHEAR = 8;
 int CLame3D::NUM_SHIFT = 6;
-int CLame3D::MAX_PHASE = 3;
 int CLame3D::NUM_HESS = 14;
 extern void (* FUNC)(double * pp);
 
@@ -38,15 +35,15 @@ CLame3D::~CLame3D (void)
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CLame3D::block_shape_init(Block<double> & B, int id_free)
+int CLame3D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int k, m;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
 		if ((B.type & ERR_CODE) == ZOOM_BLOCK && B.mp[0] == ID_MAP(2, SPHEROID_GENUS)) {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
-			B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE));
 
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
@@ -56,8 +53,8 @@ int  CLame3D::block_shape_init(Block<double> & B, int id_free)
 		}
 		else
 		if ((B.type & ERR_CODE) == CLAYER_BLOCK && B.mp[0] == ID_MAP(2, SPHEROID_GENUS)) {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
-			B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE), NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE), NULL_STATE);
 
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
  			B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
@@ -66,10 +63,10 @@ int  CLame3D::block_shape_init(Block<double> & B, int id_free)
 			B.shape->set_shape(1, sqr(B.mp[8] = get_param(NUM_GEOMT+1))/(get_param(NUM_MPLS+1)*fabs(B.mp[7])));
 		}
 		else {
-			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShapeD(MP3D_ELLI_SHAPE)); else
-			if ((B.type & ERR_CODE) == ESHE_BLOCK) B.shape->add_shape(CreateShapeS(MP3D_SPHEROID_FULL_SHAPE)); else
-			if ((B.type & ERR_CODE) == ESHE_ZOOM_BLOCK) B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE));
-			else													  B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
+			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_ELLI_SHAPE)); else
+			if ((B.type & ERR_CODE) == ESHE_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_SPHEROID_FULL_SHAPE)); else
+			if ((B.type & ERR_CODE) == ESHE_ZOOM_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE));
+			else													  B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
 			
 			B.shape->init1(UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			if ((B.type & ERR_CODE) == ESHE_BLOCK) B.shape->set_shape(fabs(B.mp[8]), get_param(NUM_GEOMT+1)/get_param(NUM_GEOMT), get_param(NUM_GEOMT)); else
@@ -100,6 +97,7 @@ int  CLame3D::block_shape_init(Block<double> & B, int id_free)
 				B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
 				B.shape->set_shape(1, sqr(B.mp[8])/(get_param(NUM_MPLS+1)*fabs(B.mp[7])));
 			}
+			else
 			if ((B.type & ERR_CODE) == ESHE_BLOCK) B.shape->set_shape(fabs(B.mp[8]), get_param(NUM_GEOMT+1)/get_param(NUM_GEOMT), get_param(NUM_GEOMT)); else
 			if ((B.type & ERR_CODE) == ESHE_ZOOM_BLOCK) B.shape->set_shape(fabs(B.mp[8]));
 			else B.shape->set_shape(get_param(NUM_MPLS+1)*fabs(B.mp[7]));
@@ -2472,7 +2470,7 @@ void CLame3D::jump_make_common(int i, int m)
 
 ////////////////////////////////////////////////////////////////////////////
 //...realization of common jump boundary condition for matrix and inclusion;
-int CLame3D::gram1(CGrid * nd, int i, int id_local)
+Num_State CLame3D::gram1(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, hz, p4, f, P[6];
@@ -2598,7 +2596,7 @@ int CLame3D::gram1(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...junction data of the periodic boundary condition for all blocks;
-int CLame3D::gram2(CGrid * nd, int i, int id_local)
+Num_State CLame3D::gram2(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, AZ, f, P[6], TX, TY, TZ, hz, 
@@ -2651,7 +2649,7 @@ int CLame3D::gram2(CGrid * nd, int i, int id_local)
 					 memset(solver.hh[k][0][num], 0, solver.dim[k]*sizeof(double));
 				}
 				if (first && solver.mode(REGULARIZATION) && (id_dir == 5 || id_dir == 6)) {
-					for (int num = m+6; num < solver.n; num--) {
+					for (int num = m+6; num < solver.n; num++) {
 						 memset(solver.hh[i][0][num], 0, solver.dim[i]*sizeof(double));
 						 memset(solver.hh[k][0][num], 0, solver.dim[k]*sizeof(double));
 					}
@@ -2746,7 +2744,7 @@ int CLame3D::gram2(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...формирование матрицы Грама для периодической задачи (один блок);
-int CLame3D::gram2peri(CGrid * nd, int i, int id_local)
+Num_State CLame3D::gram2peri(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, AZ, f, P[6], 
@@ -2759,7 +2757,7 @@ int CLame3D::gram2peri(CGrid * nd, int i, int id_local)
 /////////////////////////////////////
 //...тестовая печать множества узлов;
 		if (solver.mode(PRINT_MODE)) 
-			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
+			nd->TestGrid("nodes.bln", 0.002, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////
 //...inclusion data in gram and transfer matrix;
@@ -2845,7 +2843,7 @@ int CLame3D::gram2peri(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////
 //...inclusion of the stitching data to the solver for all blocks;
-int CLame3D::transfer1(CGrid * nd, int i, int k, int id_local)
+Num_State CLame3D::transfer1(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6], 
@@ -2942,7 +2940,7 @@ int CLame3D::transfer1(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...inclusion conjunction data to the solver for all blocks;
-int CLame3D::transfer2(CGrid * nd, int i, int k, int id_local)
+Num_State CLame3D::transfer2(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B && B[i].link && B[i].link[0] > NUM_PHASE) {
       double G1 = get_param(NUM_SHEAR), f, P[6], 
@@ -3053,7 +3051,7 @@ int CLame3D::transfer2(CGrid * nd, int i, int k, int id_local)
 
 //////////////////////////////////////////////////////////////////
 //...inclusion conjunction data to the solver for Eshrlby problem;
-int CLame3D::trans_esh(CGrid * nd, int i, int k, int id_local)
+Num_State CLame3D::trans_esh(CGrid * nd, int i, int k, int id_local)
 {
 	if (1 && nd && nd->N && 0 <= i && i < solver.N && B && B[i].link && B[i].link[0] > NUM_PHASE) {
       double G1 = get_param(NUM_SHEAR), f, P[6], hx, hy, hz, px, py, pz, 
@@ -3192,7 +3190,7 @@ int CLame3D::trans_esh(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии;
-int CLame3D::gram3(CGrid * nd, int i, int id_local)
+Num_State CLame3D::gram3(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, AZ, f, P[6], TX, TY, TZ, hz, requl = 1.;
@@ -3339,7 +3337,7 @@ int CLame3D::gram3(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии;
-int CLame3D::gram4(CGrid * nd, int i, int id_local)
+Num_State CLame3D::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, hz, p4, f, P[6];
@@ -3460,7 +3458,7 @@ int CLame3D::gram4(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CLame3D::transfer4(CGrid * nd, int i, int k, int id_local)
+Num_State CLame3D::transfer4(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6];
@@ -3548,7 +3546,7 @@ int CLame3D::transfer4(CGrid * nd, int i, int k, int id_local)
 
 //////////////////////////////////////////
 //...интегрирование НДС по границе блоков;
-int CLame3D::rigidy1(CGrid * nd, int i, double * K)
+Num_State CLame3D::rigidy1(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int l, shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT;
@@ -3632,7 +3630,7 @@ int CLame3D::rigidy1(CGrid * nd, int i, double * K)
 
 ////////////////////////////////////////////////
 //...интегрирование напряжений по объему блоков;
-int CLame3D::rigidy2(CGrid * nd, int i, double * K)
+Num_State CLame3D::rigidy2(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm, l;
@@ -3729,7 +3727,7 @@ int CLame3D::rigidy2(CGrid * nd, int i, double * K)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //...дополнительное интегрирование параметров потока для блоков с усложненными функциями;
-int CLame3D::rigidy5(CGrid * nd, int i, double * K)
+Num_State CLame3D::rigidy5(CGrid * nd, int i, double * K)
 {
    int	N_elem = UnPackInts(get_param(NUM_QUAD)), N_max = UnPackInts(get_param(NUM_QUAD), 1), m, k, l, l0;
    double 	 R1 = get_param(NUM_GEOMT), R2 = get_param(NUM_GEOMT+1), f, P[6], U[3], sum[25],
@@ -3924,7 +3922,7 @@ void CLame3D::set_fasa_hmg(double R1, double R2, double nju1, double nju2, doubl
 
 ///////////////////////////////////////////////////////////
 //...counting header for solving linear elasticity problem;
-int CLame3D::computing_header(Num_Comput Num)
+Num_State CLame3D::computing_header(Num_Comput Num)
 {
 	int  N_elem = UnPackInts(get_param(NUM_QUAD)), id_dir, i, k, elem, n_rhs = 6;
 	char msg[201];
@@ -4645,7 +4643,11 @@ void CLame3D::toreal_transf(double ** T, int n, int shift_m, int shift_n)
 //...формироване матриц Эшелби для граничных функций;
 void CLame3D::set_eshelby_matrix(int N_mpl)
 { 
+#ifdef ___2BODY_ESHELBY___
+	int num_bound = 2;
+#else
 	int num_bound = 4;
+#endif
 	double ** TX = NULL, ** TD = NULL, ** TD_dop = NULL, * H = (double *)new_struct((6*N_mpl+3)*num_bound*sizeof(double));
 	TT = (double ***)new_struct((N_mpl+2)*sizeof(double **));
 	TH = (double ***)new_struct((N_mpl+1)*sizeof(double **));
@@ -4667,7 +4669,11 @@ void CLame3D::set_eshelby_matrix(int N_mpl)
 				for (l = 0; l < mm; l++) 
 				for (j = 0; j < mn; j++) TH[k][l][num] -= TD[l][j]*TT[k+2][j][num]; 
 			}
+#ifdef ___2BODY_ESHELBY___
+			eshelby_matrix_2body(TX, TT[k], k, TD, TH[k-2], num_bound); swap(TD, TD_dop);
+#else
 			eshelby_matrix_3body(TX, TT[k], k, TD, TH[k-2], num_bound); swap(TD, TD_dop);
+#endif
 			if (solver.GaussJ(TX, mm)) {
 				for (num = 0; num < nn && TT[k]; num++) {
 					for (           l = 0; l < mm; l++) 
@@ -4840,17 +4846,17 @@ void CLame3D::eshelby_matrix_2body(double **& TT, double **& TX, int n, double *
 ///////////////////////////////////////////////////////////
 //...распределяем матрицы для решения граничного уравнения;
 	if (! TT) set_matrix(TT, num_bound*nn, num_bound*nn);
-	else		clean_matrix(TT, num_bound*nn, num_bound*nn);
+	else	  clean_matrix(TT, num_bound*nn, num_bound*nn);
 
 	if (! TX) set_matrix(TX, num_bound*nn, nn);
-	else		clean_matrix(TX, num_bound*nn, nn);
+	else	  clean_matrix(TX, num_bound*nn, nn);
 
 	if (n > 1) {
 	  	if (! TD) set_matrix(TD, num_bound*mm, nn*(num_bound/2));	
-		else		clean_matrix(TD, num_bound*mm, nn*(num_bound/2));
+		else	  clean_matrix(TD, num_bound*mm, nn*(num_bound/2));
 
 		if (! TH) set_matrix(TH, num_bound*mm, nn);	
-		else		clean_matrix(TH, num_bound*mm, nn);
+		else	  clean_matrix(TH, num_bound*mm, nn);
 	}
 
 /////////////////////////////////////////////////////////////
@@ -5994,9 +6000,9 @@ inline double DETER3(double matr[8][8], int i1, int i2, int i3, int j1, int j2, 
 			 matr[i2-1][j1-1]*matr[i1-1][j2-1]*matr[i3-1][j3-1]- 
 			 matr[i3-1][j2-1]*matr[i2-1][j3-1]*matr[i1-1][j1-1];
 }
-double CLame3D::TakeEshelby_shear_det(double ff)
+double CLame3D::TakeEshelby_shear_det(double ff, double alpha)
 {
-	double RR1 = pow(ff, 1./3.), fR2 = RR1*RR1, fR3 = 1./(RR1*fR2), fR5 = fR3/fR2, alpha = -1., 
+	double RR1 = pow(ff, 1./3.), fR2 = RR1*RR1, fR3 = 1./(RR1*fR2), fR5 = fR3/fR2, 
 			 mu_M = get_param(NUM_SHEAR), nu_M = get_param(NUM_SHEAR+1), 
 			 mu_I = get_param(NUM_SHEAR+NUM_SHIFT), nu_I = get_param(NUM_SHEAR+NUM_SHIFT+1), 
 			 mu_MI = mu_M/mu_I, 
@@ -6251,3 +6257,5 @@ double CLame3D::TakeEshelby_shear(double ff, double nju1, double nju2, double E1
 	return(mu_H);
 }
 #undef  Message
+#undef ___2BODY_ESHELBY___
+#undef ___3BODY_ESHELBY___

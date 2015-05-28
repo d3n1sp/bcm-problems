@@ -19,7 +19,7 @@ public:
 		};
 protected:
 static int NUM_SHEAR, NUM_SHIFT, NUM_ADHES, MAX_PHASE, NUM_HESS;
-		int  block_shape_init(Block<double> & B, int id_free);
+		int  block_shape_init(Block<double> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1_common_x(double * P, int i, int m);
 		void jump1_common_y(double * P, int i, int m);

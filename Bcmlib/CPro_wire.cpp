@@ -5,7 +5,7 @@
 
 #ifndef ___ABRIDGE_PROFILE_MODE___
 #include "cwire2d.h"
-#include "ccebasic.h"
+#include "CCells.h"
 #endif
 #include "unit_mes.h"
 
@@ -1194,7 +1194,7 @@ int wire2D_init(void * context, CGrid * block_nd)
                   At       = ((char  **)tab->table[9].parm_values)[tab->index];
                   
                   double D = 0., P0[2], f0, tg, a, b, tg_gamma, gamma, d;
-                  CCeBasic * ce;
+                  CCells * ce;
                   if ((cont->sm = CreateSample(WIRE2D_SAMPLE)) != 0) {
 
                       upper1 = (unsigned long)user_strlen(diameter);
@@ -1231,7 +1231,7 @@ int wire2D_init(void * context, CGrid * block_nd)
                          cont->sm->set_link (cont->sm->B[cont->sm->N-1], 1)) {
                          cont->sm->B[cont->sm->N-1].bar = new CCells;
                          cont->sm->B[cont->sm->N-1].bar->cells_new(1, 2, 0);
-                         ce = new CCeBasic;  ce->get_arc((D+diam)*.5, -M_PI, M_PI);  
+                         ce = new CCells;  ce->get_arc((D+diam)*.5, -M_PI, M_PI);  
                          cont->sm->B[cont->sm->N-1].bar->bar_add(ce);
                          cont->sm->B[cont->sm->N-1].bar->bar_ord();
                      }
@@ -1274,7 +1274,7 @@ int wire2D_init(void * context, CGrid * block_nd)
                                cont->sm->B[cont->sm->N-1].bar = new CCells;
                                cont->sm->B[cont->sm->N-1].bar->cells_new(1, 2, 0);
 
-                               ce = new CCeBasic;  ce->get_ellipt_arc(a, b, -M_PI, M_PI);
+                               ce = new CCells;  ce->get_ellipt_arc(a, b, -M_PI, M_PI);
                                cont->sm->B[cont->sm->N-1].bar->bar_add(ce);
                                cont->sm->B[cont->sm->N-1].bar->bar_ord();
 
@@ -1289,7 +1289,7 @@ int wire2D_init(void * context, CGrid * block_nd)
 ////////////////////////////////////////////////////////////////
 //...огибающая всей геометрии -- окружность последнего диаметра;
                      cont->sm->bar = new CCells;
-                     ((CCeBasic *)cont->sm->bar)->get_circle_profile((D+diam)*.5);
+                     ((CCells *)cont->sm->bar)->get_circle_profile((D+diam)*.5);
                   }
 /////////////////////////////
 //...переустанавливаем рамку;
@@ -1319,7 +1319,7 @@ int wire2D_init(void * context, CGrid * block_nd)
                   At       = ((char  **)tab->table[9].parm_values)[tab->index];
                   
                   double D = 0., P0[2], f0, tg, a, b, tg_gamma, gamma, d;
-                  CCeBasic * ce;
+                  CCells * ce;
                   if ((cont->sm = CreateSample(WIRE2D_SAMPLE)) != 0) {
 
                       upper1 = (unsigned int)user_strlen(diameter);
@@ -1361,7 +1361,7 @@ int wire2D_init(void * context, CGrid * block_nd)
                          cont->sm->set_link (cont->sm->B[cont->sm->N-1], 1)) {
                          cont->sm->B[cont->sm->N-1].bar = new CCells;
                          cont->sm->B[cont->sm->N-1].bar->cells_new(1, 2, 0);
-                         ce = new CCeBasic;  ce->get_arc((D+diam)*.5, -M_PI, M_PI);  
+                         ce = new CCells;  ce->get_arc((D+diam)*.5, -M_PI, M_PI);  
                          cont->sm->B[cont->sm->N-1].bar->bar_add(ce);
                          cont->sm->B[cont->sm->N-1].bar->bar_ord();
                      }
@@ -1405,7 +1405,7 @@ int wire2D_init(void * context, CGrid * block_nd)
                                cont->sm->B[cont->sm->N-1].bar = new CCells;
                                cont->sm->B[cont->sm->N-1].bar->cells_new(1, 2, 0);
 
-                               ce = new CCeBasic;  ce->get_ellipt_arc(a, b, -M_PI, M_PI);
+                               ce = new CCells;  ce->get_ellipt_arc(a, b, -M_PI, M_PI);
                                cont->sm->B[cont->sm->N-1].bar->bar_add(ce);
                                cont->sm->B[cont->sm->N-1].bar->bar_ord();
 
@@ -1420,7 +1420,7 @@ int wire2D_init(void * context, CGrid * block_nd)
 ////////////////////////////////////////////////////////////////
 //...огибающая всей геометрии -- окружность последнего диаметра;
                      cont->sm->bar = new CCells;
-                     ((CCeBasic *)cont->sm->bar)->get_circle_profile((D+diam)*.5);
+                     ((CCells *)cont->sm->bar)->get_circle_profile((D+diam)*.5);
                   }
 /////////////////////////////
 //...переустанавливаем рамку;

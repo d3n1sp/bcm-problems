@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "cgrid_el.h"
+#include "shapes.h"
 #include "cmindl2d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
@@ -15,21 +15,21 @@ int  gradient_model = 1;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CMindl2D::block_shape_init(Block<double> & B, int id_free)
+int CMindl2D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int k;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
-		B.shape->add_shape(CreateShapeD(MP2D_POLY_SHAPE));
+		B.shape->add_shape(CreateShape<double>(MP2D_POLY_SHAPE));
 
 		B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
 
 ////////////////////////////////////////////////////////////
 //...подключаем регулярную экспоненциальную систему функций;
 		if (gradient_model)	{//...using gradient displacements;
-			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShapeD(SK2D_ELLI_SHAPE), NULL_STATE);
-			else											   B.shape->add_shape(CreateShapeD(SK2D_POLY_SHAPE), NULL_STATE);
+			if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->add_shape(CreateShape<double>(SK2D_ELLI_SHAPE), NULL_STATE);
+			else											   B.shape->add_shape(CreateShape<double>(SK2D_POLY_SHAPE), NULL_STATE);
 		}
 		if ((B.type & ERR_CODE) == ELLI_BLOCK) B.shape->set_shape(1, get_param(NUM_MPLS+1)*fabs(B.mp[7]), get_param(NUM_MPLS+1)*fabs(B.mp[7]));
 		else												B.shape->set_shape(1, get_param(NUM_MPLS+1)*fabs(B.mp[7])); 
@@ -525,7 +525,7 @@ void CMindl2D::jump_make_common(int i, int m)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии (условие периодического скачка);
-int CMindl2D::gram3(CGrid * nd, int i, int id_local)
+Num_State CMindl2D::gram3(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, f, P[6], TX, TY, hx;
@@ -705,7 +705,7 @@ int CMindl2D::gram3(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии на границе фаз;
-int CMindl2D::transfer3(CGrid * nd, int i, int k, int id_local)
+Num_State CMindl2D::transfer3(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6], Ai, Ak, Bi, Bk;
@@ -869,7 +869,7 @@ int CMindl2D::transfer3(CGrid * nd, int i, int k, int id_local)
 
 ///////////////////////////////////////////////////////////////////////////
 //...inclusion of the boundary condition data to the solver for all blocks;
-int CMindl2D::gram4(CGrid * nd, int i, int id_local)
+Num_State CMindl2D::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, p3, f, P[6];
@@ -975,7 +975,7 @@ int CMindl2D::gram4(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CMindl2D::transfer4(CGrid * nd, int i, int k, int id_local)
+Num_State CMindl2D::transfer4(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6];
@@ -1109,7 +1109,7 @@ int CMindl2D::transfer4(CGrid * nd, int i, int k, int id_local)
 
 //////////////////////////////////////////////////////////////////////////
 //...интегрирование НДС на заданном наборе узлов для периодической задачи;
-int CMindl2D::rigidy1(CGrid * nd, int i, double * K)
+Num_State CMindl2D::rigidy1(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int l, shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm;
@@ -1221,7 +1221,7 @@ void CMindl2D::set_fasa_hmg(double nju1, double nju2, double G1, double G2, doub
 
 /////////////////////////////////////////////////////////////
 //...counting kernel for solving gradient elasticity problem;
-int CMindl2D::computing_header(Num_Comput Num)
+Num_State CMindl2D::computing_header(Num_Comput Num)
 {
 	int i, j, k, elem, id_dir, n_rhs = 2;
 	char msg[201];

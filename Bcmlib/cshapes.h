@@ -6,8 +6,6 @@
 
 #include "cbase.h"
 #include "kernel.h"
-#include "dd_real.h"
-#include "qd_real.h"
 
 /////////////////////////////////////////////////
 //...description of existing types of multipoles;
@@ -72,12 +70,13 @@ public:
 		double R0, R0_inv;	//...normalizing radius;
 protected:
 		int id_inverse, id_dim;								//...internal or external shapes and dimension;
+		int id_cmpl;											//...multipoles complexity;
 		int NN_dop, NN_grad, NN_hess;						//...internal degrees of freedom;
 		T * p, * px, * py,  * pz, * pxx, * pxy,		//...parametrization of multipoles;                
 						 * pyy, * pxz, * pyz, * pzz;
 		double CX, CY, CZ, SX, SY, SZ, P0[3], cs[6];	//...local coordinate system;
 public:
-		virtual int type() {return NULL_SHAPE;}
+		virtual Num_Shape   type() {return NULL_SHAPE;}
 		virtual int freedom(int m) {return 0;}
 //...auxilliary functions;
 		virtual void release() { 
@@ -152,9 +151,12 @@ public:
 		void admittance(T * dd, T * pp, T adm_dd, T adm_pp);
 //...dimension and inverse;
 		int  dim			 (){ return id_dim;}
+		int  cmpl		 (){ return id_cmpl;};
 		int  inverse	 (){ return id_inverse;}
-		void change		 (){ id_inverse = id_inverse ? NULL_STATE : OK_STATE;}
-		void set_inverse(int m_inv = 0){ id_inverse = m_inv;}
+		void change		 (){ id_inverse = id_inverse ? NULL_STATE : OK_STATE; id_cmpl = 2-id_cmpl;}
+		void change_cmpl(double *& pp, double *& dd) { if (cmpl() == 1 && dd)  swap(pp, dd);};
+		void set_cmpl	 (int m_cmpl = 0){ id_inverse = m_cmpl;}
+		void set_inverse(int m_inv  = 0){ id_inverse = m_inv; }
 //...setting of coordinate system;
 		void set_local(double * P = NULL) {
 			if (P) { 
@@ -175,6 +177,8 @@ public:
 		void make_common (double * P) { point_iso<double>(P, P0, CZ, SZ, CY, SY, CX, SX);}
 		void norm_local  (double * P) { point_iso<double>(P, NULL, CX, -SX, CY, -SY, CZ, -SZ);}
 		void norm_common (double * P) { point_iso<double>(P, NULL, CZ,  SZ, CY,  SY, CX,  SX);}
+		void norm_local_T (T * P) { point_iso<T>(P, NULL, CX, -SX, CY, -SY, CZ, -SZ);}
+		void norm_common_T(T * P) { point_iso<T>(P, NULL, CZ,  SZ, CY,  SY, CX,  SX);}
 //...constructor and destructor;
 		CShape() {
 			N = M  = N1 = N2 = NN = 0;
@@ -182,6 +186,7 @@ public:
 			R0 = R0_inv  = 1.;
 			p  = px = py = pz = pxx = pxy = pyy = pxz = pyz = pzz = NULL;
 			id_inverse = id_dim = 0; set_local();
+			id_cmpl = 0;
 		}
 		virtual ~CShape(void) { release();}
 //...initialization multipoles;
@@ -213,13 +218,6 @@ public:
 //...integration multipoles;
 		virtual void primitive(T * deriv){}
 };
-///////////////////////////////////////////////////////////
-//...construction of all existing types of shape functions;
-CShape<double>  * CreateShapeS(Num_Shape id_SHAPE, int id_dop = 0);
-CShape<double>  * CreateShapeD(Num_Shape id_SHAPE, int id_dop = 0);
-CShape<complex> * CreateShapeC(Num_Shape id_SHAPE, int id_dop = 0);
-//CShape<dd_real> * CreateShapeR(Num_Shape id_SHAPE, int id_dop = 0);
-//CShape<qd_real> * CreateShapeQ(Num_Shape id_SHAPE, int id_dop = 0);
 
 ////////////////////////////////////////////////////
 //           TEMPLATE VARIANT OF SHAPES           //

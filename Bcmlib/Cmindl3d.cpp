@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "cgrid_el.h"
+#include "shapes.h"
 #include "cmindl3d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
@@ -13,15 +13,15 @@ int CMindl3D::NUM_HESS  = 8;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CMindl3D::block_shape_init(Block<double> & B, int id_free)
+int  CMindl3D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int k;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
 		if ((B.type & ERR_CODE) == ZOOM_BLOCK && B.mp[0] == ID_MAP(2, SPHEROID_GENUS)) {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
-			B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE));
 
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
  			B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
@@ -31,11 +31,11 @@ int  CMindl3D::block_shape_init(Block<double> & B, int id_free)
 
 ////////////////////////////////////////////////////////////////
 //...подключаем дополнительные экспоненциальные системы функций;
-			B.shape->add_shape(CreateShapeD(SK3D_EXPP_SHAPE),	  NULL_STATE);
-			B.shape->add_shape(CreateShapeD(SK3D_EXPP_SHAPE, 1), NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE),	  NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE, 1), NULL_STATE);
 
-			B.shape->add_shape(CreateShapeD(SK3D_EXPP_SHAPE),	  NULL_STATE);
-			B.shape->add_shape(CreateShapeD(SK3D_EXPP_SHAPE, 1), NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE),	  NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE, 1), NULL_STATE);
 
 			B.shape->init1(2, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			B.shape->set_shape(2, get_param(NUM_MPLS+1)*fabs(B.mp[7]), get_param(NUM_SHEAR+3));
@@ -50,15 +50,15 @@ int  CMindl3D::block_shape_init(Block<double> & B, int id_free)
 			B.shape->set_shape(3, get_param(NUM_MPLS+1)*fabs(B.mp[7]), get_param(NUM_SHEAR+2));
 		}
 		else {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
 
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
 
 ////////////////////////////////////////////////////////////
 //...подключаем регул€рные экспоненциальные системы функций;
-			B.shape->add_shape(CreateShapeD(SK3D_ZOOM_SHAPE), NULL_STATE);
-			B.shape->add_shape(CreateShapeD(SK3D_ZOOM_SHAPE), NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE), NULL_STATE);
+			B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE), NULL_STATE);
 
 			B.shape->init1(1, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			B.shape->set_shape(1, get_param(NUM_MPLS+1)*fabs(B.mp[7]), get_param(NUM_SHEAR+3));

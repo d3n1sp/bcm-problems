@@ -94,6 +94,7 @@ extern double EE_fine;
 extern double EE;
 extern double EE_ker;
 extern double EE_dop;
+extern double EE_usl;
 extern double EE_fuz;
 extern double EE_res;
 
@@ -150,16 +151,39 @@ enum Num_State {
 	   NZ_PZS_STATE,
 };
 
-///////////////////////////////////////////////
-//...некоторые вспомогательные общие процедуры;
-clock_t timing_process(clock_t start = 0, int * hund = NULL, int * sec  = NULL,
-														int * min  = NULL, int * hour = NULL);
+///////////////////////////////////////////////////////////////////////
+//...фиксирование времени работы процесса и его перевод в 60-ю систему;
+inline void timing_process(clock_t start, clock_t inter, int * hund, int * sec, int * min, int * hour)
+{
+	if ((hund || sec || min || hour) && inter >= start) {
+		double        f     = (double)(inter-start)/CLOCKS_PER_SEC+.005;
+		unsigned long sec0  = (unsigned long)f,
+						  hund0 = (unsigned long)(100.*(f-sec0));
+		if (hour) {
+		  * hour = (int)sec0/3600; sec0 -= 3600*(* hour);
+		}
+		if (min ) {
+		  * min  = (int)sec0/60;   sec0 -= 60*(* min);
+		}
+		if (sec ) * sec  = (int)sec0; else hund0 += 100*sec0;
+		if (hund) * hund = (int)hund0;
+	}
+	return;
+}
+inline clock_t timing_process(clock_t start = 0, int * hund = NULL, int * sec  = NULL,
+														int * min  = NULL, int * hour = NULL)
+{
+	clock_t inter = clock();
+	timing_process(start, inter, hund, sec, min, hour);
+	return(inter);
+}
 
 //////////////////////////////
 //...pаспутывание комментаpия;
-int user_Read (char * buf, char * FILE, unsigned long & k, unsigned long upper_limit);
-int user_Read (char * buf, char * FILE, unsigned long & k, unsigned long upper_limit, int m);
-int user_Count(char * FILE, unsigned long k, unsigned long & upper_limit, char punct = '\xFF');
+char user_Filtr(char * FILE, unsigned long & k, unsigned long upper_limit, Num_State id_toupper = OK_STATE);
+int  user_Read (char * buf,  char * FILE, unsigned long & k, unsigned long upper_limit, Num_State id_toupper = OK_STATE);
+int  user_Read (char * buf,  char * FILE, unsigned long & k, unsigned long upper_limit, int m, Num_State id_toupper = OK_STATE);
+int  user_Count(char * FILE, unsigned long k, unsigned long & upper_limit, char punct = '\xFF');
 
 ////////////////////////////////////////
 //...чтение с учетом десятичной запятой;
@@ -249,15 +273,47 @@ double table_approx(double arg, double table[][2], int N_table, int decrease_fla
 
 //////////////////////////////////////////////////////////////////////////////////////
 //...пpоцедуpы целочисленного возведения в степень вещественного и комплексного числа;
-double  powI(double  x, int m);
-complex powC(complex x, int m);
+inline double powI(double x, int m)
+{
+  double f = 1.;
+  for (int l = 1; l <= abs(m); l++) f *= x;
+  return f;
+}
 
-/////////////////////////////////////////////////////////
-//...корректное вычисление аргумента (pабочие пpогpаммы);
-double arg0(complex z);
-double arg2(complex z);
-double arg0(double y, double x);
-double arg2(double y, double x);
+inline complex powC(complex x, int m)
+{
+  complex f = comp(1);
+  for (int l = 1; l <= abs(m); l++) f *= x;
+  return f;
+}
+
+///////////////////////////////////////////////////////////////
+//...корректное вычисление значения аpгумента: arg0([0, 2*pi));
+inline double arg0(double y, double x)
+{
+	double fi = 0.;
+	if (fabs(x) > fabs(y)) fi = atan(fabs(y/x)); else if (y != 0.) fi = M_PI_2-atan(fabs(x/y));
+	if (x < 0.) if (y <= 0.) fi = M_PI+fi; else fi = M_PI-fi; else if (y < 0.) fi = 2.*M_PI-fi;
+	return(fi);
+}
+inline double arg0(complex z)
+{
+	return(arg0(imag(z), real(z)));
+}
+
+///////////////////////////////////////////////////////////////
+//...корректное вычисление значения аpгумента: arg2([-pi, pi));
+inline double arg2(double y, double x)
+{
+	double fi = 0.;
+	if (fabs(x) > fabs(y)) fi = atan(fabs(y/x)); else if (y != 0.) fi = M_PI_2-atan(fabs(x/y));
+	if (x < 0.) if (y <= 0.) fi = -M_PI+fi; else fi = M_PI-fi; else if (y <= 0.) fi = -fi;
+	return fi;
+}
+inline double arg2(complex z)
+{
+	return (arg2(imag(z), real(z)));
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //...вспомогательные функции для работы с файлом геометрии массива элементов;

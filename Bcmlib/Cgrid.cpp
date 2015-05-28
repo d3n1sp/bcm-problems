@@ -32,47 +32,47 @@ void CGrid::zero_grid()
 
 /////////////////////////////////////
 //...bufferization of the grid nodes;
-int  CGrid::bufferization (int buf_size, int mm)
+int  CGrid::bufferization (int buf_size, Num_State mm)
 {
    int m = 1, i;
    int * new_hit = (int *)new_struct((N+buf_size)*sizeof(int));
-   if (mm && hit) memcpy(new_hit, hit, N*sizeof(int));
+   if (mm == OK_STATE && hit) memcpy(new_hit, hit, N*sizeof(int));
    if (! new_hit) m = 0; else {
        delete_struct(hit); hit = new_hit;
    }
    double * new_X = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    X) memcpy(new_X, X, N*sizeof(double));
+   if (mm == OK_STATE && X) memcpy(new_X, X, N*sizeof(double));
    if (!    new_X) m = 0; else {
        delete_struct(X); X = new_X;
    }
    double * new_Y = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    Y) memcpy(new_Y, Y, N*sizeof(double));
+   if (mm == OK_STATE && Y) memcpy(new_Y, Y, N*sizeof(double));
    if (!    new_Y) m = 0; else {
        delete_struct(Y); Y = new_Y;
    }
    double * new_Z = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    Z) memcpy(new_Z, Z, N*sizeof(double));
+   if (mm == OK_STATE && Z) memcpy(new_Z, Z, N*sizeof(double));
    if (!    new_Z) m = 0; else {
        delete_struct(Z); Z = new_Z;
    }
    double * new_nX = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    nX) memcpy(new_nX, nX, N*sizeof(double));
+   if (mm == OK_STATE && nX) memcpy(new_nX, nX, N*sizeof(double));
    if (!    new_nX) m = 0; else {
        delete_struct(nX); nX = new_nX;
    }
    double * new_nY = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    nY) memcpy(new_nY, nY, N*sizeof(double));
+   if (mm == OK_STATE && nY) memcpy(new_nY, nY, N*sizeof(double));
    if (!    new_nY) m = 0; else {
        delete_struct(nY); nY = new_nY;
    }
    double * new_nZ = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    nZ) memcpy(new_nZ, nZ, N*sizeof(double));
+   if (mm == OK_STATE && nZ) memcpy(new_nZ, nZ, N*sizeof(double));
    if (!    new_nZ) m = 0; else {
        delete_struct(nZ); nZ = new_nZ;
    }
    for (i = 0; pp && i < N_par; i++) {
        double * new_pp = (double *)new_struct((N+buf_size)*sizeof(double));
-       if (mm &&    pp[i]) memcpy(new_pp, pp[i], N*sizeof(double));
+       if (mm == OK_STATE && pp[i]) memcpy(new_pp, pp[i], N*sizeof(double));
        if (!    new_pp) m = 0; else {
            delete_struct(pp[i]); pp[i] = new_pp;
        }
@@ -83,11 +83,11 @@ int  CGrid::bufferization (int buf_size, int mm)
 
 //////////////////////////////////////////////////////
 //...bufferization of the X-array for multilevel grid;
-int  CGrid::bufferizat_X (int buf_size, int mm)
+int  CGrid::bufferizat_X (int buf_size, Num_State mm)
 {
    int m = 1;
    double * new_X = (double *)new_struct((N+buf_size)*sizeof(double));
-   if (mm &&    X) memcpy(new_X, X, N*sizeof(double));
+   if (mm == OK_STATE && X) memcpy(new_X, X, N*sizeof(double));
    if (!    new_X) m = 0; else {
        delete_struct(X); X = new_X;
    }
@@ -97,11 +97,11 @@ int  CGrid::bufferizat_X (int buf_size, int mm)
 
 //////////////////////////////////////////////////////
 //...bufferization of the Y-array for multilevel grid;
-int  CGrid::bufferizat_Y (int buf_size, int mm)
+int  CGrid::bufferizat_Y (int buf_size, Num_State mm)
 {
    int m = 1;
    double * new_Y = (double *)new_struct((N1+buf_size)*sizeof(double));
-   if (mm &&    Y) memcpy(new_Y, Y, N1*sizeof(double));
+   if (mm == OK_STATE && Y) memcpy(new_Y, Y, N1*sizeof(double));
    if (!    new_Y) m = 0; else {
        delete_struct(Y); Y = new_Y;
    }
@@ -111,11 +111,11 @@ int  CGrid::bufferizat_Y (int buf_size, int mm)
 
 //////////////////////////////////////////////////////
 //...bufferization of the Z-array for multilevel grid;
-int  CGrid::bufferizat_Z (int buf_size, int mm)
+int  CGrid::bufferizat_Z (int buf_size, Num_State mm)
 {
    int m = 1;
    double * new_Z = (double *)new_struct((N2+buf_size)*sizeof(double));
-   if (mm &&    Z) memcpy(new_Z, Z, N2*sizeof(double));
+   if (mm == OK_STATE && Z) memcpy(new_Z, Z, N2*sizeof(double));
    if (!    new_Z) m = 0; else {
        delete_struct(Z); Z = new_Z;
    }
@@ -138,12 +138,6 @@ int CGrid::add_new_point(double X, double Y, double Z, double nX, double nY, dou
        return(1);
    }
    return(0);
-}
-
-int CGrid::add_new_point(double * P, double * pp)
-{
-   if (P) return add_new_point(P[0], P[1], P[2], P[3], P[4], P[5], pp);
-   else   return(0);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -209,6 +203,57 @@ int CGrid::add_new_point_Z(double val, double eps)
    return(1);
 }
 
+////////////////////////////////////////////////////////////////
+//...adding with bufferization of the X-values for grid lattice;
+int CGrid::add_new_lattice_X(double val, double eps)
+{
+   if (! buf_X && ! bufferizat_X(N_buf)) return(0);
+   int    m = 0, j;
+   while (m < N && X[m] < val) m++;
+   if (m != N && fabs(X[m] - val) <= eps) X[m] = (X[m]+val)/2.; else   
+	if (m != 0 && fabs(X[m-1]-val) <= eps) X[m-1] = (X[m-1]+val)/2.; 
+	else {
+		 for (j = N; j > m; j--) X[j] = X[j-1];
+		 X[m] = val;
+		 N++; buf_X--;
+   }
+   return(1);
+}
+
+/////////////////////////////////////////////////////////////////
+//...adding with bufferization of the Y-values for grid lattice;
+int CGrid::add_new_lattice_Y(double val, double eps)
+{
+   if (! buf_Y && ! bufferizat_Y(N_buf)) return(0);
+   int    m = 0, j;
+   while (m < N1 && Y[m] < val) m++;
+   if (m != N1 && fabs(Y[m] - val) <= eps) Y[m] = (Y[m]+val)/2.; else   
+	if (m != 0  && fabs(Y[m-1]-val) <= eps) Y[m-1] = (Y[m-1]+val)/2.; 
+	else {
+		for (j = N1; j > m; j--) Y[j] = Y[j-1];
+		Y[m] = val;
+		N1++; buf_Y--;
+   }
+   return(1);
+}
+
+////////////////////////////////////////////////////////////////
+//...adding with bufferization of the Z-values for grid lattice;
+int CGrid::add_new_lattice_Z(double val, double eps)
+{
+   if (! buf_Z && ! bufferizat_Z(N_buf)) return(0);
+   int    m = 0, j;
+   while (m < N2 && Z[m] < val) m++;
+   if (m != N2 && fabs(Z[m] - val) <= eps) Z[m] = (Z[m]+val)/2.; else   
+	if (m != 0  && fabs(Z[m-1]-val) <= eps) Z[m-1] = (Z[m-1]+val)/2.; 
+	else {
+		for (j = N2; j > m; j--) Z[j] = Z[j-1];
+		Z[m] = val;
+		N2++; buf_Z--;
+   }
+   return(1);
+}
+
 ///////////////////////////////////////////////////
 //...adding new table of parameters for grid nodes;
 void CGrid::add_params(int m, int id_bufferizat)
@@ -237,43 +282,43 @@ void CGrid::set_param(double * pp)
 /////////////////////////////////////////////////////////
 //////////////////////////////////////////////
 //...структура поверхностных элементов блоков;
-int CGrid::stru_install(int k, int ** mm_facet) 
+int CGrid::stru_install(int k, int mm_facet[6][5]) 
 {
 	int mm[8], m = 0, i, j;
 	if  (geom && geom_ptr)
 	for (m = geom[(i = geom_ptr[k])+1]-2, j = 0; j < m; j++) mm[j] = geom[i+4+j];
 	switch (geom[i]) {
 		case GL_BOXS: {
-			int mm_f1[] = { 4, mm[0], mm[4], mm[7], mm[3] }; mm_facet[0] = mm_f1;
-			int mm_f2[] = { 4, mm[1], mm[2], mm[6], mm[5] }; mm_facet[1] = mm_f2;
-			int mm_f3[] = { 4, mm[0], mm[1], mm[5], mm[4] }; mm_facet[2] = mm_f3;
-			int mm_f4[] = { 4, mm[3], mm[7], mm[6], mm[2] }; mm_facet[3] = mm_f4;
-			int mm_f5[] = { 4, mm[0], mm[3], mm[2], mm[1] }; mm_facet[4] = mm_f5;
-			int mm_f6[] = { 4, mm[4], mm[5], mm[6], mm[7] }; mm_facet[5] = mm_f6;
 			m = 6;
+			mm_facet[0][0] = 4; mm_facet[0][1] = mm[0]; mm_facet[0][2] = mm[4]; mm_facet[0][3] = mm[7]; mm_facet[0][4] = mm[3];
+			mm_facet[1][0] = 4; mm_facet[1][1] = mm[1]; mm_facet[1][2] = mm[2]; mm_facet[1][3] = mm[6]; mm_facet[1][4] = mm[5];
+			mm_facet[2][0] = 4; mm_facet[2][1] = mm[0]; mm_facet[2][2] = mm[1]; mm_facet[2][3] = mm[5]; mm_facet[2][4] = mm[4];
+			mm_facet[3][0] = 4; mm_facet[3][1] = mm[3]; mm_facet[3][2] = mm[7]; mm_facet[3][3] = mm[6]; mm_facet[3][4] = mm[2];
+			mm_facet[4][0] = 4; mm_facet[4][1] = mm[0]; mm_facet[4][2] = mm[3]; mm_facet[4][3] = mm[2]; mm_facet[4][4] = mm[1];
+			mm_facet[5][0] = 4; mm_facet[5][1] = mm[4]; mm_facet[5][2] = mm[5]; mm_facet[5][3] = mm[6]; mm_facet[5][4] = mm[7];
 		}  break;
 		case GL_PENTA: {
-			int mm_f1[] = { 4, mm[0], mm[1], mm[4], mm[3] }; mm_facet[0] = mm_f1;
-			int mm_f2[] = { 4, mm[1], mm[2], mm[5], mm[4] }; mm_facet[1] = mm_f2;
-			int mm_f3[] = { 4, mm[2], mm[0], mm[3], mm[5] }; mm_facet[2] = mm_f3;
-			int mm_f4[] = { 3, mm[0], mm[2], mm[1] }; mm_facet[3] = mm_f4;
-			int mm_f5[] = { 3, mm[3], mm[4], mm[5] }; mm_facet[4] = mm_f5;
 			m = 5;
+			mm_facet[0][0] = 4; mm_facet[0][1] = mm[0]; mm_facet[0][2] = mm[1]; mm_facet[0][3] = mm[4]; mm_facet[0][4] = mm[3];
+			mm_facet[1][0] = 4; mm_facet[1][1] = mm[1]; mm_facet[1][2] = mm[2]; mm_facet[1][3] = mm[5]; mm_facet[1][4] = mm[4];
+			mm_facet[2][0] = 4; mm_facet[2][1] = mm[2]; mm_facet[2][2] = mm[0]; mm_facet[2][3] = mm[3]; mm_facet[2][4] = mm[5];
+			mm_facet[3][0] = 3; mm_facet[3][1] = mm[0]; mm_facet[3][2] = mm[2]; mm_facet[3][3] = mm[1];
+			mm_facet[4][0] = 3; mm_facet[4][1] = mm[3]; mm_facet[4][2] = mm[4]; mm_facet[4][3] = mm[5];
 		}	break;
 		case GL_TETRA: {
-			int mm_f1[] = { 3, mm[0], mm[2], mm[1] }; mm_facet[0] = mm_f1;
-			int mm_f2[] = { 3, mm[1], mm[2], mm[3] }; mm_facet[1] = mm_f2;
-			int mm_f3[] = { 3, mm[2], mm[0], mm[3] }; mm_facet[2] = mm_f3;
-			int mm_f4[] = { 3, mm[0], mm[1], mm[3] }; mm_facet[3] = mm_f4;
 			m = 4;
+			mm_facet[0][0] = 3; mm_facet[0][1] = mm[0]; mm_facet[0][2] = mm[2]; mm_facet[0][3] = mm[1];
+			mm_facet[1][0] = 3; mm_facet[1][1] = mm[1]; mm_facet[1][2] = mm[2]; mm_facet[1][3] = mm[3];
+			mm_facet[2][0] = 3; mm_facet[2][1] = mm[2]; mm_facet[2][2] = mm[0]; mm_facet[2][3] = mm[3];
+			mm_facet[3][0] = 3; mm_facet[3][1] = mm[0]; mm_facet[3][2] = mm[1]; mm_facet[3][3] = mm[3];
 		}  break;
 		case GL_PYRAMID: {
-			int mm_f1[] = { 3, mm[0], mm[1], mm[4] }; mm_facet[0] = mm_f1;
-			int mm_f2[] = { 3, mm[1], mm[2], mm[4] }; mm_facet[1] = mm_f2;
-			int mm_f3[] = { 3, mm[2], mm[3], mm[4] }; mm_facet[2] = mm_f3;
-			int mm_f4[] = { 3, mm[3], mm[0], mm[4] }; mm_facet[3] = mm_f4;
-			int mm_f5[] = { 4, mm[0], mm[3], mm[2], mm[1] }; mm_facet[4] = mm_f5;
 			m = 5;
+			mm_facet[0][0] = 3; mm_facet[0][1] = mm[0]; mm_facet[0][2] = mm[1]; mm_facet[0][3] = mm[4];
+			mm_facet[1][0] = 3; mm_facet[1][1] = mm[1]; mm_facet[1][2] = mm[2]; mm_facet[1][3] = mm[4];
+			mm_facet[2][0] = 3; mm_facet[2][1] = mm[2]; mm_facet[2][2] = mm[3]; mm_facet[2][3] = mm[4];
+			mm_facet[3][0] = 3; mm_facet[3][1] = mm[3]; mm_facet[3][2] = mm[0]; mm_facet[3][3] = mm[4];
+			mm_facet[4][0] = 4; mm_facet[4][1] = mm[0]; mm_facet[4][2] = mm[3]; mm_facet[4][3] = mm[2]; mm_facet[4][4] = mm[1];
 		}  break;
 		default: m = 0;
 	}
@@ -740,6 +785,46 @@ void CGrid::grid_quad_3D_refine_spec(int N_elem1, int N_elem2, double * P, doubl
   }
 }
 
+/////////////////////////////////////////////////////////////////////
+//...construction grid lattice for arbitrary structure of inclusions;
+void CGrid::grid_lattice(CGrid * nd, double * par, double eps)
+{
+	if (nd && nd->N) {
+		int k, j, mX, mY, mZ;
+		for (par[6] = par[7] = 0., k = 0; k < nd->N; k++) {
+			add_new_lattice_X(nd->X[k], eps);
+			add_new_lattice_Y(nd->Y[k], eps);
+			add_new_lattice_Z(nd->Z[k], eps);
+			par[6] += 4./3.*M_PI*nd->get_param(0, k)*sqr(nd->get_param(0, k));
+			par[7] += 4./3.*M_PI*(nd->get_param(0, k)+nd->get_param(1, k))*sqr(nd->get_param(0, k)+nd->get_param(1, k));
+		}	par[6] /= (par[1]-par[0])*(par[3]-par[2])*(par[5]-par[4]);
+			par[7] /= (par[1]-par[0])*(par[3]-par[2])*(par[5]-par[4]); par[7] -= par[6];
+
+///////////////////////////////////////////
+//...располагаем решетку между включениями;
+		for (j = 1; j < N;  j++) X[j-1] = (X[j-1]+X[j])/2.;
+		for (j = 1; j < N1; j++) Y[j-1] = (Y[j-1]+Y[j])/2.;
+		for (j = 1; j < N2; j++) Z[j-1] = (Z[j-1]+Z[j])/2.;
+
+/////////////////////////////
+//...добавляем общие границы;
+		add_new_lattice_X(par[0]); X[N-1]  = par[1];
+		add_new_lattice_Y(par[2]); Y[N1-1] = par[3];
+		add_new_lattice_Z(par[4]); Z[N2-1] = par[5];
+
+////////////////////////////////////////////////////
+//...определяем номера блоков, содержащих включения;
+		if (nd->hit)
+		for (k = 0; k < nd->N;  k++) {
+			mX = mY = mZ = 0;
+			while (mX < N  && X[mX] < nd->X[k]) mX++;
+			while (mY < N1 && Y[mY] < nd->Y[k]) mY++;
+			while (mZ < N2 && Z[mZ] < nd->Z[k]) mZ++;
+			nd->hit[k] = (mX-1)+(N-1)*((mY-1)+(N1-1)*(mZ-1));
+		}
+	}
+}
+
 ////////////////////////////////////////////////
 //...converts block structure from NASTRAN file;
 int CGrid::converts_nas(char * id_NODES, unsigned long & count, unsigned long upper_limit, int id_long)
@@ -920,7 +1005,7 @@ int CGrid::converts_nas(char * id_NODES, unsigned long & count, unsigned long up
 					one_line[min((unsigned long)STR_SIZE, count-ppos_cur)] = '\x0';
 					ppos_cur = count;
 						
-					swap(temp, one_line[part*2]); m7 = atoi(one_line+part);	  swap(temp, one_line[part*2]); 
+					swap(temp, one_line[part*2]); m7 = atoi(one_line+part);	 swap(temp, one_line[part*2]); 
 					swap(temp, one_line[part*3]); m8 = atoi(one_line+part*2); swap(temp, one_line[part*3]); 
 				}
 /////////////////////////////////
@@ -1299,8 +1384,8 @@ int CGrid::converts_inp(char * id_NODES, unsigned long & count, unsigned long up
 				while (ppos_cur < upper_element) {
 					ONE_LINE(id_NODES, pchar, ppos_cur, upper_element, one_line, STR_SIZE);
 
-/////////////////////////////////////
-//...,зачитывание геометрии элемента;
+////////////////////////////////////
+//...зачитывание геометрии элемента;
 					m[0] = atoi(one_line);
 					for (ppos = strstr(one_line, ","), j = 4; ppos && j < l0; ppos = j == j_max ? one_line : strstr(ppos+1, ","),  j++) {
 						m[j-3] = atoi(ppos+1)-numeration_shift;
@@ -1625,8 +1710,8 @@ int CGrid::condit_inp(char * id_NODES, unsigned long & count, unsigned long uppe
 					if (strstr(one_line, "internal")) elem = ERR_STATE; 
 					if (strstr(one_line, "generate")) elem = GL_ELEMENTS_GENERATE; else elem = GL_ELEMENTS; 
 
-/////////////////////////////////////////////////////////////////////
-//...просматриваем все узлы данного типа и заполняем множества узлов;
+/////////////////////////////////////////////////////////////////////////
+//...просматриваем все элементы данного типа и заполняем множества узлов;
 					if (elem == GL_ELEMENTS || elem == GL_ELEMENTS_GENERATE) {
 						if ((pchar = strstr(one_line, ", generate")) != NULL || (pchar = strstr(one_line, "\xD")) != NULL || (pchar = strstr(one_line, "\xA")) != NULL) {
 							swap(pchar[0], temp);
@@ -1881,6 +1966,91 @@ void CGrid::nodes_inp(const char * ch_NODES, int numeration_shift, int max_phase
   condit_inp   (id_NODES, count = 0, upper_limit, numeration_shift, max_phase);
   nodes_inp    (id_NODES, count = 0, upper_limit);
   delete_struct(id_NODES);
+}
+
+/////////////////////////////////////////////////////////
+//...reading structure from text file (X, Y, Z, rad, ll);
+int CGrid::stru_in(char * id_STRU, unsigned long & count, unsigned long upper_limit, double * par)
+{
+	if (id_STRU && par && count < upper_limit) {
+		unsigned long ppos_cur = count, upper;
+		const int STR_SIZE = 250;
+		char one_line[STR_SIZE+1], * pchar, * ppos;
+		double X, Y, Z, pp[2];
+		int  k = 0, M;
+
+////////////////////////////////
+//...зачитываем число включений;
+		ONE_LINE(id_STRU, pchar, ppos_cur, upper_limit, one_line, STR_SIZE);
+		M = atoi(one_line);
+
+////////////////////////////////
+//...зачитываем границы области;
+		ONE_LINE(id_STRU, pchar, ppos_cur, upper_limit, one_line, STR_SIZE);
+		par[0] = MAX_HIT; par[1] = MIN_HIT;
+		par[0] = user_strtod(one_line);
+		if ((ppos = strstr(one_line, ",")) != NULL) {
+			par[1] = user_strtod(ppos+1);
+		}
+		ONE_LINE(id_STRU, pchar, ppos_cur, upper_limit, one_line, STR_SIZE);
+		par[2] = MAX_HIT; par[3] = MIN_HIT;
+		par[2] = user_strtod(one_line);
+		if ((ppos = strstr(one_line, ",")) != NULL) {
+			par[3] = user_strtod(ppos+1);
+		}
+		ONE_LINE(id_STRU, pchar, ppos_cur, upper_limit, one_line, STR_SIZE);
+		par[4] = MAX_HIT; par[5] = MIN_HIT;
+		par[4] = user_strtod(one_line);
+		if ((ppos = strstr(one_line, ",")) != NULL) {
+			par[5] = user_strtod(ppos+1);
+		}
+
+//////////////////////////////////////////////////////////
+//...зачитываем координаты центров включений и их радиусы;
+		zero_grid(); add_params(2);
+		while ((upper = ppos_cur) < upper_limit && k++ < M) {
+				ONE_LINE(id_STRU, pchar, ppos_cur, upper_limit, one_line, STR_SIZE);
+				X = Y = Z = pp[0] = pp[1] = 0.;
+				X = user_strtod(one_line);
+				if ((ppos = strstr(one_line, ",")) != NULL) {
+					Y = user_strtod(ppos+1);
+					if ((ppos = strstr(ppos+1, ",")) != NULL) {
+						Z = user_strtod(ppos+1);
+						if ((ppos = strstr(ppos+1, ",")) != NULL) {
+							pp[0] = user_strtod(ppos+1);
+							if ((ppos = strstr(ppos+1, ",")) != NULL) {
+								pp[1] = user_strtod(ppos+1);
+							}
+						}
+					}
+				}
+//////////////////////////////////////////////////////////////
+//...сохраняем координаты центров и радиусы с межфазным слоем;
+				if (add_new_point(X, Y, Z, 0., 0., 1., pp)) hit[N-1] = k;
+				else return(0);
+		}
+	}
+	return(1);
+}
+
+void CGrid::stru_in(char * ch_STRU, double * par)
+{
+  unsigned long count, upper_limit;
+  char        * id_STRU = read_struct_ascii(ch_STRU);
+  if         (! id_STRU) return;
+  user_Count   (id_STRU, 0, upper_limit, '\x0');
+  stru_in      (id_STRU, count = 0, upper_limit, par);
+  delete_struct(id_STRU);
+}
+
+void CGrid::stru_in(const char * ch_STRU, double * par)
+{
+  unsigned long count, upper_limit;
+  char        * id_STRU = read_struct_ascii(ch_STRU);
+  if         (! id_STRU) return;
+  user_Count   (id_STRU, 0, upper_limit, '\x0');
+  stru_in      (id_STRU, count = 0, upper_limit, par);
+  delete_struct(id_STRU);
 }
 
 ///////////////////////////////////////////////////////////////////////

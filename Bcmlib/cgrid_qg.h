@@ -28,12 +28,12 @@ public:
 		void QG_generate(int N, long double cc[][2]);
 protected:
 //...gaussian quadratures for polygonal elements;
-		void QG2M_line (double * P, int M, const double c2M [][2], int normal);
-		void QG2M_tria (double * P, int M, const double c2M [][2], int normal);
-		void QG2M_quad (double * P, int M, const double c2M [][2], int normal);
-		void QG2M1_line(double * P, int M, const double c2M1[][2], int normal);
-		void QG2M1_tria(double * P, int M, const double c2M1[][2], int normal);
-		void QG2M1_quad(double * P, int M, const double c2M1[][2], int normal);
+		void QG2M_line (double * P, int M, const double c2M [][2], Num_State normal);
+		void QG2M_tria (double * P, int M, const double c2M [][2], Num_State normal);
+		void QG2M_quad (double * P, int M, const double c2M [][2], Num_State normal);
+		void QG2M1_line(double * P, int M, const double c2M1[][2], Num_State normal);
+		void QG2M1_tria(double * P, int M, const double c2M1[][2], Num_State normal);
+		void QG2M1_quad(double * P, int M, const double c2M1[][2], Num_State normal);
 //...gaussian quadratures for dimensional elements;
 		void QG_sheet(CMap * mp, int N_elem, int N_max);
 		void QG_sheet(CMap * mp, int N_elem);
@@ -67,8 +67,8 @@ protected:
 		void QG_quad_sphere (CMap * mp1, CMap * mp2, double * Po, int N_ini = 0);
 public:
 //...gaussian quadratures;
-		void facet_QG(double * P, int N_elem, int mode = NULL_STATE, int normal = OK_STATE);
-		void segms_QG(CMap * mp, int N_elem, int N_max);
+		void facet_QG(double * P, int N_elem, Num_State mode = NULL_STATE, Num_State normal = OK_STATE);
+		void segms_QG(CMap * mp,  int N_elem, int N_max);
 //...special gaussian quadratures;
 		void sphere_intrusion_QG(CMap * mp, int N_elem, double L);
 //...gaussian quadratures corrections;

@@ -8,17 +8,9 @@
 #include "ExchangeMPI.h"
 #include "gsmatrix.h"
 #endif
-#include "ccebasic.h"
-#include "cgrid_qg.h"
-#include "ccohes3d.h"
-#include "csmixer.h"
-#include "csolver.h"
-#include "clame2d.h"
-#include "clame3d.h"
-#include "cheat2d.h"
-#include "cheat3d.h"
-#include "dd_real.h"
 #include "nurbs.h"
+#include "shapes.h"
+#include "cdraft.h"
 #define n_MUNI_APPROXIMATION
 #define n_INP_CONVERTOR
 //----------------------------------------------------------------------------------------
@@ -32,61 +24,55 @@ void Convert3D_prb(char * ch_NODES, CGrid * nd, int ID_part);
 //----------------------------------------------------------------------------------------
 #define n_C3D_CONVERTOR
 //----------------------------------------------------------------------------------------
-void Read_C3D_Header(unsigned short *num_markers, unsigned short *num_channels, unsigned short *first_field, unsigned short *last_field,
+extern void Read_C3D_Header(unsigned short *num_markers, unsigned short *num_channels, unsigned short *first_field, unsigned short *last_field,
 							float *scale_factor,	unsigned short *start_record_num, unsigned short *frames_per_field, float *video_rate,	FILE *infile);
-void Read_C3D_Parameters(unsigned char	**mlabels, unsigned char **alabels,	float *gscale,	float *ascale,	int *zero_off,	FILE *infile);
-void Read_C3D_Channel(unsigned short channel_num, unsigned short num_markers,	unsigned short num_analog_channels,	unsigned short first_field,
-							 unsigned short last_field, unsigned short start_byte, unsigned short analog_frames_per_field, short *val, FILE *infile);
-
-void Read_C3D_Marker(unsigned short marker_num,	unsigned short num_markers, unsigned short num_analog_channels, unsigned short first_field, unsigned short last_field,
+extern void Read_C3D_Parameters(unsigned char	**mlabels, unsigned char **alabels,	float *gscale,	float *ascale,	int *zero_off,	FILE *infile);
+extern void Read_C3D_Channel(unsigned short channel_num, unsigned short num_markers,	unsigned short num_analog_channels,	unsigned short first_field,
+								unsigned short last_field, unsigned short start_byte, unsigned short analog_frames_per_field, short *val, FILE *infile);
+extern void Read_C3D_Marker(unsigned short marker_num,	unsigned short num_markers, unsigned short num_analog_channels, unsigned short first_field, unsigned short last_field,
 							unsigned short	start_byte,	unsigned short analog_frames_per_field, short **val, unsigned char *res, FILE	*infile);
-void Read_C3D_Data_int(unsigned short num_markers, unsigned short num_analog_channels, unsigned short first_field, unsigned short last_field, unsigned short start_byte, unsigned short analog_frames_per_field,
-							  short **x, short **y, short **z, char **residual, char **num_cam, short **analog, FILE *infile);
-void Read_C3D_Data_float(unsigned short num_markers, unsigned short num_analog_channels, unsigned short first_field, unsigned short last_field, unsigned short start_byte, unsigned short analog_frames_per_field,
-								 float **x, float **y, float **z, char **residual, char **num_cam, short **analog, FILE *infile);
+extern void Read_C3D_Data_int(unsigned short num_markers, unsigned short num_analog_channels, unsigned short first_field, unsigned short last_field, unsigned short start_byte, unsigned short analog_frames_per_field,
+								short **x, short **y, short **z, char **residual, char **num_cam, short **analog, FILE *infile);
+extern void Read_C3D_Data_float(unsigned short num_markers, unsigned short num_analog_channels, unsigned short first_field, unsigned short last_field, unsigned short start_byte, unsigned short analog_frames_per_field,
+									float **x, float **y, float **z, char **residual, char **num_cam, short **analog, FILE *infile);
 //----------------------------------------------------------------------------------------
 #define n_TEST_CCELLS
 #define n_TEST_SHAPES
-#define TEST_DRAFT_ALL
+#define n_TEST_DRAFT_ALL
 #define n_TEST_DRAFT_VISCO
 #define n_TEST_DRAFT_HYDRO
 #define n_TEST_DRAFT_VIBRO
-//----------------------------------------------------------------------------------------
-template <typename T> 
-void Number_of_Blocks	(void * _pBCM, int & _NBlks);
-template <typename T> 
-void Blocks_Partitioning(void * _pBCM, int * _Blks);
-template <typename T> 
-void Blocks_Sparsity		(void * _pBCM, int *& _IA, int *& _JA);
-template <typename T> 
-void Blocks_Row			(void * _pBCM, int _BlkRow, double * _defc);
-template <typename T> 
-void Right_Handside		(void * _pBCM, int _BlkRow, double * _refc);
-template <typename T> 
-void Initial_Guess		(void * _pBCM, int _BlkRow, double * _refc);
-template <typename T> 
-void Store_Solution		(void * _pBCM, int _BlkRow, double * _refc);
-template <typename T> 
-void Blocks_SparsitySym	(void * _pBCM, int *& _IA, int *& _JA);
-template <typename T> 
-void Blocks_RowSym		(void * _pBCM, int _BlkRow, double * _defc);
-template <typename T> 
-//----------------------------------------------------------------------------------------
-#define n_LAME3D_LAYERED_ESHELBY_HOMOGENIZATION
-#define n_CHYDRO3D_ANALYT_HOMOGENIZATION
+#define n_HEAT2D_ANALYT_HOMOGENIZATION
+#define n_HEAT3D_ANALYT_HOMOGENIZATION
+#define n_LAME3D_ANALYT_HOMOGENIZATION
+#define n_HYDRO3D_ANALYT_HOMOGENIZATION
+#define n_TEST_DRAFT_HEAT2D_INTERMEDIATE_PHASE
+#define n_TEST_DRAFT_LAME2D_INTERMEDIATE_PHASE
 #define n_TEST_DRAFT_LAME3D_INTERMEDIATE_PHASE
+#define n_TEST_DRAFT_HYDRO3D_INTERMEDIATE_PHASE
+#define n_TEST_DRAFT_HEAT3D_FROM_FEMAP
 #define n_TEST_DRAFT_LAME2D_FROM_FEMAP
+#define n_TEST_DRAFT_LAME3D_FROM_FEMAP
 #define n_TEST_DRAFT_COHES2D_FROM_FEMAP
-#define n_TEST_CCOHES2D_CONSTRUCTION_FROM_FEMAP
 //----------------------------------------------------------------------------------------
 double CIdent(char * name_ini, double R, double A, double * energy, double l1, double l2, double G1, double G2, double nju1, double nju2, 
 										 double Ad = 0, double Bd = 0, int N0 = 5, int id_layer = NULL_STATE, int id_direct = NULL_STATE, int id_visual = NULL_STATE);
 double CIdent_sphere3D(double * energy, double rad, double fV, double l1, double l2, 
 							  double G1, double G2, double nju1, double nju2, int N0 = 3, int id_visual = 0);
 //----------------------------------------------------------------------------------------
+#define n_TEST_DRAFT_COHES2D_CONSTRUCTION_FROM_FEMAP
 #define n_TEST_DRAFT_GRADIENT2D_FROM_FEMAP
+#define n_TEST_DRAFT_HEAT3D_SPHEROID
 #define n_TEST_DRAFT_LAME3D_SPHEROID
+#define n_HEAT2D_RANDOM_STRUCTURE
+#define n_HEAT3D_RANDOM_STRUCTURE
+#define n_LAME3D_RANDOM_STRUCTURE
+#define n_HEAT3D_RANDOM_HOMOGENIZATION
+#define n_LAME3D_RANDOM_HOMOGENIZATION
+#define TEST_HEAT3D_RANDOM_HOMOGENIZATION
 //----------------------------------------------------------------------------------------
+int	 strata_approx	 (int N, double * data, double * coef);
+double strata_approx	 (int N, double * data, double ll0);
 double TakeLayer_EH   (int N, double * ff, double * kk, double * ll);
 double TakeCylinder_EH(int N, double * ff, double * kk);
 double TakeCylinder_KH(int N, double * ff, double * kp, double * mu);
@@ -96,12 +82,18 @@ double TakeCylinder_LH(int N, double * ff, double * lm, double * mu, double * nj
 double TakeCylinder_GH(int N, double * ff, double * mu, double * nj);
 double TakeSphere_KH	 (int N, double * ff, double * kv, double * mu);
 double TakeSphere_GH	 (int N, double * ff, double * kv, double * mu, double * nj);
-double TakeSphere_GH_det	(double c0, double nju1, double nju2, double E1, double E2);
-double TakeSphere_volm_two (double c0, double nju1, double nju2, double E1, double E2, double l1, double l2);
+double TakeSphere_GH_det	(double c0, double nju1, double nju2, double E1, double E2, double alpha = -1);
+double TakeSphere_volm_two (double c0, double nju1, double nju2, double E1, double E2, double l1, double l2, double AA = 0.);
 double TakeSphere_volm_sym (double c0, double nju1, double nju2, double E1, double E2, double l1, double l2);
-double TakeSphere_shear_two(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2);
+double TakeSphere_shear_two(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2, double AA = 0., double BB = 0.);
 double TakeSphere_shear		(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2);
 double TakeSphere_shear_sym(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2);
+double strata_aglom(double t, int N, double * coef);
+double strata_aglom(double t, double t0, double B, double ll0);
+double aglom_approx(double t, double alpha, double r_max, double r_min, double t_min);
+double rigid_approx(double t, double E1_max, double E2_max, double E_min, double alpha, double beta, double t_min);
+double rigid_approx(double t, double E1_max, double E2_max, double E_min, double t_min, double E1, double E2, double E3, double t1, double t2, double t3);
+double rigid_approx(double t, double E1_max, double E2_max, double E_min, double t_min, double E1, double E2, double E3, double E4, double t1, double t2, double t3, double t4);
 //----------------------------------------------------------------------------------------
 #define n_DRAFT_LAME_ESHELBY_NONLINEAR_DIAGRAM
 #define n_DRAFT_LAME_ESHELBY_COMPARISON_DIAGRAM
@@ -110,6 +102,7 @@ double TakeSphere_shear_sym(double c0, double nju1, double nju2, double E1, doub
 #define n_TEST_DRAFT_LAME_ESHELBY_INTERMEDIATE_PHASE_cyl
 #define n_TEST_DRAFT_LAME_ESHELBY_INTERMEDIATE_PHASE_layer
 #define n_TEST_DRAFT_LAME_ESHELBY
+#define n_LAME3D_LAYERED_ESHELBY_HOMOGENIZATION
 #define n_ESHELBY_CALCULATIONS
 #define n_ALUMO_COMPOSITES_CALCULATIONS
 #define n_ALUMO_COMPOSITES_EXAMPLES
@@ -153,7 +146,7 @@ int main(int argc, char* argv[])
 	if (igroup == 0) {
 #endif
 	time_t start = time(NULL), sec;
-	char buf[2000]; int res;
+	char buf[2000]; int res, yes = 1;
 
 #ifdef MUNI_APPROXIMATION
 {
@@ -501,14 +494,8 @@ int main(int argc, char* argv[])
 
 #ifdef INP_CONVERTOR
 {
-	//char * name = "c:\\SIMULIA\\Job\\Abaqus\\2014\\Aminjevskoje_2014\\models\\Constru\\copy_mesh\\Aminjevskoje.inp";
-	//int ID_elements[] = {8, -51, -57, -58, -59, -60, -61, -62, -63}, ID_element_part;
-	char * name = "c:\\SIMULIA\\Job\\Abaqus\\2014\\Aminjevskoje_2014\\models\\Constru\\copy_mesh_prev_scheme\\Aminjevskoje_IGE_corr.inp";
-	int ID_elements[] = {5, -4, -45, -50, -54, -56}, ID_element_part;
-	//char * name = "c:\\SIMULIA\\Job\\Abaqus\\2014\\Aminjevskoje_2014\\models\\Constru\\copy_mesh_prev_scheme\\Aminjevskoje_step7.inp";
-	//int ID_elements[] = {2, -4, -46}, ID_element_part;
-
-
+	char * name = "c:\\SIMULIA\\Job\\Abaqus\\2015\\Kashirskoye_2015\\models\\results\\Variant8 - communication with forces output\\Kashirskoye.inp";
+	int ID_elements[] = {3, -35, -36, -37}, ID_element_part;
 
 //////////////////////////
 //...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \E7\E0\E4\E0\F7\E8;
@@ -540,9 +527,8 @@ int main(int argc, char* argv[])
 #endif
 #ifdef UWay_CONVERTOR
 {
-	//char * name = "c:\\Users\\Dima\\Programs\\Bcm_all\\Exe\\Models_inp\\Testing\\Variant01 - test_1, small\\Test_1.inp";
-	//char * name = "c:\\Users\\Dima\\Programs\\Bcm_all\\Exe\\Models_inp\\Testing\\Test_1.inp";
-	char * name = "c:\\Users\\Dima\\Programs\\Bcm_all\\Exe\\Models_inp\\Testing\\Test_2.inp";
+	//char * name = "c:\\Users\\Dima\\Programs\\Bcm_all\\Exe\\Testing\\Test_1.inp";
+	char * name = "c:\\Users\\Dima\\Programs\\Bcm_all\\Exe\\Testing\\NN-panel5.inp";
 	int ID_part;
 
 //////////////////////////
@@ -719,7 +705,7 @@ int main(int argc, char* argv[])
 
 //////////////////////////////////////
 //...\EF\EE\F0\EE\E6\E4\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\F7\E5\F1\EA\E8\E9 \FD\EB\E5\EC\E5\ED\F2;
-	CCeBasic * ce = new CCeBasic, * f0 = new CCeBasic;
+	CCells * ce = new CCells, * f0 = new CCells;
    //ce->get_nd_bar_directly(& stru, 1);
 	//ce->get_sheet(2., 1.);
    //ce->get_ring_segment(0., M_PI*.75, 1., 2.);
@@ -742,12 +728,12 @@ int main(int argc, char* argv[])
 /////////////////////////////////////
 //...\EF\E5\F7\E0\F2\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\F7\E5\F1\EA\E8\E9 \FD\EB\E5\EC\E5\ED\F2;
 	//ce->bar_exc(1);
-	ce->cells_out("CCeBasic");
+	ce->cells_out("CCells");
 
 ///////////////////////////////////////////////
 //...\F1\F2\F0\EE\E8\EC \EF\EE\E2\E5\F0\F5\ED\EE\F1\F2\F0\F3\FE \F1\E5\F2\EA\F3 \E8\EB\E8 \EA\E2\E0\E4\F0\E0\F2\F3\F0\F3;
-	CGrid_QG *  nd = new CGrid_QG; 
-	CGrid 	* bnd = new CGrid;
+	CGrid *  nd = CreateNodes(GRID_QG_NODES);
+	CGrid * bnd = CreateNodes();
 	int N_elem = 20, N_max = 3;
 
 	if (ce->mp) {
@@ -771,9 +757,9 @@ int main(int argc, char* argv[])
 #ifdef TEST_SHAPES
 {
 	CShapeMixer<double> * sp = new CShapeMixer<double>;
-	sp->add_shape(CreateShapeD(MP3D_SPHERE_SHAPE));
-	//sp->add_shape(CreateShapeD(SK3D_EXPP_SHAPE));
-	//sp->add_shape(CreateShapeD(SK3D_EXPP_SHAPE, 1));
+	sp->add_shape(CreateShape<double>(MP3D_SPHERE_SHAPE));
+	//sp->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE));
+	//sp->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE, 1));
  
 	double kk = 1.2, R0 = 1., eps0 = 5e-5, eps1 = 5e-9, A, B, C, L, f, fo,
 			 pp[14], * p_cpy, * p_cpy1, * p_cpy2, * p_cpy3, * p_cpy4, mp[6] = {0., 0., 0., 0., 0., 0.};
@@ -1095,35 +1081,36 @@ int main(int argc, char* argv[])
 	//const char * name = "../Exe/Box2d_homog/heat_clayer488.nas";
 	//const char * name = "../Exe/Box2d_homog/sph_025_16.nas";
 	//const char * name = "../Exe/Box2d_homog/ell_80_20_i_1980.nas";
-	const char * name = "../Exe/Box2d_homog/ell_80_20q7.nas";
+	const char * name = "../Exe/Box2d_homog/ell_80_20q2.nas";
 
 //////////////////////////
-//...
-	CDraft<double> * sm = CreateDraft(LAME2D_DRAFT);
-	sm->set_mpls(PackInts(2, 2)); //...;
-	sm->set_quad(PackInts(8, 8)); //...;
-	sm->set_normaliz(0.92);			  //...;
-	sm->set_lagrange(1e4);			  //...; 
+//...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
+	CDraft<double> * sm = CreateDraftR(LAME2D_DRAFT);
+	sm->set_mpls(PackInts(2, 2)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
+	sm->set_quad(PackInts(8, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
+	sm->set_normaliz(0.92);			//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
+	sm->set_lagrange(1e4);			//...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \CB\E0\E3\F0\E0\ED\E6\E0; 
 	sm->change_solv(PERIODIC_SOLVING);
 	sm->solver.change_state(EXTERN_STATE);
 	sm->solver.set_mode(REGULARIZATION2/*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
 
 //////////////////////
-//...;
-	//double K1 = 1.7,	//... (matrtix);
-	//		 K2 = 30.,	//... (inclusion);
-	//		 K3 = 3.;	//...;
+//...\EF\E0\F0\E0\EC\E5\F2\F0\FB \E7\E0\E4\E0\F7\E8;
+	//double K1 = 1.7, //...\EE\EA\F1\E8\E4 \F6\E8\F0\EA\EE\ED\E8\FF (matrtix);
+	//		 K2 = 30.,	 //...\EA\EE\F0\F3\ED\E4 (inclusion);
+	//		 K3 = 3.;	 //...\EF\F0\EE\EC\E5\E6\F3\F2\EE\F7\ED\FB\E9 \F1\EB\EE\E9;
 	//sm->set_fasa_hmg(K1, K2, K3);
-	double nj1 = 0.33, //...; 
-			 nj2 = 0.20, //...; 
-			 nj3 = 0.30, //...; 
+	double nj1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+			 nj2 = 0.20, //...\E3\F0\E0\F4\E8\F2\EE\E2\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5; 
+			 nj3 = 0.30, //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9; 
 			 E1  = 18.,  //...GPa;
 			 E2  = 380., //...GPa; 
 			 E3  = 57.5; 
 	sm->set_fasa_hmg(nj1, nj2, nj3, E1/(1.+nj1)*.5, E2/(1.+nj2)*.5, E3/(1.+nj3)*.5);
 
 ///////////////////////////////////////////////////////
-//...;
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
 	int id_reading = 0, m;
 	double X0, Y0, ell_X = 0., ell_Y = 0., rot_Z = 0.;
 	if (sm) {
@@ -1173,7 +1160,7 @@ int main(int argc, char* argv[])
 	}
 
 ////////////////////
-//...;
+//...\F0\E5\F8\E5\ED\E8\E5 \E7\E0\E4\E0\F7\E8;
 	if (sm->computing_kernel(MAPPING_COMPUT) != OK_STATE) {
 		Message("Error in sample counting...");
 		delete sm;
@@ -1218,7 +1205,7 @@ int main(int argc, char* argv[])
 	{
 //////////////////
 //..visualization;
-		res = system("mkdir var3_results");
+		res = system("mkdir ./bcm_results/test3_results");
 		//res = system("del *.grd");
 		int id_visual = 1;
 		if (id_visual) {
@@ -1239,11 +1226,11 @@ int main(int argc, char* argv[])
 
 				nd->hit[i+j*nd->N] = hit;
 			}
-			//sm->GetSurferFormat("rr", nd,        HEAT_VALUE, 0);
-			//sm->GetSurferFormat("pp", nd, FLUX_COMPOS_VALUE, 0);
-			sm->GetSurferFormat("var3_results/bb", nd,       ERR_VALUE, 0);
-			sm->GetSurferFormat("var3_results/rx", nd,     DISPL_VALUE, 0);
-			sm->GetSurferFormat("var3_results/tx", nd,  STRESS_X_VALUE, 0);
+			//sm->GetSurferFormat("./bcm_results/test3_results/rr", nd,        HEAT_VALUE, 0);
+			//sm->GetSurferFormat("./bcm_results/test3_results/pp", nd, FLUX_COMPOS_VALUE, 0);
+			sm->GetSurferFormat("./bcm_results/test3_results/bb", nd,       ERR_VALUE, 0);
+			sm->GetSurferFormat("./bcm_results/test3_results/rx", nd,     DISPL_VALUE, 0);
+			sm->GetSurferFormat("./bcm_results/test3_results/tx", nd,  STRESS_X_VALUE, 0);
 
 			delete nd;
 		}
@@ -1261,7 +1248,7 @@ int main(int argc, char* argv[])
 	//char * name_ini = "./Box2d_homog/sph_025_16.nas";
 
 //////////////////////////
-//...;
+//...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
 	CDraft<complex> * sm = CreateDraftC(VISCO2D_GRAD_DRAFT);
 	sm->set_mpls(PackInts(1, 1)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(4, 2)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
@@ -1291,7 +1278,7 @@ int main(int argc, char* argv[])
 	sm->set_fasa_hmg(K1, K2, G1, G2, l1, l2, d1, d2, AA, BB, d0);
 
 ///////////////////////////////////////////////////////
-//...    \F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
 	double X0, Y0, ell_X = 0., ell_Y = 0., rot_Z = 0.;
 	int  id_reading = 0;
 	if (sm) {
@@ -1393,24 +1380,25 @@ int main(int argc, char* argv[])
 #endif
 #ifdef TEST_DRAFT_HYDRO
 {
-	//char * name = "./Parametric/Unit3d_008.nas";
-	//char * name = "./Models_inp/Box3D_sph/Box3D_sph112.inp";
+	//const char * name = "./Parametric/Unit3d_008.nas";
+	//const char * name = "./Models_inp/Box3D_sph/Box3D_sph112.inp";
 
-	//char * name = "./Models_nas/Bench/hydro/bench_02_450.nas";
-	//char * name = "./Models_nas/Bench/hydro/zet_02_600.nas";
+	//const char * name = "./Models_nas/Bench/hydro/bench_02_450.nas";
+	//const char * name = "./Models_nas/Bench/hydro/zet_02_600.nas";
 	
-	//char * name = "./Seepage/Flow_R30_octa_M44.inp";
-	char * name = "./Seepage/Flow_R30_full_M288.inp";
-	//char * name = "./Seepage/Flow_R30_full_M432.inp";
-	//char * name = "./Seepage/Filtr_R65_full_M96.inp";
-	//char * name = "./Seepage/Filtr_R65_full_M432.inp";
+	//const char * name = "./Seepage/Flow_R30_octa_M44.inp";
+	const char * name = "./Seepage/Flow_R30_full_M288.inp";
+	//const char * name = "./Seepage/Flow_R30_full_M432.inp";
+	//const char * name = "./Seepage/Filtr_R65_full_M96.inp";
+	//const char * name = "./Seepage/Filtr_R65_full_M432.inp";
 
 	double par[6], k0 = 3., L = 0.5, rad = 0.3, layer = 0.0, eps_in = 1e-2;
 	int i, j, k, m, num; 
 
 //////////////////////////
 //...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
-	CDraft<double> * sm = CreateDraft(HYDRO3D_DRAFT, 8);		
+#define real_T dd_real
+	CDraft<real_T> * sm = CreateDraftD(HYDRO3D_DRAFT, 8);		
 	sm->set_mpls(PackInts(3, 3)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(4, 4)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(1.*L*sqrt(3.)/(.5*rad));	//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
@@ -1420,6 +1408,7 @@ int main(int argc, char* argv[])
 	sm->change_solv(PERIODIC_SOLVING);
 	sm->solver.change_state(/*EXTERN_STATE*/);
 	sm->solver.set_mode(/*PRINT_MODE*/);
+	yes = 0;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5 \E8\EB\E8 \E7\E0\E4\E0\ED\E8\E5 \E3\E5\EE\EC\E5\F2\F0\E8\E8 \E0\ED\E0\EB\E8\F2\E8\F7\E5\F1\EA\E8;
@@ -1490,16 +1479,17 @@ int main(int argc, char* argv[])
 		sm->BlockActivate();
 		for (k = 0; k < sm->N; k++) 
 		LOOP_FACET(sm->B[k].bar, num, m) {
-			((CCeBasic *)sm->B[k].bar)->SetFacetXParam(num, par[0], po, ADHESION_BND);
-			((CCeBasic *)sm->B[k].bar)->SetFacetXParam(num, par[1], po, ADHESION_BND);
+			sm->B[k].bar->SetFacetXParam(num, par[0], po, ADHESION_BND);
+			sm->B[k].bar->SetFacetXParam(num, par[1], po, ADHESION_BND);
 
-			((CCeBasic *)sm->B[k].bar)->SetFacetYParam(num, par[2], po, ADHESION_BND);
-			((CCeBasic *)sm->B[k].bar)->SetFacetYParam(num, par[3], po, ADHESION_BND);
+			sm->B[k].bar->SetFacetYParam(num, par[2], po, ADHESION_BND);
+			sm->B[k].bar->SetFacetYParam(num, par[3], po, ADHESION_BND);
 
-			((CCeBasic *)sm->B[k].bar)->SetFacetZParam(num, par[4], po, SPECIAL_BND);
-			((CCeBasic *)sm->B[k].bar)->SetFacetZParam(num, par[5], po, SPECIAL_BND);
+			sm->B[k].bar->SetFacetZParam(num, par[4], po, SPECIAL_BND);
+			sm->B[k].bar->SetFacetZParam(num, par[5], po, SPECIAL_BND);
 		}
 	}
+	res = system("mkdir./bcm_results/hydro3d_homog");
 
 ////////////////////////////
 //...solving of the problem;
@@ -1511,27 +1501,29 @@ int main(int argc, char* argv[])
 
 ////////////////////////////////////////////////////////////////
 //..\E2\FB\F7\E8\F1\EB\FF\E5\EC \EE\F1\F0\E5\E4\ED\E5\ED\ED\FB\E5 \F5\E0\F0\E0\EA\F2\E5\F0\E8\F1\F2\E8\EA\E8 (\F2\E5\ED\E7\EE\F0 \EF\F0\EE\ED\E8\F6\E0\E5\EC\EE\F1\F2\E8);
-		double K[4], nn, nn_cyl, nn_l, ff_vol, AX = 1., AY = 1., AZ = 1.; memset(K, 0, 4*sizeof(double));
+		double nn, nn_cyl, nn_l, ff_vol, AX = 1., AY = 1., AZ = 1.;
+		real_T K[4]; memset(K, 0, 4*sizeof(real_T));
 		sm->GetRigidy(K, -1,  BASIC_COMPUT); 	
 
-		ff_vol = K[3]/(AX*AY*AZ);
+		ff_vol = to_double(K[3])/(AX*AY*AZ);
 		if (AX*.5 > rad)
 		ff_vol = 1.-4./3.*M_PI*rad/AX*rad/AY*rad/AZ; else
 		ff_vol = 1.-2.*M_PI*(3.*rad/AY*rad/AZ*.5-.125-4./3.*rad/AX*rad/AY*rad/AZ);
 		
-		nn = K[2]/(AX*AY*AZ);
+		nn = to_double(K[2])/(AX*AY*AZ);
 		nn_cyl = sm->TakeCylinder(ff_vol);
 		nn_l	 = sm->TakeLayer	 (ff_vol);
 
-		FILE  * TST = fopen("hydro_homog.dat", "a");
-		fprintf(TST, "ff_vol = %g  nn = %g  nn_cyl = %g  nn_l = %g  (AX = %g  AY = %g  k0 = %g)\n", ff_vol, nn, nn_cyl, nn_l, AX, AY, k0);
-		fclose (TST);
+		FILE * TST = fopen("./bcm_results/hydro3d_homog/hydro3d_homog.dat", "a");
+		if (TST) fprintf(TST, "ff_vol = %g  nn = %g  nn_cyl = %g  nn_l = %g  (AX = %g  AY = %g  k0 = %g)\n", ff_vol, nn, nn_cyl, nn_l, AX, AY, k0);
+		if (TST) fclose (TST);
 
 //////////////////
 //..visualization;
 	{
 		int id_visual = 1;
 		if (id_visual) {
+			//res = system("del *.grd");
 			CGrid * nd = CreateNodes();
 			int NX = 200, NY = 200, axis;
 
@@ -1599,12 +1591,11 @@ int main(int argc, char* argv[])
 				if (sqr(nd->X[i]-L)+sqr(nd->Y[j]+L)+sqr(nd->Z[0]+L) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 				if (sqr(nd->X[i]+L)+sqr(nd->Y[j]+L)+sqr(nd->Z[0]+L) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 	*/		}
-			system("del *.grd");
-			//sm->GetSurferFormat("bb", nd,	     ERR_VALUE, 0, axis); 
-			sm->GetSurferFormat("pp", nd,	PRESSURE_VALUE, 0, axis);
-			sm->GetSurferFormat("vv", nd, VELOCITY_VALUE, 0, axis);
-			//sm->GetSurferFormat("nn", nd, NORMAL_R_VALUE, 0, axis);
-			//sm->GetSurferFormat("nz", nd, NORMAL_Z_VALUE, 0, axis);
+			//sm->GetSurferFormat("./bcm_results/hydro3d_homog/bb", nd,	     ERR_VALUE, 0, axis); 
+			sm->GetSurferFormat("./bcm_results/hydro3d_homog/pp", nd,	PRESSURE_VALUE, 0, axis);
+			sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv", nd, VELOCITY_VALUE, 0, axis);
+			//sm->GetSurferFormat("./bcm_results/hydro3d_homog/nn", nd, NORMAL_R_VALUE, 0, axis);
+			//sm->GetSurferFormat("./bcm_results/hydro3d_homog/nz", nd, NORMAL_Z_VALUE, 0, axis);
 
 			nd->zero_grid();
 			
@@ -1638,14 +1629,15 @@ int main(int argc, char* argv[])
 				//if (sqr(nd->X[i]-L)+sqr(nd->Y[j]+L)+sqr(nd->Z[0]+L) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 				//if (sqr(nd->X[i]+L)+sqr(nd->Y[j]+L)+sqr(nd->Z[0]+L) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 			}
-			//sm->GetSurferFormat("bb_I", nd,	    ERR_VALUE, 0, axis);
-			sm->GetSurferFormat("pp_I", nd, PRESSURE_VALUE, 0, axis);
-			sm->GetSurferFormat("vv_I", nd, VELOCITY_VALUE, 0, axis);
+			//sm->GetSurferFormat("./bcm_results/hydro3d_homog/bb_I", nd,	    ERR_VALUE, 0, axis);
+			sm->GetSurferFormat("./bcm_results/hydro3d_homog/pp_I", nd, PRESSURE_VALUE, 0, axis);
+			sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv_I", nd, VELOCITY_VALUE, 0, axis);
 
 			delete nd;
 		}
 	}
 	delete sm;
+#undef real_T
 }
 #endif
 #ifdef TEST_DRAFT_VIBRO
@@ -1672,27 +1664,26 @@ int main(int argc, char* argv[])
 //	char * name = "Models_nas/Acoustic/ono0half_120.nas";
 
 	int  i, j, k, l, N0, NN[] = {3, 1, 1, 1}, id_phase = OK_STATE;
-	double  par[6], LL[] = {1.2, 1.3, 2.5};//...\F3\EA\E0\E7\FB\E2\E0\FE\F2\F1\FF \E2\EE\E7\F0\E0\F1\F2\E0\FE\F9\E8\E5 \E7\ED\E0\F7\E5\ED\E8\FF \F2\EE\F7\E5\EA;
+	double  par[6], LL[] = {1.2, 1.3, 2.5};//...//...\F3\EA\E0\E7\FB\E2\E0\FE\F2\F1\FF \E2\EE\E7\F0\E0\F1\F2\E0\FE\F9\E8\E5 \E7\ED\E0\F7\E5\ED\E8\FF \F2\EE\F7\E5\EA;
 
-//////////////////////////
-//...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
-	CDraft<double> * sm = CreateDraft(ACOU3D_DRAFT, 8);		
+/////////////////////////////////////////////////////////
+//...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EE\E1\F0\E0\E7\F6\E0 \E8 \ED\E0\F1\F2\F0\EE\E9\EA\E0 \EF\E0\F0\E0\EC\E5\F2\F0\EE\E2 \E7\E0\E4\E0\F7\E8;
+	CDraft<double> * sm = CreateDraftR(ACOU3D_DRAFT, 8);		
 	sm->set_mpls(PackInts(3, 1)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(4, 4)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
-	sm->set_normaliz(.92);	//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
-	sm->set_lagrange(1e5);			//...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \CB\E0\E3\F0\E0\ED\E6\E0; 
+	sm->set_normaliz(.92);			//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
+	sm->set_lagrange(1e5);			//...\EC\ED\EE\E6\E8\F2\E5\EB\FC \CB\E0\E3\F0\E0\ED\E6\E0 \E4\EB\FF \F4\F3\ED\EA\F6\E8\EE\ED\E0\EB\E0 \FD\ED\E5\F0\E3\E8\E8;
 	sm->change_solv(/*PERIODIC_SOLVING*/SQUARE_SOLVING);
 	sm->solver.change_state(/*EXTERN_STATE*/);
 	sm->solver.set_mode(/*PRINT_MODE*/NO_PHASE);
 
 	sm->set_param(2, 100.);
 
-
 ////////////////////////////
 //...\EF\F0\E5\EE\E1\F0\E0\E7\EE\E2\E0\ED\E8\E5 \EE\E1\F0\E0\E7\F6\E0;
 	CGrid_el	* nd = new CGrid_el;
 
-	//N0 = sm->GetOnoBoxStruct(1.2, 1.0, 0.5, 0.5, 0.08, NN, LL, name, OK_STATE, id_phase);
+	N0 = sm->GetOnoBoxStruct(1.2, 1.0, 0.5, 0.5, 0.08, NN, LL, name, OK_STATE, id_phase);
 	//sm->B[0].bar->cells_out("bar");
 
 	for (k = 0; k < sm->N; k++) {
@@ -1713,11 +1704,11 @@ int main(int argc, char* argv[])
 			  sm->B[k].bar->ce[num]->mp[l = size_of_map (sm->B[k].bar->ce[num]->mp)] == FACET_CELL && 
 			  sm->B[k].bar->ce[num]->mp[l+1] > 0. && sm->B[k].bar->ce[num]->graph[1] > 2) {
 			if (sm->B[k].link[sm->NUM_PHASE] == -2) {
-				((CCeBasic *)sm->B[k].bar)->SetFacetXParam(num, par[0], pp, FSKEWS_BND);
-				((CCeBasic *)sm->B[k].bar)->SetFacetXParam(num, par[1], pp, FSKEWS_BND);
+				sm->B[k].bar->SetFacetXParam(num, par[0], pp, FSKEWS_BND);
+				sm->B[k].bar->SetFacetXParam(num, par[1], pp, FSKEWS_BND);
 
-				((CCeBasic *)sm->B[k].bar)->SetFacetYParam(num, par[2], pp, FSKEWS_BND);
-				((CCeBasic *)sm->B[k].bar)->SetFacetYParam(num, par[3], pp, FSKEWS_BND);
+				sm->B[k].bar->SetFacetYParam(num, par[2], pp, FSKEWS_BND);
+				sm->B[k].bar->SetFacetYParam(num, par[3], pp, FSKEWS_BND);
 			}
 		}
 	}
@@ -1768,13 +1759,14 @@ int main(int argc, char* argv[])
 		std::ofstream fout ("BsSolver.dat");
 
 		sm->shapes_init(NO_STATE); 
-		BMM_solvrC pBMM = {& sm->solver, sm, BASIC_COUNTING};
-//		AbstractSolver		(& pBMM, 
-		AbstractParSolver (& pBMM, 
+		BCM_draft<double> pBCM = {sm, MAPPING_COMPUT};
+		//AbstractSolver		(& pBCM, 
+		AbstractParSolver (& pBCM, 
 								(void *)&comm_mpi,
 								fout, params,
-								Number_of_Blocks, Blocks_Partitioning,	Blocks_Sparsity,  
-								Blocks_RowC, Right_HandsideC, Initial_GuessC, Store_SolutionC);
+								Number_of_Blocks<complex>, Blocks_Partitioning<complex>, 
+								Blocks_Sparsity<complex>, Blocks_Row<complex>, 
+								Right_Handside<complex>, Initial_Guess<complex>, Store_Solution<complex>);
 		sm->shapes_init(OK_STATE); 
 	}
 #endif
@@ -1909,55 +1901,830 @@ int main(int argc, char* argv[])
 	delete nd;
 }
 #endif
-#ifdef LAME3D_LAYERED_ESHELBY_HOMOGENIZATION
+#ifdef HEAT2D_ANALYT_HOMOGENIZATION
 {
-//////////////////////////
-//...model initialization;
-	CDraft<double> * sm = CreateDraft(COHES3D_DRAFT, 8),
-						* lm = CreateDraft(LAME2D_DRAFT, 8);
-	double nju1 = 0.30, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
-			 nju2 = 0.30, //...\F1\EB\EE\E9;
-			 nju3 = 0.22, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
-			 E1   = 0.012,//...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\E0\F2\F0\E8\F6\FB;
-			 E2   = 0.045,//...\F1\EB\EE\E9;
-			 E3   = 30.,  //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E2\EA\EB\FE\F7\E5\ED\E8\FF;
-			 kk1	= E1*(.5+nju1)/(1.+nju1), //...\EC\EE\E4\F3\EB\FC \F0\E0\F1\F2\FF\E6\E5\ED\E8\FF/\F1\E6\E0\F2\E8\FF \EC\E0\F2\F0\E8\F6\FB;
-			 kk2	= E2*(.5+nju2)/(1.+nju2), //...\F1\EB\EE\E9;
-			 kk3	= E3*(.5+nju3)/(1.+nju3), //...\EC\EE\E4\F3\EB\FC \F0\E0\F1\F2\FF\E6\E5\ED\E8\FF/\F1\E6\E0\F2\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\FF;
-			 l0	= 0.10, //...interphase layer;
-			 c0   = 0.20, //...volume fraction; 
-			 G1, G2, GH = 0., G0, EH, E_min, E_max, KH, KK = 0., KD;
+	int	 id_visual = 0,  NX = 100, NY = 100, N0 = 11, N_elem = 16, N_max = 4, i, j, axis = AXIS_Y;
+	double A = 1., B = 1., R1 = 0.3/2, R2 = 0.4/2, K1 = 20., K2 = 0.01, K3 = 1., C = 1., alpha = 0.;
 
-///////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8;
-	const int N = 3;
-	double ff[N] = {(1.-c0)*2./3., (1.-c0)*1./3., c0}, kk[N] = {kk1, kk2, kk3}, ll[N] = {l0, l0, l0}, 
-			 mu[N] = {2.*E1*(1.+nju1), 2.*E2*(1.+nju2), 2.*E3*(1.+nju3)}; 
-	//double ff[N] = {(1.-c0), c0}, kk[N] = {kk1, kk2}, ll[N] = {l0, l0}, 
-	//		 mu[N] = {2.*E1*(1.+nju1), 2.*E2*(1.+nju2)}; 
-	FILE * TST = fopen("Layered_homog.dat", "w");
-	for (int j = 0; j <= 1000; j += 1) {
-		c0 = j*.001; ff[0] = (1.-c0)*2./3.; ff[1] = (1.-c0)*1./3.; ff[2] = c0;
-		
-		E_min = sm->TakeLayer_kk(N, ff, kk); E_max = 0.;
-		EH = sm->TakeLayer_kk(N, ff, kk, ll);
-		for (int i = 0; i < N; i++) E_max += ff[i]*kk[i];
+//////////////////////////////////
+//...reading model from data-file;
+   sprintf(buf, "Reading data...");
+   Message(" ");
+   Message(buf);
 
-		KH = lm->TakeLayer_kk(N, ff, kk, mu); GH = 0.;
-		KD = ((kk[0]-kk[2])-ff[1]/(ff[0]+ff[1])*(1.+(kk[2]-kk[1])/(kk[1]+mu[1]))*(kk[0]-kk[1]))/(1.+ff[1]/(ff[0]+ff[1])*(kk[0]-kk[1])/(kk[1]+mu[1]));
-		KK = kk[2]+(ff[0]+ff[1])*KD/(1.+ff[2]*KD/(kk[2]+mu[2]));
-		//GH = lm->TakeLayer_GG(N, ff, kk, mu);
+	unsigned long count, upper_limit;
+	char        * id_DATA = read_struct_ascii("heat2d_initial.dat");
+	if         (! id_DATA) {
+		sprintf(buf, "Data not found..");
+		Message(" ");
+		Message(buf);
+		sprintf(buf, "Creating data file \"heat2d_initial.dat\"...");
+		Message(buf);
+		Message(" ");
 
-		lm->set_fasa_hmg(nju1, nju2, E1/(1.+nju1)*.5, E2/(1.+nju2)*.5, nju3, E3/(1.+nju3)*.5);
-		KD = lm->TakeEshelby_volm(ff[0], ff[1]);
+		FILE  * TST = fopen("heat2d_initial.dat", "w");
+		fprintf(TST, "N = %i\nN_elem = %i\nN_max = %i\n\n", N0, N_elem, N_max);
+		fprintf(TST, "id_visual = %i\nNX = %i\nNY = %i\naxis = %i\nalpha = %g\n\n", id_visual, NX, NY, axis, alpha);
+		fprintf(TST, "A = %g\nB = %g\nC = %g\nR1 = %g\nR2 = %g\nK1 = %g\nK2 = %g\nK3 = %g\n", A, B, C, R1, R2, K1, K2, K3);
+		fclose (TST);
 
-  		fprintf(TST, " l0 = %g, c0 = %g, EH = %g, E_min = %g, E_max = %g, KH = %g, GH = %g, KK = %g, KD = %g\n", l0, c0, EH, E_min, E_max, KH, GH, KK, KD);
+		printf("N  = %i\nN_elem = %i\nN_max = %i\n\n", N0, N_elem, N_max);
+		printf("id_visual = %i\nNX = %i\nNY = %i\naxis  = %i\nalpha = %g\n\n", id_visual, NX, NY, axis, alpha);
+		printf("A = %g\nB = %g\nC = %g\nR1 = %g\nR2 = %g\nK1 = %g\nK2 = %g\nK3 = %g\n", A, B, C, R1, R2, K1, K2, K3);
+
+		goto test;
 	}
-	fclose (TST);
+	user_Count    (id_DATA, 0, upper_limit, '\x0');
+	if (user_Count(id_DATA, count = 0, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N0 = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_elem = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_max = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_visual = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NX = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NY = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) alpha = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) A = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) B = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) C = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) R1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) R2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K3 = user_strtod(buf);
+
+///////////////////////////////////////
+//...creating model from initiual data;
+test:
+	CDraft<double> * sm = CreateDraftR(HEAT2D_DRAFT);
+	sm->set_mpls(PackInts(N0, N0));			//...space degree of multipoles;
+	sm->set_quad(PackInts(N_elem, N_max)); //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);						//...normalization coefficient;
+	sm->change_solv(SPECIAL_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
+
+// for (int k = 2; k <= 50; k++) {
+//	R1 = R2*(k-1.)/k;
+	if (sm) {
+      sprintf(buf, "Loading model...");
+      Message(" ");
+      Message(buf);
+
+		sm->stru.add_new_point(-A*.5, B*.5, 0., 0., 0., 1.); sm->stru.hit[0] = 1;
+		sm->stru.add_new_point(-A*.5,-B*.5, 0., 0., 0., 1.); sm->stru.hit[1] = 2;
+		sm->stru.add_new_point( A*.5,-B*.5, 0., 0., 0., 1.); sm->stru.hit[2] = 3;
+		sm->stru.add_new_point( A*.5, B*.5, 0., 0., 0., 1.); sm->stru.hit[3] = 4;
+		sm->stru.geom = (int *)new_struct(11*sizeof(int));
+		sm->stru.geom[0] = 1;
+		sm->stru.geom[1] = 7;
+		sm->stru.geom[2] = 6;
+		sm->stru.geom[3] = -1;
+		sm->stru.geom[4] = -1;
+		sm->stru.geom[5] = 0;
+		sm->stru.geom[6] = 1;
+		sm->stru.geom[7] = 2;
+		sm->stru.geom[8] = 3;
+		sm->stru.geom[9] = 0;
+		sm->stru.geom_ptr = (int *)new_struct(3*sizeof(int));
+		sm->stru.geom_ptr[0] = 1;
+		sm->stru.geom_ptr[1] = 9;
+		sm->stru.cond = (int *)new_struct(2*sizeof(int));
+		sm->stru.cond_ptr = (int *)new_struct(2*sizeof(int));
+		sm->stru.cond_ptr[0] = 1;
+
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(CLAYER_BLOCK);
+		Message("Finish!");
+	}
+	sm->set_fasa_hmg(R1, R2, K3, K1, K2);
+
+///////////////////////////
+//...solving of the probem;
+	if (sm->computing_kernel(PERIOD_COMPUT) != OK_STATE) {
+		Message("Error in sample counting...");
+		delete sm;
+		goto err;
+	}
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+		double par[6];	sm->SetGeomBounding(par);
+		double K[6] = {0.,0.,0.,0.,0., min(A, min(B, C))*.5}, KH, kk, kk_low, kk_max, ff_vol, ff_l;
+
+		sm->set_param(sm->NUM_QUAD, PackInts(N_elem, 2*N_max));
+
+		sm->GetRigidy(K, -1, BASIC_COMPUT);
+		sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+		ff_vol = K[3]/(K[2]+K[3]+K[4]);
+		ff_l	 = K[4]/(K[2]+K[3]+K[4]);
+		kk		 = K[0]/(K[2]+K[3]+K[4]);
+		kk_low = (K[2]+K[3]+K[4])/(K[2]/K3+K[3]/K1+K[4]/K2);
+		kk_max = (K[2]*K3+K[3]*K1+K[4]*K2)/(K[2]+K[3]+K[4]);
+
+		KH = sm->TakeEshelby(ff_vol, ff_l);
+
+		FILE * TST = fopen("heat2d_homog.dat", "a");
+		if (TST) fprintf(TST, "kk = %g  KH = %g  1-KH/kk = %g  ff_vol = %g  kk_max = %g  K1 = %g  K2 = %g  K3 = %g  R1 = %g  R2 = %g\n", 
+									  kk, KH, 1.-KH/kk, ff_vol, kk_max, K1, K2, K3, R1, R2);
+		if (TST) fclose (TST);
+
+		if (id_visual) {//..visualization;
+			CGrid_el * nd = new CGrid_el;
+			sm->BlockActivate(NULL_STATE);
+
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+			system("del *.grd");
+
+			sm->GetSurferFormat("rr", nd,			 HEAT_VALUE, 0);
+			sm->GetSurferFormat("pp", nd, FLUX_COMPOS_VALUE, 0);
+
+			delete nd;
+		}
+	}
+// }
 	delete sm;
 }
 #endif
-#ifdef CHYDRO3D_ANALYT_HOMOGENIZATION
+#ifdef HEAT3D_ANALYT_HOMOGENIZATION
+{
+	double par[6], rad = 0.3, h_rad = 0., A = 1., B = 1., C = 1.,  ll = 0.1, section = 0., section_I = 0., section_II = 0., 
+		 K1 = 20., K2 = 0.01, K3 = 1.;
+	int id_visual = 0, N_rad = 1, NX = 100, NY = 100, N0 = 15, N_elem = 8, N_max = 4, id_bcond = 0, id_solver = 0, id_type = 0, 
+		 axis = AXIS_Y, axis_I = AXIS_Z, axis_II = AXIS_X, i, j, l;
+
+//////////////////////////////////
+//...reading model from data-file;
+   sprintf(buf, "Reading data...");
+   Message(" ");
+   Message(buf);
+
+	unsigned long count, upper_limit;
+	char        * id_DATA = read_struct_ascii("heat3d_initial.dat");
+	if         (! id_DATA) {
+		sprintf(buf, "Data not found..");
+		Message(" ");
+		Message(buf);
+		sprintf(buf, "Creating data file \"heat3d_initial.dat\"...");
+		Message(buf);
+		Message(" ");
+
+		FILE  * TST = fopen("heat3d_initial.dat", "w");
+		fprintf(TST, "N = %i\nN_elem = %i\nN_max = %i\n\n", N0, N_elem, N_max);
+		fprintf(TST, "id_bcond = %i  id_solver = %i  id_type = %i\n\n", id_bcond, id_solver, id_type);
+		fprintf(TST, "id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		fprintf(TST, "A = %g\nB = %g\nC = %g\nrad = %g  layer = %g  h_rad = %g  N_rad = %i\n\n", A, B, C, rad, ll, h_rad, N_rad);
+		fprintf(TST, "K1 = %g\nK2 = %g\nK3 = %g\n", K1, K2, K3);
+		fclose (TST);
+
+		printf("N = %i\nN_elem = %i\nN_max = %i\n\n", N0, N_elem, N_max);
+		printf("id_bcond = %i  id_solver = %i  id_type = %i\n\n", id_bcond, id_solver, id_type);
+		printf("id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		printf("A = %g\nB = %g\nC = %g\nrad = %g  layer = %g  h_rad = %g  N_rad = %i\n\n", A, B, C, rad, ll, h_rad, N_rad);
+		printf("K1 = %g\nK2 = %g\nK3 = %g\n", K1, K2, K3);
+
+		goto test;
+	}
+	user_Count    (id_DATA, 0, upper_limit, '\x0');
+	if (user_Count(id_DATA, count = 0, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N0 = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_elem = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_max = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_bcond = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_solver = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_type = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_visual = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NX = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NY = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_I = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_II = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_I = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_II = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) A = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) B = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) C = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) rad = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) ll = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) h_rad = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_rad = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K1 = user_strtod(buf);
+
+///////////////////////////////////////
+//...creating model from initiual data;
+test:
+	CDraft<double> * sm = CreateDraftR(HEAT3D_DRAFT, 7);
+	sm->set_mpls(PackInts(N0, N0));			//...space degree of multipoles;
+	sm->set_quad(PackInts(N_elem, N_max)); //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);						//...normalization coefficient;
+	sm->change_solv(PERIODIC_SOLVING/*SPECIAL_SOLVING*/);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
+
+////////////////////////////////////////////////////////
+//...\EF\E5\F0\E5\E1\E8\F0\E0\E5\EC \E2\F1\E5 \F0\E0\E4\E8\F3\F1\FB, \EE\F2\EA\EB\FE\F7\E0\FF \EF\F0\E5\E4\E5\EB\FC\ED\FB\E5 \F1\EB\F3\F7\E0\E8;
+	for (l = 0; l < N_rad; l++, rad += h_rad) { 
+		sprintf(buf, "rad = %g", rad);
+		Message(" ");
+		Message(buf);
+
+////////////////////////////////////////////////////////////////////////////////
+//...\EF\E5\F0\E5\F1\F7\E5\F2 \EF\E0\F0\E0\EC\E5\F2\F0\EE\E2 \FF\F7\E5\E9\EA\E8 \E4\EB\FF \EE\E1\E5\F1\EF\E5\F7\E5\ED\E8\FF \EE\E4\E8\ED\E0\EA\EE\E2\EE\E9 \EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\E8 \F8\F3\ED\E3\E8\F2\E0;
+		if (id_type == 1) A = B = C = pow(300.*M_PI,  1./3.)*(rad+10.)*.5;                                                                    //
+		if (id_type == 2) A = B = C = pow(300.*M_PI,  1./3.)*pow(rad*sqr(rad)+((rad+ll)*sqr(rad+ll)-rad*sqr(rad))*(K3-K1)/(K2-K1), 1./3.)*.5; //                                          //
+		if (id_type == 3) {
+			A = B = C = pow(200.*M_PI/3.,  1./3.)*rad;
+			if (rad > 100) ll = 1.54*12.5*pow(100./(1.54*12.5), 2.*(3.-2.568)/3.); 
+			else 				ll = 1.54*12.5*pow( rad/(1.54*12.5), 2.*(3.-2.568)/3.);
+		}
+		if (rad > 0. && rad <= 0.5*A) {
+
+///////////////////////////////////////////
+//...\E7\E0\E4\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\FE \E8 \E8\F1\F5\EE\E4\ED\FB\E5 \EF\E0\F0\E0\EC\E5\F2\F0\FB;
+			double fL = A, fL2 = fL*fL;
+			A /= fL; rad /= fL;
+			B /= fL;	ll  /= fL;
+			C /= fL;
+			if (id_bcond) sm->GetSphBoxStruct(A, B, C, rad, ll);
+			else {
+				sm->GetSphBoxStruct(A, B, C);
+				sm->SetBUniStruct(CLAYER_BLOCK, ERR_GENUS);
+			}
+			par[0] = -A*.5; par[2] = -B*.5; par[4] = -C*.5;
+			par[1] =  A*.5; par[3] =  B*.5; par[5] =  C*.5;
+			sm->set_fasa_hmg (rad, rad+ll, K1, K2, K3);
+
+
+///////////////////////////  
+//...solving of the probem;
+			if (sm->computing_kernel(PERIOD_COMPUT) != OK_STATE) {
+				Message("Error in sample counting...");
+				delete sm;
+				goto err;
+			}
+
+//////////////////////////////////////////
+//..\E2\FB\F7\E8\F1\EB\FF\E5\EC \FD\F4\F4\E5\EA\F2\E8\E2\ED\FB\E5 \EC\EE\E4\F3\EB\E8 \EA\EE\EC\EF\EE\E7\E8\F2\E0;
+			double K[7] = {0.,0.,0.,0.,0.,0., min(A, min(B, C))*.5}, KH, kk, kk_low, kk_max, ff_vol, ll_vol;
+			sm->GetRigidy(K, -1, BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+			ff_vol =  K[4]/(K[3]+K[4]+K[5]);
+			ll_vol =  K[5]/(K[3]+K[4]+K[5]);
+			kk		 =  K[2]/(K[3]+K[4]+K[5]);
+			kk_low = (K[3]+K[4]+K[5])/(K[3]/K1+K[4]/K2+K[5]/K3);
+			kk_max = (K[3]*K1+K[4]*K2+K[5]*K3)/(K[3]+K[4]+K[5]);
+
+////////////////////////////////////////
+//...\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EC\E5\F2\EE\E4 \DD\F8\E5\EB\E1\E8;
+			KH = sm->TakeEshelby(ff_vol, ll_vol);
+
+			const char  * buf = id_type ? (id_type == 1 ? "heat3d_homog_kf1.dat" : (id_type == 2 ? "heat3d_homog_kf2.dat" : "heat3d_homog_kf3.dat")) : "heat3D_homog_kf0.dat";
+			const char  * bf1 = id_type ? (id_type == 1 ? "heat3d_homg1_kf1.dat" : (id_type == 2 ? "heat3d_homg1_kf2.dat" : "heat3d_homg1_kf3.dat")) : "heat3D_homg1_kf0.dat";
+			const char  * bf2 = id_type ? (id_type == 1 ? "heat3d_homg2_kf1.dat" : (id_type == 2 ? "heat3d_homg2_kf2.dat" : "heat3d_homg2_kf3.dat")) : "heat3D_homg2_kf0.dat";
+			FILE  * TST = fopen(id_bcond == 1 ? bf1 : (id_bcond == 2 ? bf2 : buf), "a");
+			fprintf(TST, "rad = %g  A = %g  kk = %g  KH = %g  1-KH/kk = %g  kk_max = %g  kk_low = %g  ff_vol = %g  ll_vol = %g  (%g, %g, %g) (N = %i)\n", 
+						rad*fL, A*fL, kk, KH, 1.-KH/kk, kk_max, kk_low, ff_vol, ll_vol, K2, K3, K1, N0);
+			fclose (TST);
+
+//////////////////
+//..visualization;
+			if (id_visual) { //..visualization;
+				CGrid_el * nd = new CGrid_el;
+				if (axis == AXIS_Z) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+					nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section)*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				}
+				if (axis == AXIS_Y) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+					nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section)*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				}
+				if (axis == AXIS_X) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+					nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section)*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				}
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++)
+				if (rad == 0. || ! id_bcond) nd->hit[i+j*nd->N] = 0;	else
+				if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad))    nd->hit[i+j*nd->N] = 0; else  
+				if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad+ll)) nd->hit[i+j*nd->N] = 2; else	nd->hit[i+j*nd->N] = 1;	
+
+				system("del *.grd");
+				sm->GetSurferFormat("rr", nd,				  HEAT_VALUE,							 0, axis);
+				sm->GetSurferFormat("pp", nd, id_bcond ? FLUX_VALUE : FLUX_COMPOS_VALUE, 0, axis);
+
+/////////////////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+				if (id_visual > 1) { 
+					nd->zero_grid();
+					if (axis_I == AXIS_Z) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+						nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_I)*.5);
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					}
+					if (axis_I == AXIS_Y) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+						nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_I)*.5);
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					}
+					if (axis_I == AXIS_X) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+						nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_I)*.5);
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					}
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++)
+					if (rad == 0. || ! id_bcond) nd->hit[i+j*nd->N] = 0;	else
+					if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad))    nd->hit[i+j*nd->N] = 0; else  
+					if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad+ll)) nd->hit[i+j*nd->N] = 2; else	nd->hit[i+j*nd->N] = 1;	
+
+					sm->GetSurferFormat("rr_I", nd,				  HEAT_VALUE,							0, axis_I);
+					sm->GetSurferFormat("pp_I", nd, id_bcond ? FLUX_VALUE : FLUX_COMPOS_VALUE, 0, axis_I);
+
+					if (id_visual > 2) { 
+						nd->zero_grid();
+						if (axis_II == AXIS_Z) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+							nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_II)*.5);
+							nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						}
+						if (axis_II == AXIS_Y) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+							nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_II)*.5);
+							nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						}
+						if (axis_II == AXIS_X) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+							nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_II)*.5);
+							nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						}
+						for (i = 0; i < nd->N;  i++)
+						for (j = 0; j < nd->N1; j++)
+						if (rad == 0. || ! id_bcond) nd->hit[i+j*nd->N] = 0;	else
+						if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad))    nd->hit[i+j*nd->N] = 0; else  
+						if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad+ll)) nd->hit[i+j*nd->N] = 2; else	nd->hit[i+j*nd->N] = 1;	
+
+						sm->GetSurferFormat("rr_II", nd,				  HEAT_VALUE,							0, axis_II);
+						sm->GetSurferFormat("pp_II", nd, id_bcond ? FLUX_VALUE : FLUX_COMPOS_VALUE, 0, axis_II);
+					}
+				}
+				delete nd;
+			}
+			A *= fL; rad *= fL;
+			B *= fL;	ll  *= fL;
+			C *= fL;
+		}
+	}
+	delete sm;
+}
+#endif
+#ifdef LAME3D_ANALYT_HOMOGENIZATION
+{
+	double par[6], rad = 1., h_rad = 0., A = 5., B = 5., C = 5., ll = 0.5, section = 0., section_I = 0., section_II = 0.,
+						nj1 = 0.3, nj2 = 0.3, nj3 = 0.3, E1  = 1.0, E2  = 2.0, E3  = 3.0;
+	int id_visual = 0, N_rad = 1, NX = 100, NY = 100, N0 = 7, N_elem = 8, N_max = 4, id_bcond = 0, id_solver = 0, id_type = 0, 
+				axis = AXIS_Y, axis_I = AXIS_Z, axis_II = AXIS_X, i, j, l;
+
+//////////////////////////////////
+//...reading model from data-file;`
+   sprintf(buf, "Reading data...");
+   Message(" ");
+   Message(buf);
+
+	unsigned long count, upper_limit;
+	char        * id_DATA = read_struct_ascii("lame3d_initial.dat");
+	if         (! id_DATA) {
+		sprintf(buf, "Data not found..");
+		Message(" ");
+		Message(buf);
+		sprintf(buf, "Creating data file \"lame3d_initial.dat\"...");
+		Message(buf);
+		Message(" ");
+
+		FILE  * TST = fopen("lame3d_initial.dat", "w");
+		fprintf(TST, "N = %i\nN_elem = %i\nN_max = %i\n\n", N0, N_elem, N_max);
+		fprintf(TST, "id_bcond = %i  id_solver = %i  id_type = %i\n\n", id_bcond, id_solver, id_type);
+		fprintf(TST, "id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		fprintf(TST, "A = %g\nB = %g\nC = %g\nrad = %g  layer = %g  h_rad = %g  N_rad = %i\n\n", A, B, C, rad, ll, h_rad, N_rad);
+		fprintf(TST, "E1 = %g  nu1 = %g\nE2 = %g  nu2 = %g\nE3 = %g  nu3 = %g\n", E2, nj2, E3, nj3, E1, nj1);
+		fclose (TST);
+
+		printf("N = %i\nN_elem = %i\nN_max = %i\n\n", N0, N_elem, N_max);
+		printf("id_bcond = %i  id_solver = %i  id_type = %i\n\n", id_bcond, id_solver, id_type);
+		printf("id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		printf("A = %g\nB = %g\nC = %g\nrad = %g  layer = %g  h_rad = %g  N_rad = %i\n\n", A, B, C, rad, ll, h_rad, N_rad);
+		printf("E1 = %g  nu1 = %g\nE2 = %g  nu2 = %g\nE3 = %g  nu3 = %g\n", E2, nj2, E3, nj3, E1, nj1);
+		goto test;
+	}
+	user_Count    (id_DATA, 0, upper_limit, '\x0');
+	if (user_Count(id_DATA, count = 0, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N0 = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_elem = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_max = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_bcond = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_solver = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_type = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_visual = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NX = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NY = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_I = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_II = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_I = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_II = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) A = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) B = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) C = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) rad = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) ll = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) h_rad = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_rad = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) E2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) nj2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) E3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) nj3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) E1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) nj1 = user_strtod(buf);
+
+///////////////////////////////////////
+//...creating model from initiual data;
+test:
+	CDraft<double> * sm = CreateDraftR(LAME3D_DRAFT, 7);
+	sm->set_mpls(PackInts(N0, N0));			//...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
+	sm->set_quad(PackInts(N_elem, N_max)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
+	sm->set_normaliz(0.92);						//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
+	sm->set_lagrange(1.);						//...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \CB\E0\E3\F0\E0\ED\E6\E0; 
+	sm->change_solv(SPECIAL_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*REDUCED_PRINT*//*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
+
+////////////////////////////////////////////////////////
+//...\EF\E5\F0\E5\E1\E8\F0\E0\E5\EC \E2\F1\E5 \F0\E0\E4\E8\F3\F1\FB, \EE\F2\EA\EB\FE\F7\E0\FF \EF\F0\E5\E4\E5\EB\FC\ED\FB\E5 \F1\EB\F3\F7\E0\E8;
+	for (l = 0; l < N_rad; l++, rad += h_rad) { 
+		sprintf(buf, "rad = %g", rad);
+		Message(" ");
+		Message(buf);
+
+////////////////////////////////////////////////////////////////////////////////
+//...\EF\E5\F0\E5\F1\F7\E5\F2 \EF\E0\F0\E0\EC\E5\F2\F0\EE\E2 \FF\F7\E5\E9\EA\E8 \E4\EB\FF \EE\E1\E5\F1\EF\E5\F7\E5\ED\E8\FF \EE\E4\E8\ED\E0\EA\EE\E2\EE\E9 \EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\E8 \F8\F3\ED\E3\E8\F2\E0;
+		if (id_type == 1) A = B = C = pow(300.*M_PI,  1./3.)*(rad+10.)*.5;                                                                    
+		if (id_type == 2) A = B = C = pow(300.*M_PI,  1./3.)*pow(rad*sqr(rad)+((rad+ll)*sqr(rad+ll)-rad*sqr(rad))*(E3-E1)/(E2-E1), 1./3.)*.5;                                           
+		if (id_type == 3) {
+			A = B = C = pow(200.*M_PI/3.,  1./3.)*rad;
+			if (rad > 100) ll = 1.54*12.5*pow(100./(1.54*12.5), 2.*(3.-2.568)/3.); 
+			else 				ll = 1.54*12.5*pow( rad/(1.54*12.5), 2.*(3.-2.568)/3.);
+		}
+		if (rad > 0. && rad <= 0.5*A) { 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\ED\EE\F0\EC\E8\F0\F3\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\FE \E8 \E7\E0\E4\E0\E5\EC \EF\E0\F0\E0\EC\E5\F2\F0\FB \EC\E0\F2\E5\F0\E8\E0\EB\EE\E2 (\E2 \F1\EB\F3\F7\E0\E5 ___2BODY_ESHELBY___ \E4\EB\FF \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF \E7\E0\E4\E0\E5\EC \EF\E0\F0\E0\EC\E5\F2\F0\FB \EC\E0\F2\F0\E8\F6\FB!!!);
+			double fL = A;	A /= fL; B /= fL; C /= fL; rad /= fL; ll /= fL;
+			sm->set_fasa_hmg(nj1, nj2, E1/(fL*(1.+nj1))*.5, E2/(fL*(1.+nj2))*.5, nj3, E3/(fL*(1.+nj3))*.5/*, nj1, E1/(fL*(1.+nj1))*.5*/);
+			sm->set_geometry(rad, ll);
+
+//////////////////////
+//...\E7\E0\E4\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\FE;
+			if (id_bcond) sm->GetSphBoxStruct(A, B, C, rad, ll);
+			else {
+				sm->GetSphBoxStruct(A, B, C);
+				sm->SetBUniStruct(CLAYER_BLOCK, ERR_GENUS);
+			}
+			par[0] = -A*.5; par[2] = -B*.5; par[4] = -C*.5;
+			par[1] =  A*.5; par[3] =  B*.5; par[5] =  C*.5;
+
+///////////////////////////  
+//...solving of the probem;
+			if (sm->computing_kernel(PERIOD_COMPUT) != OK_STATE) {
+				Message("Error in sample counting...");
+				delete sm;
+				goto err;
+			}
+
+//////////////////////////////////////////
+//..\E2\FB\F7\E8\F1\EB\FF\E5\EC \FD\F4\F4\E5\EA\F2\E8\E2\ED\FB\E5 \EC\EE\E4\F3\EB\E8 \EA\EE\EC\EF\EE\E7\E8\F2\E0;
+			double K[28], E0, nu, K0, m0, mu, lm, C0, KH, EH, mH, nH, ff_vol, ll_vol; memset(K, 0, 28*sizeof(double)); K[27] = A*.5;
+			sm->GetRigidy(K, -1, BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+			ff_vol = K[25]/(K[24]+K[25]+K[26]);
+			ll_vol = K[26]/(K[24]+K[25]+K[26]); 
+			
+			C0 = (K[5]-2.*K[0]*K[6]/(K[6]+K[11]))/(K[11]-2.*K[6]*K[6]/(K[6]+K[11]))*fL;
+			lm = (K[0]-C0*K[6])/(K[6]+K[11])*fL;
+			nu = lm/(C0+lm);
+			E0 = C0*(1.-2.*nu)*(1.+nu)/(1.-nu);
+			K0 = E0/(3.*(1.-2.*nu));
+			m0 = E0/(2.*(1.+nu));
+			mu = K[15]/K[21]*.5*fL;
+
+////////////////////////////////////////
+//...\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EC\E5\F2\EE\E4 \DD\F8\E5\EB\E1\E8;
+			KH = sm->TakeEshelby_volm(ff_vol, ll_vol)*fL;
+			mH = sm->TakeEshelby_shear_two(ff_vol+ll_vol)*fL;
+			mH = sm->TakeEshelby_shear(ff_vol, ll_vol)*fL;
+			EH = 9.*KH*mH/(3.*KH+mH);
+			nH = (1.5*KH-mH)/(3.*KH+mH);
+
+			//FILE  * TST = fopen("lame3D_homog.dat", "a");
+			//fprintf(TST, "ff_vol = %g  ll_vol = %g  E0 = %g  nu = %g  mu = %g  (%g, %g, %g, %g, %g, %g) (N = %i)\n", 
+			//					 ff_vol, ll_vol, E0, nu, mu, E2, E3, E1, nj2, nj3, nj1, N0);
+
+			const char  * buf = id_type ? (id_type == 1 ? "lame3d_homog_kf1.dat" : (id_type == 2 ? "lame3d_homog_kf2.dat" : "lame3d_homog_kf3.dat")) : "lame3D_homog_kf0.dat";
+			const char  * bf1 = id_type ? (id_type == 1 ? "lame3d_homg1_kf1.dat" : (id_type == 2 ? "lame3d_homg1_kf2.dat" : "lame3d_homg1_kf3.dat")) : "lame3D_homg1_kf0.dat";
+			const char  * bf2 = id_type ? (id_type == 1 ? "lame3d_homg2_kf1.dat" : (id_type == 2 ? "lame3d_homg2_kf2.dat" : "lame3d_homg2_kf3.dat")) : "lame3D_homg2_kf0.dat";
+			FILE  * TST = fopen(id_bcond == 1 ? bf1 : (id_bcond == 2 ? bf2 : buf), "a");
+			fprintf(TST, "rad = %g  A = %g  E0 = %g  nu = %g  K0 = %g  m0 = %g  mu = %g  EH = %g  KH = %g  (%g, %g, %g, %g, %g, %g) (N = %i)\n", 
+					  rad*fL, A*fL, E0, nu, K0, m0, mu, EH, KH, E2, E3, E1, nj2, nj3, nj1, N0);
+			fclose (TST);
+
+//////////////////
+//..visualization;
+			if (id_visual) {
+				CGrid_el * nd = new CGrid_el;
+				if (axis == AXIS_Z) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+					nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section)*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				}
+				if (axis == AXIS_Y) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+					nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section)*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				}
+				if (axis == AXIS_X) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+					nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section)*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				}
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++)
+				if (rad == 0. || ! id_bcond) nd->hit[i+j*nd->N] = 0;	else
+				if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad))    nd->hit[i+j*nd->N] = 0; else  
+				if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad+ll)) nd->hit[i+j*nd->N] = 2; else	nd->hit[i+j*nd->N] = 1;	
+
+				system("del *.grd");
+				sm->GetSurferFormat("rz", nd,		DISPL_VALUE, 0, axis);
+				sm->GetSurferFormat("rx", nd,		DISPL_VALUE, 1, axis);
+				sm->GetSurferFormat("tz", nd, STRESS_Z_VALUE, 0, axis);
+				sm->GetSurferFormat("tx", nd, STRESS_X_VALUE, 1, axis);
+
+/////////////////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+				if (id_visual > 1) { 
+					nd->zero_grid();
+					if (axis_I == AXIS_Z) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+						nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_I)*.5);
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					}
+					if (axis_I == AXIS_Y) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+						nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_I)*.5);
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					}
+					if (axis_I == AXIS_X) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+						nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_I)*.5);
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					}
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++)
+					if (rad == 0. || ! id_bcond) nd->hit[i+j*nd->N] = 0;	else
+					if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad))    nd->hit[i+j*nd->N] = 0; else  
+					if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad+ll)) nd->hit[i+j*nd->N] = 2; else	nd->hit[i+j*nd->N] = 1;	
+
+					sm->GetSurferFormat("rz_I", nd,	  DISPL_VALUE, 0, axis_I);
+					sm->GetSurferFormat("rx_I", nd,	  DISPL_VALUE, 1, axis_I);
+					sm->GetSurferFormat("tz_I", nd, STRESS_Z_VALUE, 0, axis_I);
+					sm->GetSurferFormat("tx_I", nd, STRESS_X_VALUE, 1, axis_I);
+
+					if (id_visual > 2) { 
+						nd->zero_grid();
+						if (axis_II == AXIS_Z) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+							nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_II)*.5);
+							nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						}
+						if (axis_II == AXIS_Y) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+							nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_II)*.5);
+							nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						}
+						if (axis_II == AXIS_X) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+							nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_II)*.5);
+							nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						}
+						for (i = 0; i < nd->N;  i++)
+						for (j = 0; j < nd->N1; j++)
+						if (rad == 0. || ! id_bcond) nd->hit[i+j*nd->N] = 0;	else
+						if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad))    nd->hit[i+j*nd->N] = 0; else  
+						if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad+ll)) nd->hit[i+j*nd->N] = 2; else	nd->hit[i+j*nd->N] = 1;	
+
+						sm->GetSurferFormat("rz_II", nd,		DISPL_VALUE, 0, axis_II);
+						sm->GetSurferFormat("rx_II", nd,		DISPL_VALUE, 1, axis_II);
+						sm->GetSurferFormat("tz_II", nd, STRESS_Z_VALUE, 0, axis_II);
+						sm->GetSurferFormat("tx_II", nd, STRESS_X_VALUE, 1, axis_II);
+					}
+				}
+				delete nd;
+			}
+			A *= fL; B *= fL;	C *= fL;	rad *= fL;	ll *= fL;	
+		}				 
+	}
+	delete sm;
+}
+#endif
+#ifdef HYDRO3D_ANALYT_HOMOGENIZATION
 {
 	double par[6], rad = 0.5, h_rad = 0., L = 0.5, alpha = 0., section = 0., section_I = 0., section_II = 0.;
 	int id_visual = 0, axis = AXIS_Y, axis_I = AXIS_Z, axis_II = AXIS_X, NX = 100, NY = 100, N_elem = 4, N_max = 2, 
@@ -2037,7 +2804,7 @@ int main(int argc, char* argv[])
 		 user_Read (buf, id_DATA, count, upper_limit)) structure = atoi(buf);
 
 	if (user_Count(id_DATA, count, count, '=') && structure &&  
-		user_Read (buf, id_DATA, count, upper_limit)) ::strcpy(name, buf);
+		user_Read (buf, id_DATA, count, upper_limit, NULL_STATE)) ::strcpy(name, buf);
 
 	if (user_Count(id_DATA, count, count, '=') && 
 		 user_Read (buf, id_DATA, count, upper_limit)) rad = user_strtod(buf);
@@ -2054,14 +2821,16 @@ int main(int argc, char* argv[])
 //////////////////////////////////////
 //...creating model from initial data;
 test:
-	CDraft<double> * sm = CreateDraft(HYDRO3D_DRAFT, 8);		
-	sm->set_mpls(PackInts(N0, N0)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
-	sm->set_quad(PackInts(N_elem, N_max));
-	sm->set_normaliz(L*sqrt(3.)/(.5*rad));			  //...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC; 
-	sm->set_lagrange(1e5);			  //...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \CB\E0\E3\F0\E0\ED\E6\E0; 
-	sm->set_fasa_hmg(alpha);		  //...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \C1\F0\E8\ED\EA\EC\E0\ED\E0; 
+#define real_T double
+	CDraft<real_T> * sm = CreateDraftR(HYDRO3D_DRAFT, 8);		
+	sm->set_fasa_hmg(alpha);					//...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \C1\F0\E8\ED\EA\EC\E0\ED\E0; 
+	sm->set_mpls(PackInts(N0, N0));			//...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
+	sm->set_quad(PackInts(N_elem, N_max)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
+	sm->set_normaliz(L*sqrt(3.)/(.5*rad));	//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC; 
+	sm->set_lagrange(1e5);						//...\EA\EE\FD\F4\F4\E8\F6\E8\E5\ED\F2 \CB\E0\E3\F0\E0\ED\E6\E0; 
 	sm->change_solv(structure ? SQUARE_SOLVING : SPECIAL_SOLVING);
 	sm->solver.set_mode(/*PRINT_MODE*/);
+	yes = 0;
 
 ///////////////////////////////////////////////////////
 //...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
@@ -2086,20 +2855,20 @@ test:
 		sm->BlockActivate();
 		for (k = 0; k < sm->N; k++) 
 		LOOP_FACET(sm->B[k].bar, num, m) {
-			((CCeBasic *)sm->B[k].bar)->SetFacetXParam(num, par[0], po, FSKEWS_BND);
-			((CCeBasic *)sm->B[k].bar)->SetFacetXParam(num, par[1], po, FSKEWS_BND);
+			sm->B[k].bar->SetFacetXParam(num, par[0], po, FSKEWS_BND);
+			sm->B[k].bar->SetFacetXParam(num, par[1], po, FSKEWS_BND);
 
-			((CCeBasic *)sm->B[k].bar)->SetFacetYParam(num, par[2], po, FSKEWS_BND);
-			((CCeBasic *)sm->B[k].bar)->SetFacetYParam(num, par[3], po, FSKEWS_BND);
+			sm->B[k].bar->SetFacetYParam(num, par[2], po, FSKEWS_BND);
+			sm->B[k].bar->SetFacetYParam(num, par[3], po, FSKEWS_BND);
 			
-			((CCeBasic *)sm->B[k].bar)->SetFacetZParam(num, par[4], po, SPECIAL_BND);
-			((CCeBasic *)sm->B[k].bar)->SetFacetZParam(num, par[5], po, SPECIAL_BND);
+			sm->B[k].bar->SetFacetZParam(num, par[4], po, SPECIAL_BND);
+			sm->B[k].bar->SetFacetZParam(num, par[5], po, SPECIAL_BND);
 		}
 	}
 
 ////////////////////////////////////////////////////////
 //...\EF\E5\F0\E5\E1\E8\F0\E0\E5\EC \E2\F1\E5 \F0\E0\E4\E8\F3\F1\FB, \EE\F2\EA\EB\FE\F7\E0\FF \EF\F0\E5\E4\E5\EB\FC\ED\FB\E5 \F1\EB\F3\F7\E0\E8;
-	res = system("mkdir var2_results"); char buff1[200], buff2[200], str[40];
+	res = system("mkdir ./bcm_results/hydro3d_homog"); char buff1[200], buff2[200], str[40];
 //	res = system("del *.grd");
 	for (l = 0; l < N_rad; l++, rad += h_rad) { 
 		sprintf(buf, "rad = %g", rad);
@@ -2117,14 +2886,14 @@ test:
 				if (1) { //...\E7\E0\E4\E0\ED\E8\E5 \EA\F0\E0\E5\E2\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \ED\E0 \E1\EE\EA\EE\E2\FB\F5 \E3\F0\E0\ED\FF\F5;
 					double po[6] = { 0., 0., 0., 0., 0., 0.};
 					LOOP_FACET(sm->B[0].bar, num, m) {
-						((CCeBasic *)sm->B[0].bar)->SetFacetXParam(num, par[0], po, FSKEWS_BND);
-						((CCeBasic *)sm->B[0].bar)->SetFacetXParam(num, par[1], po, FSKEWS_BND);
+						sm->B[0].bar->SetFacetXParam(num, par[0], po, FSKEWS_BND);
+						sm->B[0].bar->SetFacetXParam(num, par[1], po, FSKEWS_BND);
 
-						((CCeBasic *)sm->B[0].bar)->SetFacetYParam(num, par[2], po, FSKEWS_BND);
-						((CCeBasic *)sm->B[0].bar)->SetFacetYParam(num, par[3], po, FSKEWS_BND);
+						sm->B[0].bar->SetFacetYParam(num, par[2], po, FSKEWS_BND);
+						sm->B[0].bar->SetFacetYParam(num, par[3], po, FSKEWS_BND);
 						
-						((CCeBasic *)sm->B[0].bar)->SetFacetZParam(num, par[4], po, SPECIAL_BND);
-						((CCeBasic *)sm->B[0].bar)->SetFacetZParam(num, par[5], po, SPECIAL_BND);
+						sm->B[0].bar->SetFacetZParam(num, par[4], po, SPECIAL_BND);
+						sm->B[0].bar->SetFacetZParam(num, par[5], po, SPECIAL_BND);
 					}
 				}
 			}
@@ -2136,13 +2905,14 @@ test:
 
 ////////////////////////////////////////////////////////////////
 //..\E2\FB\F7\E8\F1\EB\FF\E5\EC \F3\F1\F0\E5\E4\ED\E5\ED\ED\FB\E5 \F5\E0\F0\E0\EA\F2\E5\F0\E8\F1\F2\E8\EA\E8 (\F2\E5\ED\E7\EE\F0 \EF\F0\EE\ED\E8\F6\E0\E5\EC\EE\F1\F2\E8);
-			double K[4], nn, nn_cyl, nn_cyl_alpha, nn_l, nn_l_alpha, ff_vol; memset(K, 0, 4*sizeof(double));
+			double nn, nn_cyl, nn_cyl_alpha, nn_l, nn_l_alpha, ff_vol;
+			real_T K[4]; memset(K, 0, 4*sizeof(real_T));
 			sm->GetRigidy(K, -1,  BASIC_COMPUT); 	
 
 			if (rad < 0.5)
 			ff_vol = 1.-4./3.*M_PI*rad*rad*rad; else
 			ff_vol = 1.-2.*M_PI*(1.5*rad*rad-4./3.*rad*rad*rad-0.125);
-			nn = K[2]/K[3]*ff_vol;
+			nn = to_double(K[2]/K[3])*ff_vol;
 
 			nn_cyl = sqr(ff_vol)/(8.*M_PI);
 			nn_l	= sqr(ff_vol)*ff_vol/12.; 
@@ -2150,14 +2920,14 @@ test:
 			nn_cyl_alpha = sm->TakeCylinder(ff_vol);
 			nn_l_alpha	 = sm->TakeLayer	 (ff_vol);
 
-			FILE  * TST = fopen("var2_results/hydro3d_homog.dat", "a");
-			fprintf(TST, "ff_vol = %g  vol = %g  nn = %g  nn_cyl = %g/%g  nn_l = %g/%g  (rad = %g  alpha = %g  N_mpls = %i)\n", 
-							  ff_vol, K[3], nn, nn_cyl_alpha, nn_cyl, nn_l_alpha, nn_l, rad, alpha, N0);
-			fclose (TST);
+			FILE * TST = fopen("./bcm_results/hydro3d_homog/hydro3d_homog.dat", "a");
+			if (TST) fprintf(TST, "ff_vol = %g  vol = %g  nn = %g  nn_cyl = %g/%g  nn_l = %g/%g  (rad = %g  alpha = %g  N_mpls = %i)\n", 
+										  ff_vol, to_double(K[3]), nn, nn_cyl_alpha, nn_cyl, nn_l_alpha, nn_l, rad, alpha, N0);
+			if (TST) fclose (TST);
 
 //////////////////
 //..visualization;
-			sprintf(str, "%g", rad); sprintf(buff1, "var2_results/pp_%s", str); sprintf(buff2, "var2_results/vv_%s", str);
+			sprintf(str, "%g", rad); sprintf(buff1, "./bcm_results/hydro3d_homog/pp_%s", str); sprintf(buff2, "./bcm_results/hydro3d_homog/vv_%s", str);
 			if (id_visual) { //..visualization;
 				CGrid_el * nd = new CGrid_el;
 				if (axis == AXIS_Z) {
@@ -2201,20 +2971,20 @@ test:
 					if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 
 				//system("del *.grd");
-				//sm->GetSurferFormat("bb", nd,	     ERR_VALUE, 0, axis);
-				//sm->GetSurferFormat("pp", nd,	PRESSURE_VALUE, 0, axis);
-				//sm->GetSurferFormat("vv", nd, VELOCITY_VALUE, 0, axis);
+				//sm->GetSurferFormat("./bcm_results/hydro3d_homog/bb", nd,	     ERR_VALUE, 0, axis);
+				//sm->GetSurferFormat("./bcm_results/hydro3d_homog/pp", nd,	PRESSURE_VALUE, 0, axis);
+				//sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv", nd, VELOCITY_VALUE, 0, axis);
 
 				sm->GetSurferFormat(buff1, nd,	PRESSURE_VALUE, 0, axis);
 				sm->GetSurferFormat(buff2, nd, VELOCITY_VALUE, 0, axis);
 
-				//sm->GetDataFormat("pp", nd, PRESSURE_VALUE, 0, axis);
-				//sm->GetDataFormat("vv", nd, VELOCITY_VALUE, 0, axis);
+				//sm->GetDataFormat("./bcm_results/hydro3d_homog/pp", nd, PRESSURE_VALUE, 0, axis);
+				//sm->GetDataFormat("./bcm_results/hydro3d_homog/vv", nd, VELOCITY_VALUE, 0, axis);
 				//if (axis == AXIS_Z && ! structure) {
 				//	for (i = 0; i < nd->N;  i++)
 				//	for (j = 0; j < nd->N1; j++) 
 				//		if (sqr(nd->X[i])+sqr(nd->Y[j]) > sqr(rad)) nd->hit[i+j*nd->N] = -1; else nd->hit[i+j*nd->N] = 0;
-				//	sm->GetSurferFormat("vv_analyt", nd, ANALYT_VALUE, 0, axis);
+				//	sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv_analyt", nd, ANALYT_VALUE, 0, axis);
 				//}
 
 /////////////////////////////////////////
@@ -2261,17 +3031,17 @@ test:
 					for (j = 0; j < nd->N1; j++)
 						if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 
-					//sm->GetSurferFormat("bb_I", nd,	    ERR_VALUE, 0, axis_I);
-					sm->GetSurferFormat("pp_I", nd, PRESSURE_VALUE, 0, axis_I);
-					sm->GetSurferFormat("vv_I", nd, VELOCITY_VALUE, 0, axis_I);
+					//sm->GetSurferFormat("./bcm_results/hydro3d_homog/bb_I", nd,	    ERR_VALUE, 0, axis_I);
+					sm->GetSurferFormat("./bcm_results/hydro3d_homog/pp_I", nd, PRESSURE_VALUE, 0, axis_I);
+					sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv_I", nd, VELOCITY_VALUE, 0, axis_I);
 
-					//sm->GetDataFormat("pp_I", nd, PRESSURE_VALUE, 0, axis_I);
-					//sm->GetDataFormat("vv_I", nd, VELOCITY_VALUE, 0, axis_I);
+					//sm->GetDataFormat("./bcm_results/hydro3d_homog/pp_I", nd, PRESSURE_VALUE, 0, axis_I);
+					//sm->GetDataFormat("./bcm_results/hydro3d_homog/vv_I", nd, VELOCITY_VALUE, 0, axis_I);
 					//if (axis_I == AXIS_Z && ! structure) {
 					//	for (i = 0; i < nd->N;  i++)
 					//	for (j = 0; j < nd->N1; j++) 
 					//		if (sqr(nd->X[i])+sqr(nd->Y[j]) > sqr(rad)) nd->hit[i+j*nd->N] = -1; else nd->hit[i+j*nd->N] = 0;
-					//	sm->GetSurferFormat("vv_analyt", nd, ANALYT_VALUE, 0, axis_I);
+					//	sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv_analyt", nd, ANALYT_VALUE, 0, axis_I);
 					//}
 
 					if (id_visual > 2) { 
@@ -2316,17 +3086,17 @@ test:
 						for (j = 0; j < nd->N1; j++)
 							if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
 
-						//sm->GetSurferFormat("bb_II", nd,	     ERR_VALUE, 0, axis_II);
-						sm->GetSurferFormat("pp_II", nd, PRESSURE_VALUE, 0, axis_II);
-						sm->GetSurferFormat("vv_II", nd, VELOCITY_VALUE, 0, axis_II);
+						//sm->GetSurferFormat("./bcm_results/hydro3d_homog/bb_II", nd,	     ERR_VALUE, 0, axis_II);
+						sm->GetSurferFormat("./bcm_results/hydro3d_homog/pp_II", nd, PRESSURE_VALUE, 0, axis_II);
+						sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv_II", nd, VELOCITY_VALUE, 0, axis_II);
 
-						//sm->GetDataFormat("pp_II", nd, PRESSURE_VALUE, 0, axis_II);
-						//sm->GetDataFormat("vv_II", nd, VELOCITY_VALUE, 0, axis_II);
+						//sm->GetDataFormat("./bcm_results/hydro3d_homog/pp_II", nd, PRESSURE_VALUE, 0, axis_II);
+						//sm->GetDataFormat("./bcm_results/hydro3d_homog/vv_II", nd, VELOCITY_VALUE, 0, axis_II);
 						//if (axis_II == AXIS_Z && ! structure) {
 						//	for (i = 0; i < nd->N;  i++)
 						//	for (j = 0; j < nd->N1; j++) 
 						//		if (sqr(nd->X[i])+sqr(nd->Y[j]) > sqr(rad)) nd->hit[i+j*nd->N] = -1; else nd->hit[i+j*nd->N] = 0;
-						//	sm->GetSurferFormat("vv_analyt", nd, ANALYT_VALUE, 0, axis_II);
+						//	sm->GetSurferFormat("./bcm_results/hydro3d_homog/vv_analyt", nd, ANALYT_VALUE, 0, axis_II);
 						//}
 					}
 				}
@@ -2335,22 +3105,363 @@ test:
 		}
 	}
 	delete sm;
+#undef real_T
+}
+#endif
+#ifdef TEST_DRAFT_HEAT2D_INTERMEDIATE_PHASE
+{
+	char * name = "./Parametric/Unit2d_1.nas", * buff;
+//	char * name = "./Box2d_homog/heat_clayer488.nas";
+//	char * name = "./Box2d_homog/heat_cyl_layer1148.nas";
+//	char * name = "./Box2d_homog/heat_ell_layer1174.nas";
+//	char * name = "./Box2d_homog/sph_025_16.nas";
+	int  i, j, l;
+	double X0, Y0, ell_X = 0., ell_Y = 0., rot_Z, ff = 0.2, rr = sqrt(ff/M_PI);
+
+/////////////////////////
+//...model iitialization;
+	CDraft<double> * sm = CreateDraftR(HEAT2D_DRAFT);
+	sm->set_mpls(PackInts(7, 7));	//...space degree of multipoles;
+	sm->set_quad(PackInts(4, 4));	//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);			//...normalization coefficient;
+	sm->set_lagrange(1e-4);			//...Lagrange coefficient for energy;
+	sm->change_solv(SPECIAL_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*PRINT_MODE | FULLY_MODE | MASKS_MODE | ACCUMULATION*/);
+	yes = 0;
+
+//////////////////////////////////
+//...reading model from data-file;
+	CGrid_el * nd = new CGrid_el;
+	if (nd && sm) {
+      sprintf(buf, "Loading model from file '%s'", name);
+      Message(" ");
+      Message(buf);
+      Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+		sm->bar_condit_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(CLAYER_BLOCK);
+
+/////////////////////////////
+//...parameters of inclusion;
+		if (sm->id_prop && sm->pp_cond)
+		for (j = 0; j < sm->id_prop[0]; j++)
+		if (sm->id_prop[j*2+2] == BSOURCE_BND) {
+			X0		= sm->pp_cond[j*6]; 
+			Y0		= sm->pp_cond[j*6+1];
+			ell_X = sm->pp_cond[j*6+2];
+			ell_Y = sm->pp_cond[j*6+3];
+			rot_Z = sm->pp_cond[j*6+4];
+			break;
+		}
+		if (ell_X != 0. && ell_Y != 0.) {
+			CCells * ce = new(CCells);
+			ce->cells_new(1, 2, (l = size_of_map(1, CYL_GENUS))+1);
+			ce->mp[0] = (CMap)ID_MAP(1, CYL_GENUS);
+			ce->mp[1] = X0;
+			ce->mp[2] = Y0;
+			ce->mp[4] = rot_Z/180.*M_PI;
+			ce->mp[7] = ell_X;
+			ce->mp[8] = ell_Y;
+			ce->mp[l] = (CMap)NULL_CELL;
+			sm->bar = new(CCells);
+			sm->bar->bar_add(ce);
+		}
+		Message("Finish!");
+	}
+
+//////////////////////////
+//...homogenization cycle;
+	FILE  * TST = fopen(buff = "heat2D_homog.dat", "w"); 
+	fclose (TST);
+	for (int var = 0; var < 1; var++) {
+		double K1 = 1.,		//...heat conduction (matrix);
+				 K2 = 20.,		//...heat conduction (inclusion);
+				 K3 = 0.01,		//...heat conduction (intermediate);
+				 //K1 = 1.113,	//...heat conduction (matrix);
+				 //K2 = 2.954,	//...heat conduction (inclusion);
+				 //K3 = 0.111,	//...heat conduction (intermediate);
+				 //R1 = rr = sqrt(var*.01/M_PI),	//...inclusion geometry;
+				 R1 = 0.3,								//...inclusion geometry;
+				 R2 = 0.4+var*.01;					//...intermediate geometry; 
+		sm->set_fasa_hmg(R1, R2, K1, K2, K3);
+
+///////////////////////////
+//...solving of the probem;
+		if (sm->computing_kernel(PERIOD_COMPUT/*BASIC_COMPUT*/) != OK_STATE) {
+			Message("Error in sample counting...");
+			delete sm;
+			delete nd;
+
+			goto err;
+		}
+#ifdef ___MPI_INIT___
+		if (sm->solver.id_change == EXTERN_STATE) {
+				CSlvParam params;
+				params.msglev = 3;
+				params.ittype = 2;
+				params.sttype = 1;
+				params.niter = 500;
+				params.eps = 1.0e-7;
+
+				params.tau1 = 1.0e-2;
+				params.tau2 = 1.0e-3;
+				params.theta = 0.10e0;
+
+				char strbuff[256];
+				sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+				std::ofstream fout (strbuff);
+
+				sm->shapes_init(NO_STATE); 
+				BMM_solver pBMM = {& sm->solver, sm, BASIC_COUNTING};
+				AbstractParSolver (& pBMM, 
+										(void *)&comm_mpi,
+										fout, params,
+										Number_of_Blocks, Blocks_Partitioning, 
+										Blocks_Sparsity, Blocks_Row, 
+										Right_Handside, Initial_Guess, Store_Solution);
+				sm->shapes_init(OK_STATE); 
+		}
+#endif
+
+///////////////////
+//..homogenization;
+#ifdef ___MPI_INIT___
+		if (comm_mpi.GetMyid() == 0) 
+#endif
+		{
+			double par[6];	sm->SetGeomBounding(par);
+			double K[6] = {0.,0.,0.,0.,0.,(par[1]-par[0])*.5}, KH, kk, kk_low, kk_max, ff, ff_l;
+
+			sm->GetRigidy(K, -1, BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+			//K[3] = M_PI*R1*R1;      
+			//if (K[5] < R2)
+			//K[4] = R2*R2*(M_PI-4.*acos(K[5]/R2))+4.*K[5]*sqrt(R2*R2-K[5]*K[5])-K[3]; else
+			//K[4] = M_PI*R2*R2-K[3];
+			//K[2] = 1.-K[3]-K[4];  
+
+			ff		 =  K[3]/(K[2]+K[3]+K[4]); //...\EE\E1\FA\B8\EC\ED\E0\FF \E4\EE\EB\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9;
+			ff_l	 =  K[4]/(K[2]+K[3]+K[4]); //...\EE\E1\FA\B8\EC\ED\E0\FF \E4\EE\EB\FF \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF;
+			kk		 =  K[0]/(K[2]+K[3]+K[4]);
+			kk_low = (K[2]+K[3]+K[4])/(K[2]/K1+K[3]/K2+K[4]/K3);
+			kk_max = (K[2]*K1+K[3]*K2+K[4]*K3)/(K[2]+K[3]+K[4]);
+
+			KH = sm->TakeEshelby(ff, ff_l);
+
+			TST = fopen(buff, "a"); //if (R2 > 0.5 || R1 < 0.) kk = -111.;
+			fprintf(TST, "KD = %g  Kl = %g  ff = %g  ff_vol = %g  kk = %g  KH = %g  kk_low = %g  kk_max = %g (%g  %g)\n", K2, K3, ff, ff+ff_l, kk, KH, kk_low, kk_max, R1, R2);
+			fclose (TST);
+
+//////////////////
+//..visualization;
+			int id_visual = 1;
+			if (id_visual) {
+				nd->zero_grid();
+
+				sm->BlockActivate(NULL_STATE);
+
+				int NX = 100, NY = 100;
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				system("del *.grd");
+				//sm->GetSurferFormat("bb", nd,         ERR_VALUE, 0);
+				sm->GetSurferFormat("rr", nd,        HEAT_VALUE, 0);
+				sm->GetSurferFormat("pp", nd, FLUX_COMPOS_VALUE, 0);
+			}
+		}
+	}
+	delete sm;
+	delete nd;
+}
+#endif
+#ifdef TEST_DRAFT_LAME2D_INTERMEDIATE_PHASE
+{
+	char * name = "./Box2d_homog/heat_clayer488.nas";
+	//char * name = "./Box2d_homog/heat_cyl_layer1148.nas";
+	//char * name = "./Box2d_homog/heat_ell_layer1174.nas";
+	//char * name = "./Box2d_homog/sph_025_16.nas";
+	//char * name = "./Parametric/Unit2d_16.nas";
+	int  i, j, l;
+	double X0, Y0, ell_X = 0., ell_Y = 0., rot_Z;
+
+//////////////////////////////////
+//...reading model from data-file;
+	CDraft<double> * sm = CreateDraftR(LAME2D_DRAFT);
+	sm->set_mpls(PackInts(5, 5));//...space degree of multipoles;
+	sm->set_quad(PackInts(4, 2)); //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);			//...normalization coefficient;
+	sm->set_lagrange(1e5);			//...Lagrange coefficient for energy;
+	sm->change_solv(/*PERIODIC_SOLVING*/);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*REGULARIZATION*//*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
+
+///////////////////////////
+//...parameters of problem;
+	double nju1 = 0.300,  //...\EB\E5\E4\FF\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+			 nju2 = 0.100,  //...\EC\E8\ED\E5\F0\E0\EB\FC\ED\E0\FF \F7\E0\F1\F2\E8\F6\E0 (\EF\E5\F1\EE\EA); 
+			 nju3 = 0.499,  //...\E2\EE\E4\E0; 
+			 G1   = 6.0/(1.+nju1)*.5,	//...\EB\E5\E4\FF\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0 (GPa);
+			 G2   = 50./(1.+nju2)*.5,	//...\E2\EA\EB\FE\F7\E5\ED\E8\E5 (\EF\E5\F1\EE\EA, GPa); 
+			 G3   = 1e-0/*5*//(1.+nju3)*.5; //...\EC\E5\E6\E0\E7\ED\FB\E9 \F1\EB\EE\E9 (\E2\EE\E4\E0, GPa); 
+	sm->set_fasa_hmg(nju1, nju2, nju3, G1, G2, G3);
+
+//////////////////////////////////
+//...reading model from data-file;
+	CGrid_el * nd = new CGrid_el;
+	if (nd && sm) {
+      sprintf(buf, "Loading model from file '%s'", name);
+      Message(" ");
+      Message(buf);
+      Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+		sm->bar_condit_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(POLY_BLOCK);
+
+/////////////////////////////////////
+//...reading parameters of inclusion;
+		if (sm->id_prop && sm->pp_cond)
+		for (j = 0; j < sm->id_prop[0]; j++)
+		if (sm->id_prop[j*2+2] == BSOURCE_BND) {
+			X0		= sm->pp_cond[j*6]; 
+			Y0		= sm->pp_cond[j*6+1];
+			ell_X = sm->pp_cond[j*6+2];
+			ell_Y = sm->pp_cond[j*6+3];
+			rot_Z = sm->pp_cond[j*6+4];
+			break;
+		}
+		if (ell_X != 0. && ell_Y != 0. && 0) {
+			CCells * ce = new(CCells);
+			ce->cells_new(1, 2, (l = size_of_map(1, CYL_GENUS))+1);
+			ce->mp[0] = (CMap)ID_MAP(1, CYL_GENUS);
+			ce->mp[1] = X0;
+			ce->mp[2] = Y0;
+			ce->mp[4] = rot_Z/180.*M_PI;
+			ce->mp[7] = ell_X;
+			ce->mp[8] = ell_Y;
+			ce->mp[l] = (CMap)NULL_CELL;
+			sm->bar = new(CCells);
+			sm->bar->bar_add(ce);
+		}
+		Message("Finish!");
+	}
+
+///////////////////////////
+//...solving of the probem;
+		if (sm->computing_kernel(MAPPING_COMPUT) != OK_STATE) {
+			Message("Error in sample counting...");
+			//delete sm;
+			//delete nd;
+
+			//goto err;
+		}
+#ifdef ___MPI_INIT___
+	if (sm->solver.id_change == EXTERN_STATE) {
+			CSlvParam params;
+			params.msglev = 3;
+			params.ittype = 2;
+			params.sttype = 1;
+			params.niter = 500;
+			params.eps = 1.0e-7;
+
+			params.tau1 = 1.0e-2;
+			params.tau2 = 1.0e-3;
+			params.theta = 0.10e0;
+
+			char strbuff[256];
+			sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+			std::ofstream fout (strbuff);
+
+			sm->shapes_init(NO_STATE); 
+			BMM_solver pBMM = {& sm->solver, sm, MAPPING_COUNTING};
+			AbstractParSolver (& pBMM, 
+									(void *)&comm_mpi,
+									fout, params,
+									Number_of_Blocks, Blocks_Partitioning, 
+									Blocks_Sparsity, Blocks_Row, 
+									Right_Handside, Initial_Guess, Store_Solution);
+			sm->shapes_init(OK_STATE); 
+	}
+#endif
+
+//////////////////
+//..visualization;
+	double lambda = 0., RoC = 0., low_lambda = 0.;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+		double par[6];	sm->SetGeomBounding(par);
+/*		double K[8];
+		sm->GetRigidy(K, SPECIAL2COUNTING);
+
+		f_vol	 = K[7]/((par[1]-par[0])*(par[3]-par[2])*(par[5]-par[4]));
+		RoC	 = K[5]+(K[6]-K[5])*f_vol;
+		lambda = K[2]/((par[1]-par[0])*(par[3]-par[2])*(par[5]-par[4]));
+		low_lambda = 1./(1./K[3]+(1./K[4]-1./K[3])*f_vol);
+
+		TST = NULL; OPEN_DEVICE(TST, "homog_15_3D.dat", "a");
+		fprintf(TST, "%g    %g    %g    %g     %g\n", kappa, f_vol, lambda, low_lambda, RoC);
+		fclose (TST);
+/**/
+		int id_visual = ! sm->solver.mode(TESTI_MODE) || 1;
+		if (id_visual && 1) {//..visualization;
+			nd->zero_grid();
+
+			sm->BlockActivate(NULL_STATE);
+
+			int NX = 100, NY = 100;
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) {
+				int hit = -1;
+				sm->Poly_struc_in2D (hit, nd->X[i], nd->Y[j]);
+				sm->StructEllCorrect(hit, nd->X[i], nd->Y[j]);
+				nd->hit[i+j*nd->N] = hit;
+			}
+			if (! sm->solver.mode(TESTI_MODE)) 
+			system("del *.grd");
+
+			sm->GetSurferFormat("bb", nd,       ERR_VALUE, 0);
+			sm->GetSurferFormat("rx", nd,     DISPL_VALUE, 0);
+			sm->GetSurferFormat("ry", nd,     DISPL_VALUE, 1);
+			sm->GetSurferFormat("tx", nd,  STRESS_X_VALUE, 0);
+		}
+	}
+	delete sm;
+	delete nd;
 }
 #endif
 #ifdef TEST_DRAFT_LAME3D_INTERMEDIATE_PHASE
 {
-	double AX = 1., AY = 1., AZ = 1., rad = 0.0895, ll = 0.08;
+		double AX = 1., AY = 1., AZ = 1., rad = 0.0895, ll = 0.08;
 	int i, j;
 
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(LAME3D_DRAFT/*COHES3D_DRAFT*/, 8);
-	sm->set_mpls(PackInts(13, 9)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
-	sm->set_quad(PackInts(8, 4)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
-	sm->set_normaliz(0.92);			//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
+	CDraft<double> * sm = CreateDraftR(LAME3D_DRAFT/*COHES3D_DRAFT*/, 8);
+	sm->set_mpls(PackInts(13, 9));//...space degree of multipoles;
+	sm->set_quad(PackInts(8, 4)); //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);			//...normalization coefficient;
 	sm->change_solv(SPECIAL_SOLVING);
 	sm->solver.change_state(/*EXTERN_STATE*/);
 	sm->solver.set_mode(/*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
 
 //////////////////////
 //...\EF\E0\F0\E0\EC\E5\F2\F0\FB \E7\E0\E4\E0\F7\E8;
@@ -2529,6 +3640,356 @@ test:
 	   }
 	}
 	delete sm;
+
+}
+#endif
+#ifdef TEST_DRAFT_HYDRO3D_INTERMEDIATE_PHASE
+{
+	double par[6], k0 = 0., rad = 0.3, AX = 1., AY = 1., AZ = 1., fm = 1., ff_vol = 0.99;
+	int i, j, k, m, num;
+
+////////////////////////////
+//...\EF\F0\E5\EE\E1\F0\E0\E7\EE\E2\E0\ED\E8\E5 \EE\E1\F0\E0\E7\F6\E0;
+	CDraft<double> * sm = CreateDraftR(HYDRO3D_DRAFT, 8);
+	sm->set_fasa_hmg(k0);			//...Brinkman's coefficient; 
+	sm->set_mpls(PackInts(3, 3)); //...space degree of multipoles;
+	sm->set_quad(PackInts(4, 2)); //...N_elem, N_max -- parameters of quadrature;
+	sm->change_solv(SPECIAL_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(PRINT_MODE/* | FULLY_MODE*/);
+	yes = 0;
+
+	for (int iii = 10; iii < 11; iii += 1) {
+		rad = iii*.01;
+
+		//AX = (AY = sqrt((ff = iii*.01)*fm))/fm;
+
+		if (rad <= AX*.5)
+		sm->GetSphBoxStruct(AX, AX, AX, rad, 0., OK_STATE); else
+		sm->GetPenetrateSphere(rad,  AX*.5);
+		sm->SetBUniStruct(CLAYER_BLOCK, ERR_GENUS);
+		sm->set_geometry (rad);
+	   par[0] = -AX*.5; par[2] = -AY*.5; par[4] = -AZ*.5;
+		par[1] =  AX*.5; par[3] =  AY*.5; par[5] =  AZ*.5;
+
+		//sm->GetCylSphStruct(ff_vol, rad, OK_STATE);
+		//sm->SetBUniStruct(CLAYER_BLOCK);
+		//par[0] = -sm->B[sm->N-1].mp[7]; par[2] = par[0]; par[4] = par[0];
+		//par[1] =  sm->B[sm->N-1].mp[7]; par[3] = par[1]; par[5] = par[1];
+		//par[0] = -sm->B[sm->N-1].mp[7]*M_SQRT_2/sm->get_param(sm->NUM_MPLS+1); par[2] = par[0]; par[4] = par[0];
+		//par[1] =  sm->B[sm->N-1].mp[7]*M_SQRT_2/sm->get_param(sm->NUM_MPLS+1); par[3] = par[1]; par[5] = par[1];
+
+/////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \E7\ED\E0\F7\E5\ED\E8\E9 \E2 \EC\EE\E4\E5\EB\E8;
+		int id_action = 0;
+		if (id_action) {
+			double pp[6] = { 0., 0., 0., 0., 0., 0.},
+					 po[6] = { 1., 0., 0., 0., 0., 0.};
+
+			for (k = 0; k < sm->N; k++) 
+			LOOP_FACET(sm->B[k].bar, num, m) {
+				sm->B[k].bar->SetFacetXParam(num, par[0], pp, ADHESION_BND);
+				sm->B[k].bar->SetFacetXParam(num, par[1], pp, ADHESION_BND);
+
+				sm->B[k].bar->SetFacetYParam(num, par[2], pp, ADHESION_BND);
+				sm->B[k].bar->SetFacetYParam(num, par[3], pp, ADHESION_BND);
+
+				sm->B[k].bar->SetFacetZParam(num, par[4], po, PRESSURE_BND);
+				sm->B[k].bar->SetFacetZParam(num, par[5], pp, PRESSURE_BND);
+			}
+		}
+
+///////////////////////////
+//...solving of the probem;
+		if (sm->computing_kernel(PERIOD_COMPUT/*BASIC_COMPUT*//*SPECIAL_COMPUT*/) != OK_STATE) {
+			Message("Error in sample counting...");
+			delete sm;
+			goto err;
+		}
+
+////////////////////////////////////////////////////////////////
+//..\E2\FB\F7\E8\F1\EB\FF\E5\EC \EE\F1\F0\E5\E4\ED\E5\ED\ED\FB\E5 \F5\E0\F0\E0\EA\F2\E5\F0\E8\F1\F2\E8\EA\E8 (\F2\E5\ED\E7\EE\F0 \EF\F0\EE\ED\E8\F6\E0\E5\EC\EE\F1\F2\E8);
+		double K[4], nn, nn_cyl, nn_l; memset(K, 0, 4*sizeof(double));
+		sm->GetRigidy(K, -1,  BASIC_COMPUT); 	
+
+		//ff_vol = K[3]/(AX*AY*AZ);
+		//if (AX*.5 > rad)
+		//ff_vol = 1.-4./3.*M_PI*rad/AX*rad/AY*rad/AZ; else
+		//ff_vol = 1.-2.*M_PI*(3.*rad/AY*rad/AZ*.5-.125-4./3.*rad/AX*rad/AY*rad/AZ);
+		//nn = G0*K[2]/(AX*AY*AZ);
+
+		nn = K[2]/K[3];
+		ff_vol = 4./3.*M_PI*(par[1]*sqr(par[1])-rad*sqr(rad));
+
+		//memset(K, 0, 4*sizeof(double)); sm->GetRigidy(K, -1,  VOLUME_COUNTING); 	
+		//nn = G0*K[2]/K[3];
+
+ 		nn_cyl = sqr(ff_vol)/(8.*M_PI);
+		nn_l = sqr(ff_vol)*ff_vol/12.;
+
+		FILE  * TST = fopen("hydro3D_homog.dat", "a");
+		fprintf(TST, "ff_vol = %g  nn = %g  nn_cyl = %g  nn_l = %g  (AX = %g  AY = %g  k0 = %g)\n", ff_vol, nn, nn_cyl, nn_l, AX, AY, k0);
+		fclose (TST);
+
+//////////////////////////////////////////
+//..\F2\E5\F1\F2\E8\F0\F3\E5\EC \E3\F0\E0\ED\E8\F7\ED\FB\E5 \E7\ED\E0\F7\E5\ED\E8\FF \ED\E0 \F1\F4\E5\F0\E5;
+		int id_testin = 0;
+		if (id_testin) {
+			CGrid_el	* nd = new CGrid_el;                                      
+			int NX = 40, NY = 40;
+			for (i = 0; i <= 2*NX; i++) 
+			for (j = 0; j <= 2*NY; j++) {
+				double Co = cos((M_PI*i)/NX*.5+M_PI*.25),
+						 Si = sin((M_PI*i)/NX*.5+M_PI*.25),
+						 C2 = cos((M_PI*j)/NY+M_PI*.25),
+						 S2 = sin((M_PI*j)/NY+M_PI*.25);
+				nd->add_new_point(rad*Si*C2, rad*Si*S2, rad*Co, Si*C2, Si*S2, Co);
+			}
+			double out_F[3], eps = 1e-12, vv_resi_R0 = 0., dd;
+			FILE * TST = fopen("vv_resi_R0.dat", "w");
+			for (i = 1; i < nd->N; i++) {
+				sm->GetFuncAllValues (nd->X[i], nd->Y[i], nd->Z[i], out_F, 0, VELOCITY_VALUE);
+				fprintf(TST, " %i  %g  %g  %g  (norm = %g)\n", i, 
+					filtr_(out_F[0], eps), filtr_(out_F[1], eps), 
+					filtr_(out_F[2], eps), sqrt(sqr(out_F[0])+sqr(out_F[1])+sqr(out_F[2])));
+				if (vv_resi_R0 < (dd = sqrt(sqr(out_F[0])+sqr(out_F[1])+sqr(out_F[2])))) vv_resi_R0 = dd;
+			}
+			fclose(TST);
+			delete nd;
+			TST = fopen("all_resi.dat", "w");
+			fprintf(TST, " vv_resi_R0 =  %g", vv_resi_R0); 
+			fclose(TST);
+		}
+
+//////////////////
+//..visualization;
+		int id_visual = 1;
+		if (id_visual) {
+			CGrid_el	* nd = new CGrid_el;
+			int NX = 100, NY = 100, axis = AXIS_Y; double alpha = 0;
+
+			if (axis == AXIS_Z) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+				nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+alpha)*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+			}
+			if (axis == AXIS_Y) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+				nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+alpha)*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+			}
+			if (axis == AXIS_X) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+				nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+alpha)*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+			}
+			//for (i = 0; i < nd->N;  i++)
+			//for (j = 0; j < nd->N1; j++) 
+			//if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad) ||
+			//	 sqr(nd->X[i]-1.)+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad) ||
+			//	 sqr(nd->X[i]-1.)+sqr(nd->Y[j]-1.)+sqr(nd->Z[0]) < sqr(rad) ||
+			//	 sqr(nd->X[i])+sqr(nd->Y[j]-1.)+sqr(nd->Z[0]) < sqr(rad) ||
+			//	 sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]-1.) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) 
+				if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad) /*||
+					 sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) > sqr(par[0])*/) nd->hit[i+j*nd->N] = -1;
+
+			system("del *.grd");
+			//sm->GetSurferFormat("bb", nd,		  ERR_VALUE, 0, axis);
+			sm->GetSurferFormat("pp", nd,	PRESSURE_VALUE, 0, axis);
+			sm->GetSurferFormat("vv", nd, VELOCITY_VALUE, 0, axis);
+
+//////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\E0\FF \EF\EB\EE\F1\EA\EE\F1\F2\FC;
+			for (i = 0; i <= 2*NX; i++) nd->X[i] = (.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->Y[j] = (.5*j/NY*(par[3]-par[2])+par[2]);
+			nd->Z[0] = (par[4]+(par[5]-par[4])*(1.+alpha)*.5);
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) 
+				if (sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad) ||
+				 sqr(nd->X[i]-1.)+sqr(nd->Y[j])+sqr(nd->Z[0]) < sqr(rad) ||
+				 sqr(nd->X[i]-1.)+sqr(nd->Y[j]-1.)+sqr(nd->Z[0]) < sqr(rad) ||
+				 sqr(nd->X[i])+sqr(nd->Y[j]-1.)+sqr(nd->Z[0]) < sqr(rad) ||
+				 sqr(nd->X[i])+sqr(nd->Y[j])+sqr(nd->Z[0]-1.) < sqr(rad)) nd->hit[i+j*nd->N] = -1;
+				else																		 nd->hit[i+j*nd->N] =  0;
+			//sm->GetSurferFormat("pp_dop", nd, PRESSURE_VALUE, 0, AXIS_Z);
+			//sm->GetSurferFormat("vv_dop", nd, VELOCITY_VALUE, 0, AXIS_Z);
+
+			delete nd;
+		}
+	}
+	delete sm;
+}
+#endif
+#ifdef TEST_DRAFT_HEAT3D_FROM_FEMAP
+{
+	char * name = "./Parametric/Unit3d_001.nas";
+	double par[6];
+	int i, j, k, m, num;
+
+//////////////////////
+//...\EF\E0\F0\E0\EC\E5\F2\F0\FB \EC\EE\E4\E5\EB\E8;
+	CDraft<double> * sm = CreateDraftR(HEAT3D_DRAFT, 7);
+	sm->set_fasa_hmg(1., 1.);		  //...\EC\EE\E4\F3\EB\FC \F2\E5\EF\EB\EE\EF\F0\EE\E2\EE\E4\ED\EE\F1\F2\E8; 
+	sm->set_mpls(PackInts(1, 1));   //...space degree of multipoles;
+	sm->set_quad(PackInts(4, 2));   //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);			  //...normalization coefficient;
+	sm->set_lagrange(1e3);			  //...Lagrange coefficient; 
+	sm->change_solv(ENERGY_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
+
+///////////////////////////////////////////////////////
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
+	if (sm) {
+		Message(" ");
+		sprintf(buf, "Loading model from file '%s'", name);
+		Message(buf);
+		Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+      sm->bar_condit_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(POLY_BLOCK);
+		sm->SetGeomBounding(par);
+
+		Message("Finish!");
+	}
+
+/////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \E7\ED\E0\F7\E5\ED\E8\E9 \E2 \EC\EE\E4\E5\EB\E8;
+	int id_action = 1;
+	if (id_action) {
+		double pp[6] = { 1., 0., 0., 0., 0., 0.},
+				 po[6] = { 0., 0., 0., 0., 0., 0.};
+		sm->BlockActivate();
+		for (k = 0; k < sm->N; k++) 
+		LOOP_FACET(sm->B[k].bar, num, m) {
+			sm->B[k].bar->SetFacetXParam(num, par[0], po, RIGID_BND);
+			sm->B[k].bar->SetFacetXParam(num, par[1], po, RIGID_BND);
+
+			sm->B[k].bar->SetFacetYParam(num, par[2], po, RIGID_BND);
+			sm->B[k].bar->SetFacetYParam(num, par[3], po, RIGID_BND);
+
+			sm->B[k].bar->SetFacetZParam(num, par[4], pp, FORCEN_BND);
+			sm->B[k].bar->SetFacetZParam(num, par[5], po, DISPLN_BND);
+		}
+	}
+
+////////////////////////////
+//...solving of the problem;
+	if (sm->computing_kernel(BASIC_COMPUT) != OK_STATE) {
+		Message("Error in sample counting...");
+		delete sm;
+		goto err;
+	}
+#ifdef ___MPI_INIT___
+	if (sm->solver.id_change == EXTERN_STATE) {
+		CSlvParam params;
+		params.msglev = 2;
+		params.ncycle = 1;
+		params.ncpuext = 1;
+		params.decomptype = 1;
+
+		params.ittype = 2;
+		params.sttype = 1;
+		params.niter = 400;
+		params.eps = 1.0e-9;
+
+		params.tau1 = 1.0e-2;
+		params.tau2 = 1.0e-3;
+		params.theta= 0.10e0;
+
+		char strbuff[256];
+		sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+		std::ofstream fout (strbuff);
+
+		sm->shapes_init(NO_STATE); 
+		BMM_solver pBMM = {& sm->solver, sm, BASIC_COUNTING};
+		AbstractParSolver (& pBMM, 
+								(void *)&comm_mpi,
+								fout, params,
+								Number_of_Blocks, Blocks_Partitioning,	Blocks_Sparsity,  
+								Blocks_Row, Right_Handside, Initial_Guess, Store_Solution);
+		sm->shapes_init(OK_STATE); 
+	}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+		int id_visual = 1;
+		if (id_visual) {
+			CGrid_el * nd = new CGrid_el;
+			int NX = 100, NY = 100, axis;
+
+			sm->BlockActivate();
+
+#ifdef ___LONGITUDINAL_SECTIOM___
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+			nd->add_new_point_Z((par[5]+par[4])*.5);
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) {
+				int hit = -1;
+				sm->Poly_struc_in3D (hit, nd->X[i], nd->Y[j], nd->Z[0]);
+				nd->hit[i+j*nd->N] = hit;
+			}
+			axis = AXIS_Z;
+#else
+			if (1) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+				nd->add_new_point_Z((par[3]+par[2])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->Y[j], nd->Z[0], nd->X[i]);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_Y;
+			}
+			else {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+				nd->add_new_point_Z((par[1]+par[0])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->Z[0], nd->X[i], nd->Y[j]);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_X;
+			}
+#endif
+			system("del *.grd");
+			sm->GetSurferFormat("rr", nd,	HEAT_VALUE, 0, axis);
+			sm->GetSurferFormat("pp", nd, FLUX_VALUE, 0, axis);
+			delete nd;
+		}
+	}
+	delete sm;
 }
 #endif
 #ifdef TEST_DRAFT_LAME2D_FROM_FEMAP
@@ -2539,28 +4000,29 @@ test:
 	//char * name = "./Parametric/Unit2d_16.nas";
 
 //////////////////////////
-//...;
-	CDraft<double> * sm = CreateDraft(LAME2D_DRAFT);
-	sm->set_mpls(PackInts(7, 5)); //...;
-	sm->set_quad(PackInts(16, 8)); //...;
-	sm->set_normaliz(0.92);			  //...;
-	sm->set_lagrange(1e5);			  //...; 
+//...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
+	CDraft<double> * sm = CreateDraftR(LAME2D_DRAFT);
+	sm->set_mpls(PackInts(7, 5));   //...space degree of multipoles;
+	sm->set_quad(PackInts(16, 8));  //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);			  //...normalization coefficient;
+	sm->set_lagrange(1e5);			  //...Lagrange coefficient; 
 	sm->change_solv(PERIODIC_SOLVING);
 	sm->solver.change_state(/*EXTERN_STATE*/);
 	sm->solver.set_mode(/*REGULARIZATION*//*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
 
 //////////////////////
-//...;
-	double nju1 = 0.300,  //...; 
-			 nju2 = 0.100,  //...); 
-			 nju3 = 0.499,  //...; 
-			 G1   = 6.0/(1.+nju1)*.5,	//...(GPa);
-			 G2   = 50./(1.+nju2)*.5,	//...GPa); 
-			 G3   = 1e-05/(1.+nju3)*.5; //...GPa); 
+//...\EF\E0\F0\E0\EC\E5\F2\F0\FB \E7\E0\E4\E0\F7\E8;
+	double nju1 = 0.300,  //...\EB\E5\E4\FF\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+			 nju2 = 0.100,  //...\EC\E8\ED\E5\F0\E0\EB\FC\ED\E0\FF \F7\E0\F1\F2\E8\F6\E0 (\EF\E5\F1\EE\EA); 
+			 nju3 = 0.499,  //...\E2\EE\E4\E0; 
+			 G1   = 6.0/(1.+nju1)*.5,	//...\EB\E5\E4\FF\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0 (GPa);
+			 G2   = 50./(1.+nju2)*.5,	//...\E2\EA\EB\FE\F7\E5\ED\E8\E5 (\EF\E5\F1\EE\EA, GPa); 
+			 G3   = 1e-05/(1.+nju3)*.5; //...\EC\E5\E6\E0\E7\ED\FB\E9 \F1\EB\EE\E9 (\E2\EE\E4\E0, GPa); 
 	sm->set_fasa_hmg(nju1, nju2, nju3, G1, G2, G3);
 
 //////////////////////////////////////////////////////////////////////////////////////
-//...;
+//...\E2\FB\F7\E8\F1\EB\E5\ED\E8\E5 \EF\EE\EF\F0\E0\E2\EA\E8 \EA \F4\EE\F0\EC\F3\EB\E5 \F1\EC\E5\F1\E8 \E4\EB\FF \EF\F0\EE\E4\EE\EB\FC\ED\EE\E3\EE \EC\EE\E4\F3\EB\FF \E6\E5\F1\F2\EA\EE\F1\F2\E8 \E2\E4\EE\EB\FC \F1\EB\EE\E5\E2;
 //{	double c0 = 0.5, nj1 = 0.3, nj2 = 0.49, E1 = 1., E2 = 10, 
 //			 k1 = E1*(1.-nj1)/((1.-2.*nj1)*(1.+nj1)), lm1 = nj1*k1/(1.-nj1),
 //			 k2 = E2*(1.-nj2)/((1.-2.*nj2)*(1.+nj2)), lm2 = nj2*k2/(1.-nj2), eps, k_eff, k_low;
@@ -2569,10 +4031,10 @@ test:
 //	k_eff = k1*(1.-c0)+k2*c0;
 //	return(0);
 //}
-//...;
+//...\EA\EE\ED\E5\F6 \E2\FB\F7\E8\F1\EB\E5\ED\E8\FF\EC;
 ///////////////////////
 ///////////////////////////////////////////////////////
-//...;
+//...    \F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
 	if (sm) {
 		sprintf(buf, "Loading model from file '%s'", name);
 		Message(" ");
@@ -2587,7 +4049,7 @@ test:
 	}
 
 ////////////////////
-//...;
+//...\F0\E5\F8\E5\ED\E8\E5 \E7\E0\E4\E0\F7\E8;
 	if (sm->computing_kernel(MAPPING_COMPUT) != OK_STATE) {
 		Message("Error in sample counting...");
 		delete sm;
@@ -2649,6 +4111,199 @@ test:
 	delete nd;
 }
 #endif
+#ifdef TEST_DRAFT_LAME3D_FROM_FEMAP
+{
+	char * name = "./Box3d_homog/nano_35x25x246_octa.nas";
+	int i, j, k, m, num;
+
+///////////////////////////////////
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
+	CDraft<double> * sm = CreateDraftR(LAME3D_DRAFT, 7);
+	sm->set_mpls(PackInts(1, 1));   //...space degree of multipoles;
+	sm->set_quad(PackInts(2, 2));   //...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);			  //...normalization coefficient;
+	sm->set_lagrange(1e5);			  //...Lagrange coefficient; 
+	sm->change_solv(/*ENERGY_SOLVING*/);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
+
+///////////////////////////////////////////////////////
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
+	if (sm) {
+		sprintf(buf, "Loading model from file '%s'", name);
+		Message(" ");
+		Message(buf);
+		Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(POLY_BLOCK);
+
+		Message("Finish!");
+	}
+	double par[6];	sm->SetGeomBounding(par);
+
+////////////////////////////////////////
+//...\E7\E0\E4\E0\E5\EC \E3\F0\E0\ED\E8\F7\ED\FB\E5 \E7\ED\E0\F7\E5\ED\E8\FF \E2 \EC\EE\E4\E5\EB\E8;
+	int id_action = 1;
+	if (id_action) {
+		sm->BlockActivate();
+		double pp[6] = {     0., 0., 0., 0., 0., 0.},
+				 po[6] = {-par[0], 0., 0., 0., 0., 0.};
+		for (k = 0; k < sm->N; k++) 
+		LOOP_FACET(sm->B[k].bar, num, m) {
+			sm->B[k].bar->SetFacetXParam(num, par[0], pp, FSKEWS_BND);
+			sm->B[k].bar->SetFacetXParam(num, par[1], pp, FSKEWS_BND);
+
+			sm->B[k].bar->SetFacetYParam(num, par[2], pp, FSKEWS_BND);
+			sm->B[k].bar->SetFacetYParam(num, par[3], pp, FSKEWS_BND);
+
+			sm->B[k].bar->SetFacetZParam(num, par[4], po, FSKEWS_BND);
+			sm->B[k].bar->SetFacetZParam(num, par[5], pp, FSKEWS_BND);
+		}
+	}
+/////////////////////////////////////////
+//...\F3\F1\F2\E0\ED\E0\E2\EB\E8\E2\E0\E5\EC \E3\F0\E0\ED\E8\F7\ED\F3\FE \EF\EE\E2\E5\F0\F5\ED\EE\F1\F2\FC;
+/*	double rr0 = 0.25,
+			 fff = M_PI*rr0*rr0,
+			 rrr = pow(fff*.75/M_PI, 1./3.), 
+			 rr1 = 0.5-rrr,
+			 rr2 = 0.5-rrr*M_SQRT_2,
+			 rr3 = 0.5-rrr/sqrt(3.); rrr = rr0;
+
+	if (0) sm->add_sph_surface(-rrr, 0.5, 0.5, 0.5);
+	if (0) {
+		sm->add_cyl_surface(2.7, 30.-2.7, 12.-2.7, 50.);
+		sm->add_cyl_surface(-6., 12.+ 6., 12.+ 6., 50.);
+		sm->add_cyl_surface(2.7, 12.-2.7, 40.-2.7, 50.);
+	}
+	if (0) {
+		sm->add_cyl_surface(-1., 0., 0., 0.);
+		sm->add_cyl_surface( 2., 0., 0., 0.);
+	}
+*/
+///////////////////////////
+//...parameters of problem;
+	double nj1 = 0.4999,	//...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+			 nj2 = 0.30,	//...\E3\F0\E0\F4\E8\F2\EE\E2\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5; 
+			 nj3 = 0.30,   //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9; 
+			 E1  = 0.000135,
+			 E2  = 0.031, 
+			 E3  = 0.015; 
+	sm->set_fasa_hmg(nj1, nj2, E1/(1.+nj1)*.5, E2/(1.+nj2)*.5, nj3, E3/(1.+nj1)*.5);
+
+////////////////////////////
+//...solving of the problem;
+	if (sm->computing_kernel(BASIC_COMPUT/*MAPPING_COMPUT*/) != OK_STATE) {
+		Message("Error in sample counting...");
+		if (sm) delete sm;
+		goto err;
+	}
+#ifdef ___MPI_INIT___
+		if (sm->solver.id_change == EXTERN_STATE) {
+			CSlvParam params;
+			params.msglev = 2;
+			params.ncycle = 1;
+			params.ncpuext = 1;
+			params.decomptype = 1;
+
+			params.ittype = 2;
+			params.sttype = 1;
+			params.niter = 1000;
+			params.eps = 1.0e-9;
+
+			params.tau1 = 1.0e-2;
+			params.tau2 = 1.0e-3;
+			params.theta= 0.10e0;
+
+			char strbuff[256];
+			sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+			std::ofstream fout (strbuff);
+
+			sm->shapes_init(NO_STATE); 
+			BMM_solver pBMM = {& sm->solver, sm, BASIC_COUNTING};
+			AbstractParSolver (& pBMM, 
+									(void *)&comm_mpi,
+									fout, params,
+									Number_of_Blocks, Blocks_Partitioning,	Blocks_Sparsity,  
+									Blocks_Row, Right_Handside, Initial_Guess, Store_Solution);
+			sm->shapes_init(OK_STATE); 
+		}
+#endif
+//	sm->block_descrap("Descrapency.sta");
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+		int id_visual = 1;
+		if (id_visual) {
+			CGrid_el * nd = new CGrid_el;
+			int NX = 100, NY = 100, axis;
+
+			sm->BlockActivate();
+
+#ifdef ___LONGITUDINAL_SECTIOM___
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+			nd->add_new_point_Z((par[5]+par[4])*.5);
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) {
+				int hit = -1;
+				sm->Poly_struc_in3D (hit, nd->X[i], nd->Y[j], nd->Z[0]);
+				nd->hit[i+j*nd->N] = hit;
+			}
+			axis = AXIS_Z;
+#else
+			if (1) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+				nd->add_new_point_Z((par[3]+par[2])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->Y[j], nd->Z[0], nd->X[i]);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_Y;
+			}
+			else {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+				nd->add_new_point_Z((par[1]+par[0])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->Z[0], nd->X[i], nd->Y[j]);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_X;
+			}
+#endif
+			system("del *.grd");
+			sm->GetSurferFormat("bb", nd,	     ERR_VALUE, 0, axis);
+			sm->GetSurferFormat("rr", nd,    DISPL_VALUE, 0, axis);
+			sm->GetSurferFormat("tz", nd, STRESS_Z_VALUE, 0, axis);
+			
+			delete nd;
+		}
+	}
+	delete sm;
+}
+#endif
 #ifdef TEST_DRAFT_COHES2D_FROM_FEMAP
 {
 	//char * name_ini = "./Models_inp/Box2D_sph/sph_009_84.inp";
@@ -2666,7 +4321,7 @@ test:
 
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(COHES2D_DRAFT, 8);
+	CDraft<double> * sm = CreateDraftR(COHES2D_DRAFT, 8);
 	sm->set_mpls(PackInts(2, 2)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(8, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(0.92);
@@ -2674,6 +4329,7 @@ test:
 	sm->change_solv(E_PERIODIC_SOLVING);
 	sm->solver.change_state(OK_STATE/*EXTERN_STATE*/);
 	sm->solver.set_mode(/*REGULARIZATION*//*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
 
 ///////////////////////////
 //...parameters of problem;
@@ -2766,14 +4422,14 @@ test:
 		std::ofstream fout (strbuff);
 
 		sm->shapes_init(NO_STATE); 
-		BMM_solver pBMM = {& sm->solver, sm, MAPPING_COUNTING};
-//		AbstractSolver		(& pBMM, 
-		AbstractParSolver (& pBMM, 
+		BCM_draft<double> pBCM = {sm, MAPPING_COMPUT};
+		//AbstractSolver		(& pBCM, 
+		AbstractParSolver (& pBCM, 
 								(void *)&comm_mpi,
 								fout, params,
-								Number_of_Blocks, Blocks_Partitioning, 
-								Blocks_Sparsity, Blocks_Row, 
-								Right_Handside, Initial_Guess, Store_Solution);
+								Number_of_Blocks<double>, Blocks_Partitioning<double>, 
+								Blocks_Sparsity<double>, Blocks_Row<double>, 
+								Right_Handside<double>, Initial_Guess<double>, Store_Solution<double>);
 		sm->shapes_init(OK_STATE); 
 	}
 #endif	
@@ -2829,7 +4485,7 @@ test:
 	delete sm;
 }
 #endif
-#ifdef TEST_CCOHES2D_CONSTRUCTION_FROM_FEMAP
+#ifdef TEST_DRAFT_COHES2D_CONSTRUCTION_FROM_FEMAP
 {
 ///////////////////////////
 //...parameters of problem;
@@ -2942,7 +4598,7 @@ test:
 
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(MINDL2D_DRAFT, 8);
+	CDraft<double> * sm = CreateDraftR(MINDL2D_DRAFT, 8);
 	sm->set_mpls(PackInts(3, 3)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(16, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(0.92);
@@ -2950,6 +4606,7 @@ test:
 	sm->change_solv(E_PERIODIC_SOLVING);
 	sm->solver.change_state(/*EXTERN_STATE*/);
 	sm->solver.set_mode(/*REGULARIZATION*//*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
 
 ///////////////////////////
 //...parameters of problem;
@@ -3041,14 +4698,14 @@ test:
 		std::ofstream fout (strbuff);
 
 		sm->shapes_init(NO_STATE); 
-		BMM_solver pBMM = {& sm->solver, sm, MAPPING_COMPUT};
-//		AbstractSolver		(& pBMM, 
-		AbstractParSolver (& pBMM, 
+		BCM_draft<double> pBCM = {sm, MAPPING_COMPUT};
+		//AbstractSolver		(& pBCM, 
+		AbstractParSolver (& pBCM, 
 								(void *)&comm_mpi,
 								fout, params,
-								Number_of_Blocks, Blocks_Partitioning, 
-								Blocks_Sparsity, Blocks_Row, 
-								Right_Handside, Initial_Guess, Store_Solution);
+								Number_of_Blocks<double>, Blocks_Partitioning<double>, 
+								Blocks_Sparsity<double>, Blocks_Row<double>, 
+								Right_Handside<double>, Initial_Guess<double>, Store_Solution<double>);
 		sm->shapes_init(OK_STATE); 
 	}
 #endif	
@@ -3127,18 +4784,133 @@ test:
 	delete sm;
 }
 #endif
+#ifdef TEST_DRAFT_HEAT3D_SPHEROID
+{
+	double par[6], RR = 1., rr = 1., AA = 3.;
+
+//////////////////////////
+//...model initialization;
+	CHeat3D * sm = new CHeat3D(7);
+	sm->set_mpls(PackInts(1, 1)); //...multipoles degree;
+	sm->set_quad(PackInts(8, 4));
+	sm->set_normaliz(0.92);
+	sm->change_solv(SPECIAL_SOLVING);
+	sm->solver.set_mode(/*REDUCED_PRINT*/PRINT_MODE/*FULLY_MODE*/);
+	yes = 0;
+
+//////////////////////
+//...\EF\E0\F0\E0\EC\E5\F2\F0\FB \E7\E0\E4\E0\F7\E8;
+	double K1 = 1.,	 //...heat conduction (matrix);
+			 K2 = 2.;	 //...heat conduction (inclusion);
+	sm->set_fasa_hmg(RR, rr, K1, K2, K2);
+
+for (int j = 1; j <= 1; j++) {
+///////////////////////
+//...\E3\E5\EE\EC\E5\F2\F0\E8\FF \EE\E1\EB\E0\F1\F2\E8;
+	sm->GetSpheroidBoxStruct(AA, AA, AA, RR, rr); sm->B[1].type = ESHE_ZOOM_BLOCK;
+	par[0] = -AA*.5; par[2] = -AA*.5; par[4] = -AA*.5;
+	par[1] =  AA*.5; par[3] =  AA*.5; par[5] =  AA*.5;
+
+///////////////////////////
+//...solving of the probem;
+	if (sm->counting_kernel(ESHELBY_COUNTING) != OK_COUNTING) {
+		Message("Error in sample counting...");
+		delete sm;
+		goto err;
+	}
+
+///////////////////////////////////////////////////////////////////////
+//..\E2\FB\F7\E8\F1\EB\FF\E5\EC \EE\F1\F0\E5\E4\ED\E5\ED\ED\FB\E5 \F5\E0\F0\E0\EA\F2\E5\F0\E8\F1\F2\E8\EA\E8 (\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E8 \EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0);
+	//double K[28], E0, K0, nu, mu, C0, lm, ff_vol, ll_vol; memset(K, 0, 28*sizeof(double)); K[27] = AX*.5;
+	//sm->GetRigidy(K, -1, VOLUME_COUNTING); for (i = 0; i < 25; i++) K[i] = -K[i];
+	//sm->GetRigidy(K, -1, BASIC_COUNTING);
+	//sm->GetRigidy(K, -1, COVERING_COUNTING);
+
+	//ff_vol = K[25]/(K[24]+K[25]+K[26]);
+	//ll_vol = K[26]/(K[24]+K[25]+K[26]);
+
+	//C0 = (K[5]-2.*K[0]*K[6]/(K[6]+K[11]))/(K[11]-2.*K[6]*K[6]/(K[6]+K[11]));
+	//lm = (K[0]-C0*K[6])/(K[6]+K[11]);
+	//nu = lm/(C0+lm);
+	//E0 = (C0-lm)*(C0+2.*lm)/(C0+lm);
+	//K0 = E0/(3.*(1.-2.*nu));
+	//mu = K[15]/K[21]*.5;
+	//FILE  * TST = fopen("lame3D_homog2.dat", "a");
+	//fprintf(TST, "ff_vol+ll_vol = %g  KH = %g  EH = %g  mH = %g  nH = %g (%g, %g, %g, %g, %g, %g, %g)\n", 						 
+	//				  ff_vol+ll_vol, KH, EH, mH, nH, rad, E2, E3, E1, nj2, nj3, nj1);
+	//fclose (TST);
+}
+
+//////////////////
+//..visualization;
+	int id_visual = 1;
+	if (id_visual) {
+		CGrid_el	* nd = new CGrid_el;
+		int NX = 100, NY = 100, axis = AXIS_Y, alpha = 0, i, j;
+
+		if (axis == AXIS_Z) {
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+			nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+alpha)*.5);
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+		}
+		if (axis == AXIS_Y) {
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+			nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+alpha)*.5);
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+		}
+		if (axis == AXIS_X) {
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+			nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+alpha)*.5);
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+		}
+		for (i = 0; i < nd->N;  i++)
+		for (j = 0; j < nd->N1; j++) {
+			double X, Y, Z;
+			if (axis == AXIS_Z) {
+				X = nd->X[i]; Y = nd->Y[j]; Z = nd->Z[0];
+			}
+			else
+			if (axis == AXIS_Y) {
+				X = nd->Y[j]; Y = nd->Z[0]; Z = nd->X[i];
+			}
+			else
+			if (axis == AXIS_X) {
+				X = nd->Z[0]; Y = nd->X[i]; Z = nd->Y[j];
+			}
+			if (RR == 0. || rr == 0.) nd->hit[i+j*nd->N] = 0; else
+			if (sqr(X/rr)+sqr(Y/rr)+sqr(Z/RR) < 1.) nd->hit[i+j*nd->N] = 0; 
+			else	nd->hit[i+j*nd->N] = 1;	
+		}
+
+		system("del *.grd");
+		sm->GetSurferFormat("rr", nd,	HEAT_VALUE, 0, axis);
+		sm->GetSurferFormat("rz", nd,	HEAT_ESHE_VALUE, 0, axis);
+		sm->GetSurferFormat("tz", nd, FLUX_ESHE_VALUE, 0, axis);
+
+		delete nd;
+	}
+	delete sm;
+}
+#endif
 #ifdef TEST_DRAFT_LAME3D_SPHEROID
 {
 	double RR = 1., rr = 0.7, AA = 3.;
 
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(LAME3D_DRAFT, 8);
+	CDraft<double> * sm = CreateDraftR(LAME3D_DRAFT, 8);
 	sm->set_mpls(PackInts(11, 1)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(8, 4)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(0.92);			//...\ED\EE\F0\EC\E8\F0\F3\FE\F9\E8\E9 \EC\ED\EE\E6\E8\F2\E5\EB\FC;
 	sm->change_solv(/*SPECIAL_SOLVING*/);
 	sm->solver.set_mode(/*REDUCED_PRINT*//*PRINT_MODE*//*FULLY_MODE*/);
+	yes = 0;
 
 //////////////////////
 //...\EF\E0\F0\E0\EC\E5\F2\F0\FB \E7\E0\E4\E0\F7\E8;
@@ -3218,6 +4990,1482 @@ test:
 		sm->GetSurferFormat("tz", nd, STRESS_Z_ESHE_VALUE, 0, axis);
 
 		delete nd;
+	}
+	delete sm;
+}
+#endif
+#ifdef HEAT2D_RANDOM_STRUCTURE
+{
+	char * name = "./Parametric/Unit2d_4.nas";
+	int  i, j, l;
+
+///////////////////////////
+//...parameters of problem;
+	double K1 = 1.,		//...heat conduction (matrix);
+			 K2 = 20.,		//...heat conduction (inclusion);
+			 K3 = 0.01,		//...heat conduction (intermediate);
+			 R1 = 0.3/2.,	//...inclusion geometry;
+			 R2 = 0.4/2.;	//...intermediate geometry; 
+
+//////////////////////////
+//...model initialization;
+	CDraft<double> * sm = CreateDraftR(HEAT2D_DRAFT);
+	sm->set_fasa_hmg(R1, R2, K1, K2, K3);	//...parameters of problem;
+	sm->set_mpls(PackInts(7, 7));				//...space degree of multipoles;
+	sm->set_quad(PackInts(8, 16));			//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);						//...normalization coefficient;
+	sm->set_lagrange(1e-4);						//...Lagrange coefficient for energy;
+	sm->change_solv(PERIODIC_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*REGULARIZATION*//*PRINT_MODE*//*FULLY_MODE*//*| MASKS_MODE | ACCUMULATION*/);
+	yes = 0;
+
+//////////////////////////////////
+//...reading model from data-file;
+	if (sm) {
+      sprintf(buf, "Loading model from file '%s'", name);
+      Message(" ");
+      Message(buf);
+      Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+		sm->bar_condit_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct( CLAYER_BLOCK);
+		//for (i = 0; i < 10; i++)
+		//for (j = 0; j < 10; j++) if ((i+j)%2 && (i-2)*(i-2)+(j-2)*(j-2) >= 4 
+		//												 && (i-2)*(i-2)+(j-7)*(j-7) >= 4
+		//												 && (i-7)*(i-7)+(j-2)*(j-2) >= 4
+		//												 && (i-7)*(i-7)+(j-7)*(j-7) >= 4)
+		//sm->SetBUniStruct(10*i+j, POLY_BLOCK, ERR_GENUS);
+		//sm->SetBUniStruct(0, POLY_BLOCK, ERR_GENUS);
+		//sm->SetBUniStruct(1, POLY_BLOCK, ERR_GENUS);
+
+		Message("Finish!");
+	}
+
+///////////////////////////
+//...solving of the probem;
+	FILE  * TST = fopen("heat2D_random.dat", "w"); 
+	fclose (TST);
+	for (int var = 50; var < 51; var++) {
+		if (sm->computing_kernel(MAPPING_COMPUT) != OK_STATE) {
+			Message("Error in sample counting...");
+			delete sm;
+			goto err;
+		}
+#ifdef ___MPI_INIT___
+		if (sm->solver.id_change == EXTERN_STATE) {
+				CSlvParam params;
+				params.msglev = 3;
+				params.ittype = 2;
+				params.sttype = 1;
+				params.niter = 500;
+				params.eps = 1.0e-7;
+
+				params.tau1 = 1.0e-2;
+				params.tau2 = 1.0e-3;
+				params.theta = 0.10e0;
+
+				char strbuff[256];
+				sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+				std::ofstream fout (strbuff);
+
+				sm->shapes_init(NO_STATE); 
+				BMM_solver pBMM = {& sm->solver, sm, BASIC_COUNTING};
+				AbstractParSolver (& pBMM, 
+										(void *)&comm_mpi,
+										fout, params,
+										Number_of_Blocks, Blocks_Partitioning, 
+										Blocks_Sparsity, Blocks_Row, 
+										Right_Handside, Initial_Guess, Store_Solution);
+				sm->shapes_init(OK_STATE); 
+		}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+		if (comm_mpi.GetMyid() == 0) 
+#endif
+		{
+			double par[6];	sm->SetGeomBounding(par);
+			double K[5] = {0.,0.,0.,0.,0.}, KH, kk, kk_low, kk_max, ff_vol;
+
+			sm->set_param(3, PackInts(UnPackInts(sm->get_param(3)), 2*UnPackInts(sm->get_param(3), 1)));
+
+			sm->GetRigidy(K, -1,		BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+			ff_vol = (K[3]+K[4])/(K[2]+K[3]+K[4]);
+			kk		 =  K[0]/(K[2]+K[3]+K[4]);
+			kk_low = (K[2]+K[3]+K[4])/(K[2]/K1+K[3]/K2+K[4]/K3);
+			kk_max = (K[2]*K1+K[3]*K2+K[4]*K3)/(K[2]+K[3]+K[4]);
+
+			KH = sm->TakeEshelby_two(ff_vol);
+
+			TST = fopen("heat2D_random.dat", "a");
+			fprintf(TST, "%g    %g    %g    %g    %g\n", ff_vol, kk, KH, kk_low, kk_max);
+			fclose (TST);
+
+			int id_visual = 1;
+			if (id_visual) { //..visualization;
+				CGrid * nd = CreateNodes();
+				int NX = 200, NY = 200, i, j;
+
+				sm->BlockActivate(NULL_STATE);
+
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in2D (hit, nd->X[i], nd->Y[j]);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				system("del *.grd");
+
+				sm->GetSurferFormat("bb", nd,         ERR_VALUE, 0);
+				sm->GetSurferFormat("rr", nd,        HEAT_VALUE, 0);
+				sm->GetSurferFormat("pp", nd, FLUX_COMPOS_VALUE, 0);
+
+				delete nd;
+			}
+		}
+	}
+	delete sm;
+}
+#endif
+#ifdef HEAT3D_RANDOM_STRUCTURE
+{
+	char * name = "./Parametric/Unit3d_002.nas";
+	double A = 1., B = 1., C = 1., rad = 0.1, ll = 0.05;
+	int i = 0, j, k, M = 1, m = 1;
+/////////////////////////////////////////////////////////////
+//...\E3\E5\ED\E5\F0\E0\F2\EE\F0 \F1\EB\F3\F7\E0\E9\ED\FB\F5 \F7\E8\F1\E5\EB;                            //
+//	for (srand((unsigned)time(NULL)), i = 0; i < 10; i++) { //
+//	double random = (double) rand()/(double) RAND_MAX;      //
+//			i = i;                                            //
+//	}                                                       //
+/////////////////////////////////////////////////////////////
+//////////////////////////////////
+//...\E3\E5\ED\E5\F0\E8\EC \F1\F2\F0\F3\EA\F2\F3\F0\F3 \E2\EA\EB\EB\FE\F7\E5\ED\E8\E9;
+	const int N = 3;
+	double X[] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.}, 
+			 Y[] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.}, 
+			 Z[] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.}, pp[8], par[7], dd_shift = 4.;
+	//for (j = 0; j < 2*(M+m+1); j++) pp[j] = j/(2.*(M+m+1.));
+	rad = .05/(2.*N); ll = 2.*rad;
+
+///////////////////////////
+//...parameters of problem;
+	//double K1 = 1.113,	//...heat conduction (matrix);
+	//		 K2 = 2.954,	//...heat conduction (inclusion);
+	//		 K3 = 0.111,	//...heat conduction (intermediate) 
+	double K1 = 1.,	//...heat conduction (matrix);
+			 K2 = 20.,	//...heat conduction (inclusion);
+			 K3 = 0.01,	//...heat conduction (intermediate);
+			 R1 = rad,		//...inclusion geometry;
+			 R2 = rad+ll;	//...intermediate geometry; 
+
+//////////////////////////
+//...model initialization;
+	CDraft<double> * sm = CreateDraftR(HEAT3D_DRAFT, 8);
+	sm->set_fasa_hmg(R1, R2, K1, K2, K3);	//...parameters of problem;
+	sm->set_mpls(PackInts(13, 13));				//...space degree of multipoles;
+	sm->set_quad(PackInts(8, 4));				//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);						//...normalization coefficient;
+	sm->set_lagrange(1e5);						//...Lagrange coefficient for energy;
+	sm->change_solv(/*ENERGY_SOLVING*/PERIODIC_SOLVING/*SPECIAL_SOLVING*/);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(/*REGULARIZATION*//* | *//*PRINT_MODE*//*FULLY_MODE*//* | MASKS_MODE*//* | ACCUMULATION*/);
+	yes = 0;
+
+//////////////////////////////////////////////
+//...\EF\EE\F1\F2\F0\EE\E5\ED\E8\E5 \F0\E5\F8\E5\F2\EA\E8 \E4\EB\FF \F1\E8\F1\F2\E5\EC\FB \E2\EA\EB\FE\F7\E5\ED\E8\E9;
+	CGrid * nd = CreateNodes(); nd->add_params(2);
+	CGrid * lt = CreateNodes();
+
+	pp[0] = rad; pp[1] = rad+ll; 
+	par[0] = X[0]-dd_shift; par[2] = Y[0]-dd_shift; par[4] = Z[0]-dd_shift; ; par[1] = X[N-1]+dd_shift; par[3] = Y[N-1]+dd_shift; par[5] = Z[N-1]+dd_shift; 
+	for (k = 0; k < N; k++)
+	for (j = 0; j < N; j++)
+	for (i = 0; i < N; i++) 
+		nd->add_new_point((X[i]-par[0])/(par[1]-par[0]), (Y[j]-par[2])/(par[3]-par[2]), (Z[k]-par[4])/(par[5]-par[4]), pp);
+	
+	par[0] = par[2] = par[4] = 0.; par[1] = par[3] = par[5] = 1.;
+	lt->grid_lattice(nd, par);
+
+
+/////////////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \F4\F3\ED\EA\F6\E8\E5\E9;
+	if (sm && 1) {
+		sm->GetLatticeBox3DStruct(lt->X, lt->Y, lt->Z, lt->N, lt->N1, lt->N2, /*POLY_BLOCK*/CLAYER_BLOCK);
+		//sm->GetLatticeBox3DStruct(X, Y, Z, N+1, N+1, N+1, /*POLY_BLOCK*/CLAYER_BLOCK);
+		//sm->GetLatticeBox3DStruct(pp, pp, pp, 2*(M+m+1), 2*(M+m+1), 2*(M+m+1), POLY_BLOCK/*CLAYER_BLOCK*/);
+		//for (k = m; k <= 2*M+m; k++)
+		//for (j = m; j <= 2*M+m; j++)
+		//for (i = m; i <= 2*M+m; i++) 
+		//	sm->SetBUniStruct(i+(2*(M+m)+1)*(j+(2*(M+m)+1)*k), CLAYER_BLOCK, ERR_GENUS);
+		sm->SetBounding(par);
+	}
+
+///////////////////////////////////////////////////////
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
+	if (sm && 0) {
+		Message(" ");
+		sprintf(buf, "Loading model from file '%s'", name);
+		Message(buf);
+		Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+      sm->bar_condit_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(CLAYER_BLOCK);
+		sm->SetGeomBounding(par);
+
+		Message("Finish!");
+	}
+
+///////////////////////////
+//...solving of the probem;
+	for (int var = 50; var < 51; var++) {
+		if (sm->computing_kernel(/*BASIC_COMPUT*/MAPPING_COMPUT/*PERIOD_COMPUT*/) != OK_STATE) {
+			Message("Error in sample counting...");
+			delete sm;
+			goto err;
+		}
+#ifdef ___MPI_INIT___
+		if (sm->solver.id_change == EXTERN_STATE) {
+			CSlvParam params;
+			params.ordtype = 1;
+			params.tau1 = 1.0e-2;
+			params.tau2 = 1.0e-3;
+			params.theta = 0.10e0;
+			params.niter = 200;
+			params.eps = 1.0e-9;
+
+			params.memory = 4.0e0;
+			params.msglev = 3;
+
+			char strbuff[256];
+			sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+			std::ofstream fout (strbuff);
+
+			params.ittype = 2;
+			params.sttype = 1;
+			params.collap = 4;
+
+			sm->shapes_init(NO_STATE); 
+			BMM_solver pBMM = {& sm->solver, sm, BASIC_COUNTING};
+	//		AbstractSolver		(& pBMM, 
+			AbstractParSolver (& pBMM, 
+									(void *)&comm_mpi,
+									fout, params,
+									Number_of_Blocks, Blocks_Partitioning,	Blocks_Sparsity,  
+									Blocks_Row,  Right_Handside,  Initial_Guess,  Store_Solution);
+			sm->shapes_init(OK_STATE); 
+		}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+		if (comm_mpi.GetMyid() == 0) 
+#endif
+		{
+			double K[6] = {0.,0.,0.,0.,0.,0.}, KH, kk, kk_low, kk_max, ff_vol;
+
+			sm->GetRigidy(K, -1,		BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+			ff_vol = (K[4]+K[5])/(K[3]+K[4]+K[5]);
+			kk		 =  K[2]/(K[3]+K[4]+K[5]);
+			kk_low = (K[3]+K[4]+K[5])/(K[3]/K1+K[4]/K2+K[5]/K3);
+			kk_max = (K[3]*K1+K[4]*K2+K[5]*K3)/(K[3]+K[4]+K[5]);
+
+			KH = sm->TakeEshelby_two(ff_vol);
+
+			FILE *  TST = fopen("homog_heat.dat", "a");
+			fprintf(TST, "%g    %g    %g    %g    %g\n", ff_vol, kk, KH, kk_low, kk_max);
+			fclose (TST);
+
+			nd->zero_grid();
+			int id_visual = ! sm->solver.mode(TESTI_MODE) || 1;
+			if (id_visual && 1) {//..visualization;
+				sm->BlockActivate(NULL_STATE);
+
+				int NX = 100, NY = 100, axis;
+#ifdef ___LONGITUDINAL_SECTIOM___
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+				nd->add_new_point_Z((par[5]+par[4])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_Z;
+#else
+				if (1) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+					nd->add_new_point_Z((par[3]+par[2])*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++) {
+						int hit = -1;
+						sm->Poly_struc_in3D (hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE);
+						nd->hit[i+j*nd->N] = hit;
+					}
+					axis = AXIS_Y;
+				}
+				else {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+					nd->add_new_point_Z((par[1]+par[0])*.5);
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++) {
+						int hit = -1;
+						sm->Poly_struc_in3D (hit, nd->Z[0], nd->X[i], nd->Y[j]);
+						nd->hit[i+j*nd->N] = hit;
+					}
+					axis = AXIS_X;
+				}
+#endif
+				if (! sm->solver.mode(TESTI_MODE)) 
+				system("del *.grd");
+				//sm->GetSurferFormat("bb", nd,			  ERR_VALUE, 0, axis);
+				sm->GetSurferFormat("rr", nd,			 HEAT_VALUE, 0, axis);
+				sm->GetSurferFormat("pp", nd, FLUX_COMPOS_VALUE, 0, axis);
+			}
+			int id_lines = 0;
+			if (id_lines) {//...\EE\E4\ED\EE\EC\E5\F0\ED\FB\E5 \E3\F0\E0\F4\E8\EA\E8;
+				double F[3];
+				FILE * TST = fopen("lines.dat", "w");
+				for (i = 0; i < nd->N;  i++){
+					sm->GetFuncAllValues(nd->X[i], nd->Y[nd->N1/2], 0., F, nd->hit[i+nd->N1/2*nd->N], HEAT_VALUE);
+					fprintf(TST, "%g   %g", nd->X[i], F[0]);
+
+					sm->GetFuncAllValues(nd->X[i], nd->Y[0], 0., F, nd->hit[i+0*nd->N], HEAT_VALUE);
+					fprintf(TST, "   %g", F[0]);
+
+					sm->GetFuncAllValues(nd->X[i], nd->Y[nd->N1/2], 0., F, nd->hit[i+nd->N1/2*nd->N], ANALYT_VALUE, 100);
+					fprintf(TST, "   %g", F[0]);
+
+					sm->GetFuncAllValues(nd->X[i], nd->Y[nd->N1/2], 0., F, nd->hit[i+nd->N1/2*nd->N], FLUX_X_VALUE);
+					fprintf(TST, "   %g", F[0]);
+
+					sm->GetFuncAllValues(nd->X[i], nd->Y[0], 0., F, nd->hit[i+0*nd->N], FLUX_X_VALUE);
+					fprintf(TST, "   %g", F[0]);
+
+					sm->GetFuncAllValues(nd->X[i], nd->Y[nd->N1/2], 0., F, nd->hit[i+nd->N1/2*nd->N], ANALYT_VALUE, 100);
+					fprintf(TST, "   %g\n", F[1]);
+				}
+				fclose (TST);
+			}
+		}
+	}
+	delete sm;
+	delete nd;
+}
+#endif
+#ifdef LAME3D_RANDOM_STRUCTURE
+{
+	char * name = "./Box3d_homog/nano_35x25x246_octa.nas";
+	double A = 1., B = 1., C = 1., rad = 0.1, ll = 0.05;
+	int i = 0, j, k, m, num;
+
+///////////////////////////
+//...parameters of problem;
+	double X[] = {0., 0.5, 1.}, Y[] = {0., 0.5, 1.}, Z[] = {0., 0.5, 1.}, par[6];
+	//double nj1 = 0.300,  //...\EB\E5\E4\FF\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+	//		 nj2 = 0.100,  //...\EC\E8\ED\E5\F0\E0\EB\FC\ED\E0\FF \F7\E0\F1\F2\E8\F6\E0 (\EF\E5\F1\EE\EA); 
+	//		 nj3 = 0.499,  //...\E2\EE\E4\E0; 
+	//		 E1   = 6.0,
+	//		 E2   = 50.,
+	//		 E3   = 1e-0/*5*/, 
+	//double nj1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+	//		 nj2 = 0.20, //...\E3\F0\E0\F4\E8\F2\EE\E2\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5; 
+	//		 nj3 = 0.30, //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9; 
+	//		 E1  = 18.,  //...GPa;
+	//		 E2  = 380., //...GPa; 
+	//		 E3  = 57.5, 
+	double nj1 = 0.4999,	//...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0; 
+			 nj2 = 0.30,	//...\E3\F0\E0\F4\E8\F2\EE\E2\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5; 
+			 nj3 = 0.30,   //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9; 
+			 E1  = 0.135,
+			 E2  = 31.0, 
+			 E3  = 1.50, 
+			 R1 = rad,		//...inclusion geometry;
+			 R2 = rad+ll;	//...intermediate geometry; 
+
+//////////////////////////
+//...model initialization;
+	CDraft<double> * sm = CreateDraftR(LAME3D_DRAFT, 7);
+	sm->set_fasa_hmg(R1, R2, nj2, nj3, nj1, E2/(1.+nj2)*.5, E3/(1.+nj1)*.5, E1/(1.+nj1)*.5);
+	sm->set_mpls(PackInts(2, 2));				//...space degree of multipoles;
+	sm->set_quad(PackInts(4, 4));				//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);						//...normalization coefficient;
+	sm->set_lagrange(1e5);						//...Lagrange coefficient for energy;
+	sm->change_solv(/*ENERGY_SOLVING*//*PERIODIC_SOLVING*/SPECIAL_SOLVING);
+	sm->solver.change_state(/*EXTERN_STATE*/);
+	sm->solver.set_mode(REGULARIZATION | PRINT_MODE/*FULLY_MODE*//*| MASKS_MODE | ACCUMULATION*/);
+	yes = 0;
+	
+/////////////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \F4\F3\ED\EA\F6\E8\E5\E9;
+	if (sm && 1) {
+		sm->GetLatticeBox3DStruct(X, Y, Z, 2, 2, 2/*, CLAYER_BLOCK*/);
+		sm->SetBounding(par);
+
+		sm->SetBUniStruct (CLAYER_BLOCK, ERR_GENUS);
+		//for (i = 0; i < sm->N; i++)
+		//sm->SetBUniStruct(i, POLY_BLOCK, ERR_GENUS);
+	}
+
+///////////////////////////////////////////////////////
+//...\F7\F2\E5\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \E8\E7 \F4\E0\E9\EB\E0 \E4\E0\ED\ED\FB\F5;
+	if (sm && 0) {
+		Message(" ");
+		sprintf(buf, "Loading model from file '%s'", name);
+		Message(buf);
+		Message("Reading data file ...");
+
+		sm->stru.nodes_in(name);
+      sm->bar_condit_in(name);
+		sm->LinkUniStruct();
+		sm->SetBUniStruct(/*CLAYER_BLOCK*/);
+		sm->SetGeomBounding(par);
+
+		Message("Finish!");
+	}
+
+////////////////////////////
+//...solving of the problem;
+	if (sm->computing_kernel(/*BASIC_COMPUT*//*MAPPING_COMPUT*/PERIOD_COMPUT) != OK_STATE) {
+		Message("Error in sample counting...");
+		delete sm;
+		goto err;
+	}
+#ifdef ___MPI_INIT___
+		if (sm->solver.id_change == EXTERN_STATE) {
+		CSlvParam params;
+		params.msglev = 3;
+		params.ittype = 2;
+		params.sttype = 1;
+		params.niter = 700;
+		params.eps = 1.0e-9;
+
+		params.tau1 = 1.0e-2;
+		params.tau2 = 1.0e-3;
+		params.theta = 0.10e0;
+
+		char strbuff[256];
+		sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+		std::ofstream fout (strbuff);
+		params.collap = 4;
+
+		sm->shapes_init(NO_STATE); 
+		BCM_draft<double> pBCM = {sm, PERIOD_COMPUT};
+		AbstractParSolver (& pBCM, 
+								(void *)&comm_mpi,
+								fout, params,
+								Number_of_Blocks<double>, Blocks_Partitioning<double>, 
+								Blocks_Sparsity<double>, Blocks_Row<double>, 
+								Right_Handside<double>, Initial_Guess<double>, Store_Solution<double>);
+		sm->shapes_init(OK_STATE); 
+		}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+		int id_visual = 1;
+		if (id_visual) {
+			CGrid_el * nd = new CGrid_el;
+			int NX = 100, NY = 100, axis;
+
+			sm->BlockActivate();
+
+#ifdef ___LONGITUDINAL_SECTIOM___
+			for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+			for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+
+			nd->add_new_point_Z((par[5]+par[4])*.5);
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) {
+				int hit = -1;
+				sm->Poly_struc_in3D (hit, nd->X[i], nd->Y[j], nd->Z[0]);
+				nd->hit[i+j*nd->N] = hit;
+			}
+			axis = AXIS_Z;
+#else
+			if (1) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+
+				nd->add_new_point_Z((par[3]+par[2])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_Y;
+			}
+			else {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+
+				nd->add_new_point_Z((par[1]+par[0])*.5);
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					sm->Poly_struc_in3D (hit, nd->Z[0], nd->X[i], nd->Y[j]);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				axis = AXIS_X;
+			}
+#endif
+			system("del *.grd");
+			//sm->GetSurferFormat("bb", nd,	     ERR_VALUE, 0, axis);
+			sm->GetSurferFormat("rr", nd,    DISPL_VALUE, 0, axis);
+			sm->GetSurferFormat("tz", nd, STRESS_Z_VALUE, 0, axis);
+			
+			delete nd;
+		}
+	}
+	delete sm;
+}
+#endif
+#ifdef HEAT3D_RANDOM_HOMOGENIZATION
+{
+	double rad = 0.1, ll = 0.05, section = 0., section_I = 0., section_II = 0., K1 = 1., K2 = 20., K3 = 0.01, lagrange = 1e5, par[8];
+	int i, j, NX = 100, NY = 100, id_visual = 0, N0 = 15, N_elem = 8, N_max = 4, axis = AXIS_Y, axis_I = AXIS_Z, axis_II = AXIS_X;
+	char name[2000]; name[0] = 0;
+//////////////////////////////////
+//...reading model from data-file;
+   sprintf(buf, "Reading data...");
+   Message(" ");
+   Message(buf);
+
+	unsigned long count, upper_limit;
+	char        * id_DATA = read_struct_ascii("heat3d_initial.dat");
+	if         (! id_DATA) {
+		sprintf(buf, "Data not found..");
+		Message(" ");
+		Message(buf);
+		sprintf(buf, "Creating data file \"heat3d_initial.dat\"...");
+		Message(buf);
+		Message(" ");
+
+		FILE  * TST = fopen("heat3d_initial.dat", "w");
+		fprintf(TST, "N = %i\nN_elem = %i\nN_max = %i\nlagrange = %g\n\n", N0, N_elem, N_max, lagrange);
+		fprintf(TST, "id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		fprintf(TST, "K_matrix = %g\nK_inclusion = %g\nK_layer = %g\n\n", K1, K2, K3);
+		fprintf(TST, "structure = %s\n\n", name);
+		fclose (TST);
+
+		printf("N = %i\nN_elem = %i\nN_max = %i\nlagrange = %g\n\n", N0, N_elem, N_max, lagrange);
+		printf("id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		printf("K_matrix = %g\nK_inclusion = %g\nK_layer = %gn\\n", K1, K2, K3);
+		printf("structure = %s\n\n", name);
+
+		goto test;
+	}
+	user_Count    (id_DATA, 0, upper_limit, '\x0');
+	if (user_Count(id_DATA, count = 0, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N0 = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_elem = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_max = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) lagrange = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_visual = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NX = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NY = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_I = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_II = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_I = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_II = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') &&  
+		user_Read (buf, id_DATA, count, upper_limit, NULL_STATE)) ::strcpy(name, buf);
+
+///////////////////////////////////////
+//...creating model from initiual data;
+test:
+	CDraft<double> * sm = CreateDraftR(HEAT3D_DRAFT, 7);
+	sm->set_fasa_hmg(rad, rad+ll, K1, K2, K3);//...parameters of problem;
+	sm->set_mpls(PackInts(N0, N0));				//...space degree of multipoles;
+	sm->set_quad(PackInts(N_elem, N_max));		//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);							//...normalization coefficient;
+	sm->set_lagrange(lagrange);					//...Lagrange coefficient for energy;
+	sm->change_solv (lagrange ? E_PERIODIC_SOLVING : PERIODIC_SOLVING);
+	sm->solver.change_state(EXTERN_STATE);
+	sm->solver.set_mode(REGULARIZATION/* | *//*PRINT_MODE*//*FULLY_MODE*//* | MASKS_MODE*//* | ACCUMULATION*/);
+	yes = 0;
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//...\E7\E0\F7\E8\F2\FB\E2\E0\E5\EC \F1\F2\F0\F3\EA\F2\F3\F0\F3 \E2\EA\EB\EB\FE\F7\E5\ED\E8\E9 (\E8 \EF\E5\F0\E5\F3\F1\F2\E0\ED\E0\E2\EB\E8\E2\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\FE \E2\EA\EB\FE\F7\E5\ED\E8\E9 \EF\EE \EF\E5\F0\E2\EE\E9 \F2\EE\F7\EA\E5);
+	CGrid * nd_stru = CreateNodes();
+			  nd_stru->stru_in(name, par);
+	sm->set_geometry(rad = nd_stru->get_param(0, 0), ll = nd_stru->get_param(1, 0));
+
+//////////////////////////////////////////////
+//...\EF\EE\F1\F2\F0\EE\E5\ED\E8\E5 \F0\E5\F8\E5\F2\EA\E8 \E4\EB\FF \F1\E8\F1\F2\E5\EC\FB \E2\EA\EB\FE\F7\E5\ED\E8\E9;
+	CGrid * lt = CreateNodes();
+			  lt->grid_lattice(nd_stru, par);
+
+/////////////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \F4\F3\ED\EA\F6\E8\E5\E9;
+	if (sm) {
+		sm->GetLatticeBox3DStruct(lt->X, lt->Y, lt->Z, lt->N, lt->N1, lt->N2, CLAYER_BLOCK);
+		sm->SetBounding(par);
+		//sm->SetBUniStruct (CLAYER_BLOCK, ERR_GENUS);
+	}
+	delete nd_stru;
+	delete lt;
+
+///////////////////////////
+//...solving of the probem;
+	res = system("mkdir ./bcm_results/heat3d_homog"); Num_Comput temp_comput;
+	if (sm->computing_kernel(temp_comput = sm->N > 1 ? MAPPING_COMPUT : PERIOD_COMPUT) != OK_STATE) {
+		Message("Error in sample counting...");
+		delete sm;
+		goto err;
+	}
+#ifdef ___MPI_INIT___
+	if (sm->solver.id_change == EXTERN_STATE) {
+		CSlvParam params;
+		params.msglev = 3;
+		params.ittype = 2;
+		params.sttype = 1;
+		params.niter = 700;
+		params.eps = 1.0e-9;
+
+		params.tau1 = 1.0e-2;
+		params.tau2 = 1.0e-3;
+		params.theta = 0.10e0;
+
+		char strbuff[256];
+		sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+		std::ofstream fout (strbuff);
+		params.collap = 4;
+
+		sm->shapes_init(NO_STATE); 
+		BCM_draft<double> pBCM = {sm, temp_comput};
+		AbstractParSolver (& pBCM, 
+								(void *)&comm_mpi,
+								fout, params,
+								Number_of_Blocks<double>, Blocks_Partitioning<double>, 
+								Blocks_Sparsity<double>, Blocks_Row<double>, 
+								Right_Handside<double>, Initial_Guess<double>, Store_Solution<double>);
+		sm->shapes_init(OK_STATE); 
+	}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+		double K[7] = {0.,0.,0.,0.,0.,0.}, KH, kk, kk_low, kk_max; K[6] = (par[1]-par[0])*.5;
+
+		sm->GetRigidy(K, -1,		BASIC_COMPUT);
+		sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+		kk		 =  K[2]/(K[3]+K[4]+K[5]);
+		kk_low = (K[3]+K[4]+K[5])/(K[3]/K1+K[4]/K2+K[5]/K3);
+		kk_max = (K[3]*K1+K[4]*K2+K[5]*K3)/(K[3]+K[4]+K[5]);
+
+		KH = sm->TakeEshelby(par[6], par[7]);
+
+		FILE * TST = fopen("./bcm_results/heat3d_homog/heat3d_homog.dat", "a");
+		if (TST) fprintf(TST, "%g    %g    %g    %g    %g\n", par[6], kk, KH, kk_low, kk_max);
+		if (TST)	fclose (TST);
+
+//////////////////
+//..visualization;
+		if (id_visual) { //..visualization;
+			CGrid_el * nd = new CGrid_el;
+			if (axis == AXIS_Z) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+				nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section)*.5);
+			}
+			if (axis == AXIS_Y) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+				nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section)*.5);
+			}
+			if (axis == AXIS_X) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+				nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section)*.5);
+			}
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) {
+				int hit = -1;
+				if (axis == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+				if (axis == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+				if (axis == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+				nd->hit[i+j*nd->N] = hit;
+			}
+			sm->GetSurferFormat("./bcm_results/heat3d_homog/rr", nd,		  HEAT_VALUE, 0, axis);
+			sm->GetSurferFormat("./bcm_results/heat3d_homog/pp", nd, FLUX_COMPOS_VALUE, 0, axis);
+
+///////////////////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF I (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+			if (id_visual > 1) { 
+				nd->zero_grid();
+				if (axis_I == AXIS_Z) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+					nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_I)*.5);
+				}
+				if (axis_I == AXIS_Y) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+					nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_I)*.5);
+				}
+				if (axis_I == AXIS_X) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+					nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_I)*.5);
+				}
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					if (axis_I == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+					if (axis_I == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+					if (axis_I == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				sm->GetSurferFormat("./bcm_results/heat3d_homog/rr_I", nd,			 HEAT_VALUE, 0, axis_I);
+				sm->GetSurferFormat("./bcm_results/heat3d_homog/pp_I", nd, FLUX_COMPOS_VALUE, 0, axis_I);
+
+////////////////////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF II (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+				if (id_visual > 2) { 
+					nd->zero_grid();
+					if (axis_II == AXIS_Z) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+						nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_II)*.5);
+					}
+					if (axis_II == AXIS_Y) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+						nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_II)*.5);
+					}
+					if (axis_II == AXIS_X) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+						nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_II)*.5);
+					}
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++) {
+						int hit = -1;
+						if (axis_II == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+						if (axis_II == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+						if (axis_II == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+						nd->hit[i+j*nd->N] = hit;
+					}
+					sm->GetSurferFormat("./bcm_results/heat3d_homog/rr_II", nd,			 HEAT_VALUE, 0, axis_I);
+					sm->GetSurferFormat("./bcm_results/heat3d_homog/pp_II", nd, FLUX_COMPOS_VALUE, 0, axis_I);
+				}
+			}
+			delete nd;
+		}
+	}
+	delete sm;
+}
+#endif
+#ifdef LAME3D_RANDOM_HOMOGENIZATION
+{
+	double rad = 0.1, ll = 0.05, section = 0., section_I = 0., section_II = 0., nj1 = 0.3, nj2 = 0.3, nj3 = 0.3, E1 = 1.0, E2 = 2.0, E3 = 3.0, lagrange = 0, par[8];
+	int i, j, NX = 100, NY = 100, id_visual = 0, N0 = 7, N_elem = 8, N_max = 4, axis = AXIS_Y, axis_I = AXIS_Z, axis_II = AXIS_X;
+	char name[2000]; name[0] = 0;
+//////////////////////////////////
+//...reading model from data-file;
+   sprintf(buf, "Reading data...");
+   Message(" ");
+   Message(buf);
+
+	unsigned long count, upper_limit;
+	char        * id_DATA = read_struct_ascii("lame3d_initial.dat");
+	if         (! id_DATA) {
+		sprintf(buf, "Data not found..");
+		Message(" ");
+		Message(buf);
+		sprintf(buf, "Creating data file \"lame3d_initial.dat\"...");
+		Message(buf);
+		Message(" ");
+
+		FILE  * TST = fopen("lame3d_initial.dat", "w");
+		fprintf(TST, "N = %i\nN_elem = %i\nN_max = %i\nlagrange = %g\n\n", N0, N_elem, N_max, lagrange);
+		fprintf(TST, "id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		fprintf(TST, "E_matrix = %g     \tnju_matrix = %g\nE_inclusion = %g     \tnju_inclusion = %g\nE_layer = %g     \tnju_layer = %g\n\n", E1, nj1, E2, nj2, E3, nj3);
+		fprintf(TST, "structure = %s\n\n", name);
+		fclose (TST);
+
+		printf("N = %i\nN_elem = %i\nN_max = %i\nlagrange = %g\n\n", N0, N_elem, N_max, lagrange);
+		printf("id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		printf("E_matrix = %g     \tnju_matrix = %g\nE_inclusion = %g     \tnju_inclusion = %g\nE_layer = %g     \tnju_layer = %g\n\n", E1, nj1, E2, nj2, E3, nj3);
+		printf("structure = %s\n\n", name);
+
+		goto test;
+	}
+	user_Count    (id_DATA, 0, upper_limit, '\x0');
+	if (user_Count(id_DATA, count = 0, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N0 = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_elem = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_max = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) lagrange = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_visual = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NX = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NY = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_I = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_II = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_I = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_II = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) E1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) nj1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) E2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) nj2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) E3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) nj3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') &&  
+		user_Read (buf, id_DATA, ++count, upper_limit, NULL_STATE)) ::strcpy(name, buf);
+
+///////////////////////////////////////
+//...creating model from initiual data;
+test:
+	CDraft<double> * sm = CreateDraftR(LAME3D_DRAFT, 8);
+	sm->set_fasa_hmg(rad, rad+ll, nj2, nj3, nj1, E2/(1.+nj2)*.5, E3/(1.+nj3)*.5, E1/(1.+nj1)*.5);//...parameters of problem;
+	sm->set_mpls(PackInts(N0, N0));				//...space degree of multipoles;
+	sm->set_quad(PackInts(N_elem, N_max));		//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);							//...normalization coefficient;
+	sm->set_lagrange(lagrange);					//...Lagrange coefficient for energy;
+	sm->change_solv (lagrange ? E_PERIODIC_SOLVING : PERIODIC_SOLVING);
+	sm->solver.change_state(EXTERN_STATE);
+	sm->solver.set_mode(REGULARIZATION/* | PRINT_MODE*//*FULLY_MODE*//* | MASKS_MODE*//* | ACCUMULATION*/);
+	yes = 0;
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+//...\E7\E0\F7\E8\F2\FB\E2\E0\E5\EC \F1\F2\F0\F3\EA\F2\F3\F0\F3 \E2\EA\EB\EB\FE\F7\E5\ED\E8\E9 (\E8 \EF\E5\F0\E5\F3\F1\F2\E0\ED\E0\E2\EB\E8\E2\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\FE \E2\EA\EB\FE\F7\E5\ED\E8\E9 \EF\EE \EF\E5\F0\E2\EE\E9 \F2\EE\F7\EA\E5);
+	CGrid * nd_stru = CreateNodes();
+			  nd_stru->stru_in(name, par);
+	sm->set_geometry(rad = nd_stru->get_param(0, 0), ll = nd_stru->get_param(1, 0));
+
+//////////////////////////////////////////////
+//...\EF\EE\F1\F2\F0\EE\E5\ED\E8\E5 \F0\E5\F8\E5\F2\EA\E8 \E4\EB\FF \F1\E8\F1\F2\E5\EC\FB \E2\EA\EB\FE\F7\E5\ED\E8\E9;
+	CGrid * lt = CreateNodes();
+			  lt->grid_lattice(nd_stru, par);
+
+/////////////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \F4\F3\ED\EA\F6\E8\E5\E9;
+	if (sm) {
+		sm->GetLatticeBox3DStruct(lt->X, lt->Y, lt->Z, lt->N, lt->N1, lt->N2, CLAYER_BLOCK);
+		sm->SetBounding(par);
+		sm->SetBUniStruct (CLAYER_BLOCK, ERR_GENUS);
+	}
+	delete nd_stru;
+	delete lt;
+
+///////////////////////////
+//...solving of the probem;
+	res = system("mkdir ./bcm_results/lame3d_homog"); Num_Comput temp_comput;
+	if (sm->computing_kernel(temp_comput = sm->N > 1 ? MAPPING_COMPUT : PERIOD_COMPUT) != OK_STATE) {
+		Message("Error in sample counting...");
+		delete sm;
+		goto err;
+	}
+#ifdef ___MPI_INIT___
+	if (sm->solver.id_change == EXTERN_STATE) {
+		CSlvParam params;
+		params.msglev = 3;
+		params.ittype = 2;
+		params.sttype = 1;
+		params.niter = 700;
+		params.eps = 1.0e-9;
+
+		params.tau1 = 1.0e-2;
+		params.tau2 = 1.0e-3;
+		params.theta = 0.10e0;
+
+		char strbuff[256];
+		sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+		std::ofstream fout (strbuff);
+		params.collap = 4;
+
+		sm->shapes_init(NO_STATE); 
+		BCM_draft<double> pBCM = {sm, temp_comput};
+		AbstractParSolver (& pBCM, 
+								(void *)&comm_mpi,
+								fout, params,
+								Number_of_Blocks<double>, Blocks_Partitioning<double>, 
+								Blocks_Sparsity<double>, Blocks_Row<double>, 
+								Right_Handside<double>, Initial_Guess<double>, Store_Solution<double>);
+		sm->shapes_init(OK_STATE); 
+	}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+	if (comm_mpi.GetMyid() == 0) 
+#endif
+	{
+//////////////////////////////////////////
+//..\E2\FB\F7\E8\F1\EB\FF\E5\EC \FD\F4\F4\E5\EA\F2\E8\E2\ED\FB\E5 \EC\EE\E4\F3\EB\E8 \EA\EE\EC\EF\EE\E7\E8\F2\E0;
+			double K[28], E0, nu, K0, m0, mu, lm, C0, KH, EH, mH, nH; memset(K, 0, 28*sizeof(double)); K[27] = (par[1]-par[0])*.5;
+			sm->GetRigidy(K, -1, BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+			
+			C0 = (K[5]-2.*K[0]*K[6]/(K[6]+K[11]))/(K[11]-2.*K[6]*K[6]/(K[6]+K[11]));
+			lm = (K[0]-C0*K[6])/(K[6]+K[11]);
+			nu = lm/(C0+lm);
+			E0 = C0*(1.-2.*nu)*(1.+nu)/(1.-nu);
+			K0 = E0/(3.*(1.-2.*nu));
+			m0 = E0/(2.*(1.+nu));
+			mu = K[15]/K[21]*.5;
+
+////////////////////////////////////////
+//...\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EC\E5\F2\EE\E4 \DD\F8\E5\EB\E1\E8;
+			KH = sm->TakeEshelby_volm(par[6], par[7]);
+			mH = sm->TakeEshelby_shear_two(par[6]+par[7]);
+			//mH = sm->TakeEshelby_shear(par[6], par[7]);
+			EH = 9.*KH*mH/(3.*KH+mH);
+			nH = (1.5*KH-mH)/(3.*KH+mH);
+
+			FILE * TST = fopen("./bcm_results/lame3d_homog/lame3d_homog.dat", "a");
+			if (TST) fprintf(TST, "rad = %g  ll = %g  E0 = %g  nu = %g  K0 = %g  m0 = %g  mu = %g  EH = %g  KH = %g  (%g, %g, %g, %g, %g, %g) (N = %i)\n", 
+										  rad, ll, E0, nu, K0, m0, mu, EH, KH, E1, nj1, E2, nj2, E3, nj3, N0);
+			if (TST) fclose (TST);
+
+//////////////////
+//..visualization;
+		if (id_visual) { //..visualization;
+			CGrid_el * nd = new CGrid_el;
+			if (axis == AXIS_Z) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+				nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section)*.5);
+			}
+			if (axis == AXIS_Y) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+				nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section)*.5);
+			}
+			if (axis == AXIS_X) {
+				for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+				for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+				nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section)*.5);
+			}
+			nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+			for (i = 0; i < nd->N;  i++)
+			for (j = 0; j < nd->N1; j++) {
+				int hit = -1;
+				if (axis == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+				if (axis == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+				if (axis == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+				nd->hit[i+j*nd->N] = hit;
+			}
+			sm->GetSurferFormat("./bcm_results/lame3d_homog/rz", nd,	   DISPL_VALUE, 0, axis);
+			sm->GetSurferFormat("./bcm_results/lame3d_homog/rx", nd,	   DISPL_VALUE, 1, axis);
+			sm->GetSurferFormat("./bcm_results/lame3d_homog/tz", nd, STRESS_Z_VALUE, 0, axis);
+			sm->GetSurferFormat("./bcm_results/lame3d_homog/tx", nd, STRESS_X_VALUE, 1, axis);
+
+///////////////////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF I (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+			if (id_visual > 1) { 
+				nd->zero_grid();
+				if (axis_I == AXIS_Z) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+					nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_I)*.5);
+				}
+				if (axis_I == AXIS_Y) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+					nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_I)*.5);
+				}
+				if (axis_I == AXIS_X) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+					nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_I)*.5);
+				}
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					if (axis_I == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+					if (axis_I == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+					if (axis_I == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				sm->GetSurferFormat("./bcm_results/lame3d_homog/rz_I", nd,	   DISPL_VALUE, 0, axis);
+				sm->GetSurferFormat("./bcm_results/lame3d_homog/rx_I", nd,	   DISPL_VALUE, 1, axis);
+				sm->GetSurferFormat("./bcm_results/lame3d_homog/tz_I", nd, STRESS_Z_VALUE, 0, axis);
+				sm->GetSurferFormat("./bcm_results/lame3d_homog/tx_I", nd, STRESS_X_VALUE, 1, axis);
+
+////////////////////////////////////////////
+//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF II (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+				if (id_visual > 2) { 
+					nd->zero_grid();
+					if (axis_II == AXIS_Z) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+						nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_II)*.5);
+					}
+					if (axis_II == AXIS_Y) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+						nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_II)*.5);
+					}
+					if (axis_II == AXIS_X) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+						nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_II)*.5);
+					}
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++) {
+						int hit = -1;
+						if (axis_II == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+						if (axis_II == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+						if (axis_II == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+						nd->hit[i+j*nd->N] = hit;
+					}
+					sm->GetSurferFormat("./bcm_results/lame3d_homog/rz_II", nd,	   DISPL_VALUE, 0, axis);
+					sm->GetSurferFormat("./bcm_results/lame3d_homog/rx_II", nd,	   DISPL_VALUE, 1, axis);
+					sm->GetSurferFormat("./bcm_results/lame3d_homog/tz_II", nd, STRESS_Z_VALUE, 0, axis);
+					sm->GetSurferFormat("./bcm_results/lame3d_homog/tx_II", nd, STRESS_X_VALUE, 1, axis);
+				}
+			}
+			delete nd;
+		}
+	}
+	delete sm;
+}
+#endif
+#ifdef TEST_HEAT3D_RANDOM_HOMOGENIZATION
+{
+	int M = 3, M_max_add = 1, M_add;
+	double A = 1., B = 1., C = 1., section = 0., section_I = 0., section_II = 0., K1 = 1., K2 = 20., K3 = 0.01, lagrange = 0, par[8], pp[2], ll_rad = 7., c0, c1;
+	int i, j, k, NX = 100, NY = 100, id_visual = 1, N0 = 5, N_elem = 4, N_max = 4, axis = AXIS_Y, axis_I = AXIS_Z, axis_II = AXIS_X;
+
+//////////////////////////////////
+//...reading model from data-file;
+   sprintf(buf, "Reading data...");
+   Message(" ");
+   Message(buf);
+
+	unsigned long count, upper_limit;
+	char        * id_DATA = read_struct_ascii("heat3d_initial.dat");
+	if         (! id_DATA) {
+		sprintf(buf, "Data not found..");
+		Message(" ");
+		Message(buf);
+		sprintf(buf, "Creating data file \"heat3d_initial.dat\"...");
+		Message(buf);
+		Message(" ");
+
+		FILE  * TST = fopen("heat3d_initial.dat", "w");
+		fprintf(TST, "N = %i\nN_elem = %i\nN_max = %i\nlagrange = %g\n\n", N0, N_elem, N_max, lagrange);
+		fprintf(TST, "id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		fprintf(TST, "K_matrix = %g\nK_inclusion = %g\nK_layer = %g\n\n", K1, K2, K3);
+		fprintf(TST, "M = %i\nM_max_add = %i\n\n", M, M_max_add);
+		fclose (TST);
+
+		printf("N = %i\nN_elem = %i\nN_max = %i\nlagrange = %g\n\n", N0, N_elem, N_max, lagrange);
+		printf("id_visual = %i\nNX = %i\nNY = %i\naxis = %i  axis_I = %i  axis_II = %i\nsection = %g  section_I = %g  section_II = %g\n\n", 
+			id_visual, NX, NY, axis, axis_I, axis_II, section, section_I, section_II);
+		printf("K_matrix = %g\nK_inclusion = %g\nK_layer = %g\n\n", K1, K2, K3);
+		printf("M = %i\nM_max_add = %i\n\n", M, M_max_add);
+
+		goto test;
+	}
+	user_Count    (id_DATA, 0, upper_limit, '\x0');
+	if (user_Count(id_DATA, count = 0, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N0 = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_elem = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) N_max = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) lagrange = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) id_visual = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NX = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) NY = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_I = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) axis_II = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_I = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) section_II = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K1 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K2 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) K3 = user_strtod(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) M = atoi(buf);
+
+	if (user_Count(id_DATA, count, count, '=') && 
+		 user_Read (buf, id_DATA, count, upper_limit)) M_max_add = atoi(buf);
+
+///////////////////////////////////////
+//...creating model from initiual data;
+test:
+	CDraft<double> * sm = CreateDraftR(HEAT3D_DRAFT, 7);
+	sm->set_fasa_hmg(pp[0] = .05/(2.*M), pp[1] = (ll_rad+1.)*.05/(2.*M), K1, K2, K3);//...parameters of problem;
+	sm->set_mpls(PackInts(N0, N0));				//...space degree of multipoles;
+	sm->set_quad(PackInts(N_elem, N_max));		//...N_elem, N_max -- parameters of quadrature;
+	sm->set_normaliz(0.92);							//...normalization coefficient;
+	sm->set_lagrange(lagrange);					//...Lagrange coefficient for energy;
+	sm->change_solv (lagrange ? E_PERIODIC_SOLVING : PERIODIC_SOLVING);
+	sm->solver.change_state(EXTERN_STATE);
+	sm->solver.set_mode(REGUL_BOUNDARY/* | *//*PRINT_MODE*//*FULLY_MODE*//* | MASKS_MODE*//* | ACCUMULATION*/);
+	yes = 0;
+
+////////////////////
+//...\EF\E5\F7\E0\F2\E0\E5\EC \F8\E0\EF\EA\F3;
+	res = system("mkdir ./heat3d_homog");
+	FILE * TST = fopen("./heat3d_homog/heat3d_homog.dat", "a");
+	if (TST) fprintf(TST, "c0              c1            kk         kH          kk_low      kk_max      (N = %i, K_matrix = %g, K_inclu = %g, K_layer = %g))\n", N0, K1, K2, K3);
+	if (TST)	fclose (TST);
+
+//////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\F3 \E0\E3\E3\F0\E5\E3\E0\F6\E8\E8;
+	for (k = 0; k <= M_max_add; k++) {
+		M_add = k;
+
+////////////////////////////////////////////////////////////////////////////
+//...\E3\E5\ED\E5\F0\E8\EC \F1\F2\F0\F3\EA\F2\F3\F0\F3 \E2\EA\EB\EB\FE\F7\E5\ED\E8\E9 (\E8 \EF\E5\F0\E5\F3\F1\F2\E0\ED\E0\E2\EB\E8\E2\E0\E5\EC \E3\E5\EE\EC\E5\F2\F0\E8\FE \E2\EA\EB\FE\F7\E5\ED\E8\E9);
+		CGrid * nd_stru = CreateNodes(); nd_stru->add_params(2);
+		par[0] = 0.; par[1] = A;
+		par[2] = 0.; par[3] = B;
+		par[4] = 0.; par[5] = C;
+		for (int mZ = 1; mZ < 2*(M+2*M_add); mZ += 2) 
+		for (int mY = 1; mY < 2*(M+2*M_add); mY += 2)
+		for (int mX = 1; mX < 2*(M+2*M_add); mX += 2)
+			if (nd_stru->add_new_point(mX/(2.*(M+2*M_add)), mY/(2.*(M+2*M_add)), mZ/(2.*(M+2*M_add)), 0., 0., 1., pp)) nd_stru->hit[nd_stru->N-1] = nd_stru->N;
+
+//////////////////////////////////////////////
+//...\EF\EE\F1\F2\F0\EE\E5\ED\E8\E5 \F0\E5\F8\E5\F2\EA\E8 \E4\EB\FF \F1\E8\F1\F2\E5\EC\FB \E2\EA\EB\FE\F7\E5\ED\E8\E9;
+		CGrid * lt = CreateNodes();
+				  lt->grid_lattice(nd_stru, par);
+		if (! k) {
+			c0 = par[6]; c1 = par[7];
+		}
+
+/////////////////////////////////////////////////
+//...\E7\E0\E4\E0\ED\E8\E5 \EC\EE\E4\E5\EB\E8 \E8 \E3\F0\E0\ED\E8\F7\ED\FB\F5 \F3\F1\EB\EE\E2\E8\E9 \F4\F3\ED\EA\F6\E8\E5\E9;
+		if (sm) {
+			sm->GetLatticeBox3DStruct(lt->X, lt->Y, lt->Z, lt->N, lt->N1, lt->N2, CLAYER_BLOCK);
+			sm->SetBUniStruct (POLY_BLOCK, ERR_GENUS);
+			for (int mZ = M_add; mZ < M+M_add; mZ++) 
+			for (int mY = M_add; mY < M+M_add; mY++)
+			for (int mX = M_add; mX < M+M_add; mX++)
+				sm->SetBUniStruct(mX+(M+2*M_add)*(mY+(M+2*M_add)*mZ), CLAYER_BLOCK, ERR_GENUS);
+		}
+		delete nd_stru;
+		delete lt;
+
+///////////////////////////
+//...solving of the probem;
+		Num_Comput temp_comput;
+		if (sm->computing_kernel(temp_comput = sm->N > 1 ? MAPPING_COMPUT : PERIOD_COMPUT) != OK_STATE) {
+			Message("Error in sample counting...");
+			delete sm;
+			goto err;
+		}
+#ifdef ___MPI_INIT___
+		if (sm->solver.id_change == EXTERN_STATE) {
+			CSlvParam params;
+			params.msglev = 3;
+			params.ittype = 2;
+			params.sttype = 1;
+			params.niter = 300;
+			params.eps = 1.0e-12;
+
+			params.tau1 = 1.0e-2;
+			params.tau2 = 1.0e-4;
+			params.theta = 0.10e0;
+
+			char strbuff[256];
+			sprintf (strbuff,"%s%i%s","BsSolver_",comm_mpi.GetMyid(),".dat");
+
+			std::ofstream fout (strbuff);
+			params.collap = 4;
+
+			sm->shapes_init(NO_STATE); 
+			BCM_draft<double> pBCM = {sm, temp_comput};
+			AbstractParSolver (& pBCM, 
+									(void *)&comm_mpi,
+									fout, params,
+									Number_of_Blocks<double>, Blocks_Partitioning<double>, 
+									Blocks_Sparsity<double>, Blocks_Row<double>, 
+									Right_Handside<double>, Initial_Guess<double>, Store_Solution<double>);
+			sm->shapes_init(OK_STATE); 
+		}
+#endif
+
+//////////////////
+//..visualization;
+#ifdef ___MPI_INIT___
+		if (comm_mpi.GetMyid() == 0) 
+#endif
+		{
+			double K[7] = {0.,0.,0.,0.,0.,0.}, kH, kk, kk_low, kk_max; K[6] = (par[1]-par[0])*.5;
+
+			sm->GetRigidy(K, -1,		BASIC_COMPUT);
+			sm->GetRigidy(K, -1, COVERING_COMPUT);
+
+			kk		 =  K[2]/(K[3]+K[4]+K[5]);
+			kk_low = (K[3]+K[4]+K[5])/(K[3]/K1+K[4]/K2+K[5]/K3);
+			kk_max = (K[3]*K1+K[4]*K2+K[5]*K3)/(K[3]+K[4]+K[5]);
+
+			kH = sm->TakeEshelby(c0, c1);
+
+			FILE * TST = fopen("./heat3d_homog/heat3d_homog.dat", "a");
+			if (TST) fprintf(TST, "%g    %g    %g    %g    %g    %g\n", c0, c1, kk, kH, kk_low, kk_max);
+			if (TST)	fclose (TST);
+
+	//////////////////
+	//..visualization;
+			if (id_visual) { //..visualization;
+				CGrid_el * nd = new CGrid_el;
+				if (axis == AXIS_Z) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+					nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section)*.5);
+				}
+				if (axis == AXIS_Y) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+					nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section)*.5);
+				}
+				if (axis == AXIS_X) {
+					for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+					for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+					nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section)*.5);
+				}
+				nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+				for (i = 0; i < nd->N;  i++)
+				for (j = 0; j < nd->N1; j++) {
+					int hit = -1;
+					if (axis == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+					if (axis == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+					if (axis == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+					nd->hit[i+j*nd->N] = hit;
+				}
+				sprintf(buf, "./heat3d_homog/rr(%i)", k);	sm->GetSurferFormat(buf, nd, HEAT_VALUE, 0, axis);
+				sprintf(buf, "./heat3d_homog/pp(%i)", k);	sm->GetSurferFormat(buf, nd, FLUX_COMPOS_VALUE, 0, axis);
+
+	///////////////////////////////////////////
+	//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF I (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+				if (id_visual > 1) { 
+					nd->zero_grid();
+					if (axis_I == AXIS_Z) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+						nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_I)*.5);
+					}
+					if (axis_I == AXIS_Y) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+						nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_I)*.5);
+					}
+					if (axis_I == AXIS_X) {
+						for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+						for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+						nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_I)*.5);
+					}
+					nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+					for (i = 0; i < nd->N;  i++)
+					for (j = 0; j < nd->N1; j++) {
+						int hit = -1;
+						if (axis_I == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+						if (axis_I == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+						if (axis_I == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+						nd->hit[i+j*nd->N] = hit;
+					}
+					sprintf(buf, "./heat3d_homog/rr(%i)_I", k);	sm->GetSurferFormat(buf, nd, HEAT_VALUE, 0, axis_I);
+					sprintf(buf, "./heat3d_homog/pp(%i)_I", k);	sm->GetSurferFormat(buf, nd, FLUX_COMPOS_VALUE, 0, axis_I);
+
+	////////////////////////////////////////////
+	//...\E4\EE\EF\EE\EB\ED\E8\F2\E5\EB\FC\ED\FB\E5 \F1\E5\F7\E5\ED\E8\FF II (\E5\F1\EB\E8 \ED\F3\E6\ED\EE);
+					if (id_visual > 2) { 
+						nd->zero_grid();
+						if (axis_II == AXIS_Z) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[1]-par[0])+par[0]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[3]-par[2])+par[2]);
+							nd->add_new_point_Z(par[4]+(par[5]-par[4])*(1.+section_II)*.5);
+						}
+						if (axis_II == AXIS_Y) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[5]-par[4])+par[4]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[1]-par[0])+par[0]);
+							nd->add_new_point_Z(par[2]+(par[3]-par[2])*(1.+section_II)*.5);
+						}
+						if (axis_II == AXIS_X) {
+							for (i = 0; i <= 2*NX; i++) nd->add_new_point_X(.5*i/NX*(par[3]-par[2])+par[2]);
+							for (j = 0; j <= 2*NY; j++) nd->add_new_point_Y(.5*j/NY*(par[5]-par[4])+par[4]);
+							nd->add_new_point_Z(par[0]+(par[1]-par[0])*(1.+section_II)*.5);
+						}
+						nd->hit = (int *)new_struct(nd->N*nd->N1*sizeof(int));
+						for (i = 0; i < nd->N;  i++)
+						for (j = 0; j < nd->N1; j++) {
+							int hit = -1;
+							if (axis_II == AXIS_Z) sm->Poly_struc_in3D(hit, nd->X[i], nd->Y[j], nd->Z[0], NULL_STATE); else
+							if (axis_II == AXIS_Y) sm->Poly_struc_in3D(hit, nd->Y[j], nd->Z[0], nd->X[i], NULL_STATE); else
+							if (axis_II == AXIS_X) sm->Poly_struc_in3D(hit, nd->Z[0], nd->X[i], nd->Y[j], NULL_STATE);
+							nd->hit[i+j*nd->N] = hit;
+						}
+						sprintf(buf, "./heat3d_homog/rr(%i)_II", k);	sm->GetSurferFormat(buf, nd, HEAT_VALUE, 0, axis_II);
+						sprintf(buf, "./heat3d_homog/pp(%i)_II", k);	sm->GetSurferFormat(buf, nd, FLUX_COMPOS_VALUE, 0, axis_II);
+					}
+				}
+				delete nd;
+			}
+		}
 	}
 	delete sm;
 }
@@ -3689,8 +6937,8 @@ int N_spinel = 2;
 {
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(/*MINDL3D_DRAFT*/COHES3D_DRAFT, 8),
-						* el = CreateDraft(LAME3D_DRAFT,  8);
+	CDraft<double> * sm = CreateDraftR(/*MINDL3D_DRAFT*/COHES3D_DRAFT, 8),
+						* el = CreateDraftR(LAME3D_DRAFT,  8);
 	double nju1 = 0.4, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
 			 nju2 = 0.22, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
 			 K1   = 1.0,  //...\EE\E1\FA\E5\EC\ED\FB\E9 \EC\EE\E4\F3\EB\FC \EC\E0\F2\F0\E8\F6\FB;
@@ -3740,12 +6988,60 @@ int N_spinel = 2;
 	delete el;
 }
 #endif
+#ifdef LAME3D_LAYERED_ESHELBY_HOMOGENIZATION
+{
+//////////////////////////
+//...model initialization;
+	CDraft<double> * sm = CreateDraftR(COHES3D_DRAFT, 8),
+						* lm = CreateDraftR(LAME2D_DRAFT, 8);
+	double nju1 = 0.30, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
+			 nju2 = 0.30, //...\F1\EB\EE\E9;
+			 nju3 = 0.22, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
+			 E1   = 0.012,//...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\E0\F2\F0\E8\F6\FB;
+			 E2   = 0.045,//...\F1\EB\EE\E9;
+			 E3   = 30.,  //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E2\EA\EB\FE\F7\E5\ED\E8\FF;
+			 kk1	= E1*(.5+nju1)/(1.+nju1), //...\EC\EE\E4\F3\EB\FC \F0\E0\F1\F2\FF\E6\E5\ED\E8\FF/\F1\E6\E0\F2\E8\FF \EC\E0\F2\F0\E8\F6\FB;
+			 kk2	= E2*(.5+nju2)/(1.+nju2), //...\F1\EB\EE\E9;
+			 kk3	= E3*(.5+nju3)/(1.+nju3), //...\EC\EE\E4\F3\EB\FC \F0\E0\F1\F2\FF\E6\E5\ED\E8\FF/\F1\E6\E0\F2\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\FF;
+			 l0	= 0.10, //...interphase layer;
+			 c0   = 0.20, //...volume fraction; 
+			 G1, G2, GH = 0., G0, EH, E_min, E_max, KH, KK = 0., KD;
+
+///////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8;
+	const int N = 3;
+	double ff[N] = {(1.-c0)*2./3., (1.-c0)*1./3., c0}, kk[N] = {kk1, kk2, kk3}, ll[N] = {l0, l0, l0}, 
+			 mu[N] = {2.*E1*(1.+nju1), 2.*E2*(1.+nju2), 2.*E3*(1.+nju3)}; 
+	//double ff[N] = {(1.-c0), c0}, kk[N] = {kk1, kk2}, ll[N] = {l0, l0}, 
+	//		 mu[N] = {2.*E1*(1.+nju1), 2.*E2*(1.+nju2)}; 
+	FILE * TST = fopen("Layered_homog.dat", "w");
+	for (int j = 0; j <= 1000; j += 1) {
+		c0 = j*.001; ff[0] = (1.-c0)*2./3.; ff[1] = (1.-c0)*1./3.; ff[2] = c0;
+		
+		E_min = sm->TakeLayer_kk(N, ff, kk); E_max = 0.;
+		EH = sm->TakeLayer_kk(N, ff, kk, ll);
+		for (int i = 0; i < N; i++) E_max += ff[i]*kk[i];
+
+		KH = lm->TakeLayer_kk(N, ff, kk, mu); GH = 0.;
+		KD = ((kk[0]-kk[2])-ff[1]/(ff[0]+ff[1])*(1.+(kk[2]-kk[1])/(kk[1]+mu[1]))*(kk[0]-kk[1]))/(1.+ff[1]/(ff[0]+ff[1])*(kk[0]-kk[1])/(kk[1]+mu[1]));
+		KK = kk[2]+(ff[0]+ff[1])*KD/(1.+ff[2]*KD/(kk[2]+mu[2]));
+		//GH = lm->TakeLayer_GG(N, ff, kk, mu);
+
+		lm->set_fasa_hmg(nju1, nju2, E1/(1.+nju1)*.5, E2/(1.+nju2)*.5, nju3, E3/(1.+nju3)*.5);
+		KD = lm->TakeEshelby_volm(ff[0], ff[1]);
+
+  		fprintf(TST, " l0 = %g, c0 = %g, EH = %g, E_min = %g, E_max = %g, KH = %g, GH = %g, KK = %g, KD = %g\n", l0, c0, EH, E_min, E_max, KH, GH, KK, KD);
+	}
+	fclose (TST);
+	delete sm;
+}
+#endif
 #ifdef ESHELBY_CALCULATIONS
 {
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(MINDL3D_DRAFT, 8),
-						* el = CreateDraft(LAME3D_DRAFT,  8);
+	CDraft<double> * sm = CreateDraftR(MINDL3D_DRAFT, 8),
+						* el = CreateDraftR(LAME3D_DRAFT,  8);
 ////////////////////////////////////////////////////////
 //...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - \C2\CF\CC2;
 	//double nju1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
@@ -3825,18 +7121,19 @@ int N_spinel = 2;
 {
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(COHES3D_DRAFT, 8),
-						* el = CreateDraft(LAME3D_DRAFT,  8);
+	CDraft<double> * sm = CreateDraftR(COHES3D_DRAFT, 8),
+						* el = CreateDraftR(LAME3D_DRAFT,  8);
 //////////////////////////////////////////////////////////////
 //...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - \EC\E0\F2\F0\E8\F6\E0 Al;
-	//double nju1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
-	//		 nju3 = 0.30, //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9;
-	//		 E1   = 15.6, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-	//		 E3   = 57.5, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
-	//		 G1   = E1/(1.+nju1)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-	//		 G3   = E3/(1.+nju3)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
-	//		 l1	= 0.2455,  //...\F0\E0\E7\EC\E5\F0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (\EC\EA\EC, 16.365*0.015);
-	//		 eps	= 26.; //...\EF\EE\F0\E8\F1\F2\EE\F1\F2\FC (%);
+	double nju1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
+			 nju3 = 0.30, //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9;
+			 E1   = 62.0, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 //E1   = 70.0, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 E3   = 89.2, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
+			 G1   = E1/(1.+nju1)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 G3   = E3/(1.+nju3)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
+			 l1	= 0.2455,  //...\F0\E0\E7\EC\E5\F0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (\EC\EA\EC, 16.365*0.015);
+			 eps	= 26.; //...\EF\EE\F0\E8\F1\F2\EE\F1\F2\FC (%);
 //////////////////////////////////////////////////////////////////
 //...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - \EC\E0\F2\F0\E8\F6\E0 Al-B95;
 	//double nju1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
@@ -3852,8 +7149,8 @@ int N_spinel = 2;
 	//double nju2 = 0.25, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
 	//		 E2   = 500., //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
 	//		 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \EC\E0\F2\F0\E8\F6\FB (GPa);
-	//		 l2	= 0.0015,  //...\EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC);
-	//		 rad = 0.015,   //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
+	//		 l2	= 0.0015, //...\EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC);
+	//		 rad = 0.1,  	 //...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\E0\FF \F8\E8\F0\E8\ED\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E9 \E7\EE\ED\FB;
 	//		 c0  = 0.0001,  //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
 	//		 \D11, \D12, GH = 0., KH, G0, K0, EH, nuH, E0, nu0, ff, ff_l, ll, kk;
 ///////////////////////////////////////////////////////////////////
@@ -3861,19 +7158,19 @@ int N_spinel = 2;
 	//double nju2 = 0.24, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
 	//		 E2   = 293., //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
 	//		 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \EC\E0\F2\F0\E8\F6\FB (GPa);
-	//		 l2	= 0.05,  //...\EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC);
+	//		 l2	= 0.1,	//...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\E0\FF \F8\E8\F0\E8\ED\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E9 \E7\EE\ED\FB;
 	//		 rad = 0.500,  //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
-	//		 c0  = 0.0001,  //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
+	//		 c0  = 0.0001, //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
 	//		 \D11, \D12, GH = 0., KH, G0, K0, EH, nuH, E0, nu0, ff, ff_l, ll, kk;
 /////////////////////////////////////////////////////////////////
 //...\E8\F1\F5\EE\E4\ED\FB\E5 \E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - ZrO2;
-	//double nju2 = 0.31, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
-	//		 E2   = 578.,  //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \EC\E0\F2\F0\E8\F6\FB (GPa);
-	//		 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \EC\E0\F2\F0\E8\F6\FB (GPa);
-	//		 l2	= 0.0015, //...\EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC);
-	//		 rad = 0.015,   //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
-	//		 c0  = 0.001,   //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \EC\E0\EA\F1\E8\EC\E0\EB\FC\ED\EE\E9 \EA\EB\E0\F1\F2\E5\F0\E8\E7\E0\F6\E8\E8 \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
-	//		 \D11, \D12, GH = 0., KH, G0, K0, EH, nuH, E0, nu0, ff, ff_l, ll, kk;
+	double nju2 = 0.31, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
+			 E2   = 205.,  //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 l2	= 0.03,	 //...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\E0\FF \F8\E8\F0\E8\ED\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E9 \E7\EE\ED\FB;
+			 rad = 0.015,   //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
+			 c0  = 0.001,   //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \EC\E0\EA\F1\E8\EC\E0\EB\FC\ED\EE\E9 \EA\EB\E0\F1\F2\E5\F0\E8\E7\E0\F6\E8\E8 \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
+			 \D11, \D12, GH = 0., KH, G0, K0, EH, E_min, E_max, nuH, E0, nu0, ff, ff_l, ll, ll0, kk, l1_limit, AA, BB;
 ////////////////////////////////////////////////////////////////
 //...\E8\F1\F5\EE\E4\ED\FB\E5 \E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - SiC;
 	//double nju2 = 0.16, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
@@ -3885,24 +7182,67 @@ int N_spinel = 2;
 	//		 \D11, \D12, GH = 0., KH, G0, K0, EH, nuH, E0, nu0, E_max, ff, ff_l, ll, kk;
 ///////////////////////////////////////////////////////////////////////////
 //...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \FD\EF\EE\EA\F1\E8\E4\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - SiO2;
-	double nju1 = 0.39, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
-			 nju2 = 0.20, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
-			 E1   = 2.51, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \FD\EF\EE\EA\F1\E8\E4\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-			 E2   = 87.5, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \F1\F2\E5\EA\EB\FF\ED\ED\FB\F5 \F8\E0\F0\E8\EA\EE\E2 (GPa);
-			 //E2   = 56.0, //...\E0\EB\FC\F2\E5\F0\ED\E0\F2\E8\E2\ED\FB\E9 \EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \F1\F2\E5\EA\EB\FF\ED\ED\FB\F5 \F8\E0\F0\E8\EA\EE\E2 (GPa);
-			 G1   = E1/(1.+nju1)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EF\EE\EB\E8\EC\E5\F0\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-			 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
-			 rad  = 0.015, //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \ED\E0\ED\EE\E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
-			 l1	= 0.100, //...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\FB\E9 \EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \EC\E0\F2\F0\E8\F6\FB (\EC\EA\EC);
-			 l2	= 0.030, //...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\FB\E9 \EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC);
-			 c0   = 0.001, //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
-			 \D11, \D12, GH = 0., KH, G0, K0, EH, E_min, E_max, nuH, E0, nu0, ff, ff_l, ll, kk;
+	//double nju1 = 0.39, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
+	//		 nju2 = 0.20, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
+	//		 E1   = 2.51, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \FD\EF\EE\EA\F1\E8\E4\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+	//		 E2   = 87.5, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \F1\F2\E5\EA\EB\FF\ED\ED\FB\F5 \F8\E0\F0\E8\EA\EE\E2 (GPa);
+	//		 //E2   = 56.0, //...\E0\EB\FC\F2\E5\F0\ED\E0\F2\E8\E2\ED\FB\E9 \EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \F1\F2\E5\EA\EB\FF\ED\ED\FB\F5 \F8\E0\F0\E8\EA\EE\E2 (GPa);
+	//		 G1   = E1/(1.+nju1)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EF\EE\EB\E8\EC\E5\F0\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+	//		 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
+	//		 rad  = 0.015, //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \ED\E0\ED\EE\E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
+	//		 l1	= 0.100, //...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\FB\E9 \EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \EC\E0\F2\F0\E8\F6\FB (\EC\EA\EC);
+	//		 l2	= 0.030, //...\EE\F2\ED\EE\F1\E8\F2\E5\EB\FC\ED\FB\E9 \EC\E0\F1\F8\F2\E0\E1\ED\FB\E9 \EF\E0\F0\E0\EC\E5\F2\F0 \E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC);
+	//		 c0   = 0.001, //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
+	//		 \D11, \D12, GH = 0., KH, G0, K0, EH, E_min, E_max, nuH, E0, nu0, ff, ff_l, ll, kk;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F2\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EE\F6\E5\ED\EA\E0 \EC\EE\E4\F3\EB\FF \DE\ED\E3\E0 \EF\EE \EF\EE\F0\E8\F1\F2\EE\F1\F2\E8);
+	//FILE * TST = fopen("Alumo3D_eps.dat", "w");
+	//for (int j = 1; j <= 26; j += 1) {
+	//	ff = j*0.01;
+	//	el->set_fasa_hmg(nju1, nju2, G1, 0.);
+
+	//	K0 = el->TakeEshelby_volm_two (ff);
+	//	G0 = el->TakeEshelby_shear_two(ff);
+
+	//	E0 = 9.*K0*G0/(3.*K0+G0);
+
+	//	fprintf(TST, " c0 = %g, K0 = %g, G0 = %g, E0 = %g\n", ff*100, K0, G0, E0);
+	//}
+	//fclose (TST);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EE\F6\E5\ED\EA\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF);
+int  N_data = 1;
+//double data[] = {0.1, 16.3647, 0.5, 9.15491, 1., 7.06, 1.5, 6.04102},
+double data[] = {0.1, 16.3647, 0.5, 8.14284, 1., 4.44806, 1.5, 3.02},
+		 coef[] = {0., 0., 0.};
+	//FILE * TST = fopen("Alumo3D_strata.dat", "w");
+	//for (int j = 1; j <= 2000; j += 1) {
+	//	ff = .0005; ll = j*.01; if (ll > (ll0 = pow(M_PI/(6.*ff), 1./3.)-1.)) ll = ll0;
+	//	ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.);
+
+	//	E3 = 67.; G3 = E3/(1.+nju3)*.5;
+	//	el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
+
+	//	K0 = el->TakeEshelby_volm (ff, ff_l);
+	//	G0 = el->TakeEshelby_shear(ff, ff_l);
+
+	//	E0 = 9.*K0*G0/(3.*K0+G0);
+	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
+
+	//	fprintf(TST, " c0 = %g, c1 = %g, l1/rad = %g, K0 = %g, G0 = %g, E0 = %g\n", ff, ff_l, ll, K0, G0, E0);
+	//}
+	//fclose (TST);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EE\F6\E5\ED\EA\E0 E3);
-	//FILE * TST = fopen("Alumo3D_limit.dat", "w");
-	//for (int j = 1; j <= 1000; j += 1) {
-	//	ff = .0015; ll = l1/0.015; ll = 6.04;
+int  N_table = 5;
+//double table_EL[][2] = {{0.01, 89.2},{0.05, 71.8},{0.10, 60.},{0.15, 67.6},{0.20, 67.6}};
+double table_EL[][2] = {{0.01, 89.2},{0.05, 75.8},{0.10, 55.7},{0.15, 100.},{0.20, 105.}};
+	//FILE * TST = fopen("Alumo3D_rigidity.dat", "w");
+	//for (int k = 4, j = 1; j <= 3000; j += 1) {
+	//	ff = data[k]*0.001; ll = pow(M_PI/(6.*ff), 1./3.)-1.; ll = data[k+1];
 	//	ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.);
 
 	//	E3 = 10+j*.1;
@@ -3911,165 +7251,102 @@ int N_spinel = 2;
 
 	//	K0 = el->TakeEshelby_volm (ff, ff_l);
 	//	G0 = el->TakeEshelby_shear(ff, ff_l);
-
 	//	E0 = 9.*K0*G0/(3.*K0+G0);
-	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
 
-	//	fprintf(TST, " c0 = %g, c1 = %g, l1/rad = %g, E3 = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", ff, ff_l, ll, E3, K0, G0, E0, nu0);
+	//	fprintf(TST, " c0 = %g, c1 = %g, l1/rad = %g, E3 = %g, K0 = %g, G0 = %g, E0 = %g\n", ff, ff_l, ll, E3, K0, G0, E0);
 	//}
 	//fclose (TST);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EE\F6\E5\ED\EA\E0 \F0\E0\E4\E8\F3\F1\E0 \EA\EB\E0\F1\F2\E5\F0\E0);
-	//FILE * TST = fopen("Alumo3D_aglom.dat", "w");
-	//for (int j = 1; j <= 500; j += 1) {
-	//	ff = .001; ll = 3+j*.01;
-	//	ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \E0\EF\EF\F0\EE\EA\F1\E8\EC\E0\F6\E8\FF \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF);
+	kk  = strata_approx(N_data, data, ll0 = pow(M_PI/(6.*0.0001), 1./3.)-1.);
+	res = strata_approx(N_data, data, coef);
 
-	//	el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
+	FILE * TST = fopen("Alumo3D_homog.dat", "w");
+	fprintf(TST, " coef = %g", coef[0]); 
+	for (int j = 1; j <= N_data; j++) fprintf(TST, ", %g", coef[j]);	fprintf(TST, "\n"); 
+	fprintf(TST, " ll0 = %g, %g\n", ll0, kk); 
+	for (int j = 1; j <= 2000; j += 1) {
+		ff = j*.00001; ll = strata_aglom(ff/0.001, 0.1, kk, ll0);/* if (ff >= 0.0001) ll = pow(M_PI/(6.*ff), 1./3.)-1.;*/
+		//E3 = table_approx(ff*100., table_EL, N_table); G3 = E3/(1.+nju3)*.5;
+		E3 = rigid_approx(ff*100., table_EL[0][1]+5., table_EL[4][1]+20., table_EL[2][1], table_EL[2][0], table_EL[0][1], table_EL[1][1], table_EL[3][1],
+			table_EL[0][0]/table_EL[2][0]-1, table_EL[1][0]/table_EL[2][0]-1, table_EL[3][0]/table_EL[2][0]-1); G3 = E3/(1.+nju3)*.5;
+		ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.); 
+		
+		rad = aglom_approx(ff/0.001, 4., 0.3, 0.015, 0.1);
+		if (ff < 0.0001) rad = l1/ll; l1_limit = rad*(pow(M_PI/(6.*ff), 1./3.)-1.);
 
-	//	K0 = el->TakeEshelby_volm (ff, ff_l);
-	//	G0 = el->TakeEshelby_shear(ff, ff_l);
+		el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
 
-	//	E0 = 9.*K0*G0/(3.*K0+G0);
-	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
+		K0 = el->TakeEshelby_volm (ff, ff_l);
+		G0 = el->TakeEshelby_shear(ff, ff_l);
+		E0 = 9.*K0*G0/(3.*K0+G0);
 
-	//	fprintf(TST, " c0 = %g, c1 = %g, l1/rad = %g, rad = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", ff, ff_l, ll, l1/ll, K0, G0, E0, nu0);
-	//}
-	//fclose (TST);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \F4\E8\EA\F1\E8\F0\EE\E2\E0\ED\ED\FB\E9 \F1\EB\EE\E9);
-	//double table_lrad[][2] = {{0.0001, 16.365},{0.0005, 9.155},{0.0006, 7.60},{0.0007, 6.63},{0.0008, 5.81},{0.0009, 5.10},{0.0010, 4.72},{0.0015, 5.23},{0.0020, 5.4}},
-	//		 table_EL  [][2] = {{0.0001,   57.5},{0.0005,  30.3},{0.0006, 30.0},{0.0007, 29.7},{0.0008, 29.4},{0.0009, 29.1},{0.0010, 28.9},{0.0015, 28.9},{0.0020, 28.8}},
-	//		 table_rad [][2] = {{0.0001,  0.015},{0.0005,  0.40},{0.0006, 0.42},{0.0007, 0.44},{0.0008, 0.46},{0.0009, 0.48},{0.0010, 0.50},{0.0015, 0.50},{0.0020, 0.50}};
-	//int N_table = 9;
-
-	//FILE * TST = fopen("Alumo3D_layer.dat", "w");
-	//for (int j = 1; j <= 200; j += 1) {
-	//	ff = j*.00001; /*ll = 16.365*sqrt(1.162506)/sqrt(1.+sqr(ff/c0)*(15.607+7.43633*(ff/c0))); 
-	//	if (ff > c0) ll = 16.365*sqrt(1.162506)/sqrt(24.04333); rad =l1/(16.365*sqrt(1.162506))*sqrt(24.04333);*/
-	//	ll = table_approx(ff, table_lrad, N_table);
-	//	E3 = table_approx(ff, table_EL,   N_table);
-	//	G3 = E3/(1.+nju3)*.5;
-	//	rad = table_approx(ff, table_rad, N_table);
-	//	ff_l = ff*(sqr(1+ll)*(1+ll)-1.);
-
-	//	el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
-
-	//	K0 = el->TakeEshelby_volm (ff, ff_l);
-	//	G0 = el->TakeEshelby_shear(ff, ff_l);
-
-	//	E0 = 9.*K0*G0/(3.*K0+G0);
-	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
-
-	//	fprintf(TST, " rad = %g, l1/rad = %g, c0 = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", rad/*l1/ll*/, ll, ff, K0, G0, E0, nu0);
-	//}
-	//fclose (TST);
-
-////////////////////////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \EA\EE\EC\EF\EE\E7\E8\F2\E0 \EF\EE \E3\F0\E0\E4\E8\E5\ED\F2\ED\EE\E9 \EC\EE\E4\E5\EB\E8;
-	FILE * TST = fopen("Alumo3D_grad.dat", "w");
-	for (int j = 0; j <= 1000; j += 1) {
-		ff = c0*j;
-		sm->set_fasa_hmg(nju1, nju2, G1, G2, \D11 = G1/sqr(l1), G2/sqr(l2));
-
-		KH = sm->TakeEshelby_volm_two (ff);
-		GH = sm->TakeEshelby_shear_two(ff);
-
-		EH = 9.*KH*fabs(GH)/(3.*KH+fabs(GH));
-		nuH = (3.*KH-2.*fabs(GH))/(3.*KH+fabs(GH))*.5;
-
-		E_min = 1./(ff/E2+(1.-ff)/E1);
-		E_max = ff*E2+(1.-ff)*E1;
-
-		//fprintf(TST, " l1 = %g, l2 = %g, c0 = %g, KH = %g, GH = %g, EH = %g, E_min = %g, , E_max = %g, , nuH = %g\n", l1, l2, ff, KH, GH, EH, E_min, E_max, nuH);
-		fprintf(TST, " %g, %g, %g, %g\n", ff, EH, E_min, E_max);
+		//fprintf(TST, " c0 = %g, l1/rad = %g, rad = %g, l1 = %g, l1_limit = %g, E3 = %g, K0 = %g, G0 = %g, E0 = %g\n", ff*100., ll, rad, ll*rad, l1_limit, E3, K0, G0, E0);
+		fprintf(TST, " %g, %g, %g, %g, %g, %g, %g, %g, %g\n", ff*100., ll, rad, ll*rad, l1_limit, E3, K0, G0, E0);
 	}
 	fclose (TST);
 
-//////////////////////////////////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \F5\E0\F0\E0\EA\F2\E5\F0\E0 \ED\E0\F1\FB\F9\E5\ED\E8\FF \EF\EE \E3\F0\E0\E4\E8\E5\ED\F2\ED\EE\E9 \EC\EE\E4\E5\EB\E8;
-	//FILE * TST = fopen("Alumo3D_saturat.dat", "w");
-	//for (int j = 1; j <= 1000; j += 1) {
-	//	ff = c0; ll = l1*j*0.001;
-	//	sm->set_fasa_hmg(nju1, nju2, G1, G2, \D11 = G1/sqr(ll), G2/sqr(l2/rad));
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 \EF\EE \E3\F0\E0\E4\E8\E5\ED\F2\ED\EE\E9 \EC\EE\E4\E5\EB\E8(\EE\F6\E5\ED\EA\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF);
+double data_grad[] = {0.1, 16.3647, 0.5, 5.3992/*4.8*//*4.46*/, 1., 0.01, 1.5, 1.86};
 
-	//	KH = sm->TakeEshelby_volm_two (ff);
-	//	GH = sm->TakeEshelby_shear_two(ff);
+//	FILE * TST = fopen("Alumo3D_strata_grad.dat", "w");
+//	for (int k = 6, j = 1; j <= 2000; j += 1) {
+//		ff = data_grad[k]*0.001; ll = j*.01;
+//
+//		AA = 55270.2;
+//		KH = TakeSphere_volm_two (ff, nju1, nju2, E1, E2, ll, l2, AA);
+//		GH = TakeSphere_shear_two(ff, nju1, nju2, E1, E2, ll, l2, AA);
+//		EH = 9.*KH*fabs(GH)/(3.*KH+fabs(GH));
+//
+//		fprintf(TST, " c0 = %g, l1/rad = %g, K0 = %g, G0 = %g, E0 = %g\n", ff, ll, KH, GH, EH);
+//	}
+//	fclose (TST);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8, \F2\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC - \F0\E0\F1\F7\E5\F2 \EA\EE\EC\EF\EE\E7\E8\F2\E0 \EF\EE \E3\F0\E0\E4\E8\E5\ED\F2\ED\EE\E9 \EC\EE\E4\E5\EB\E8 (\EE\F6\E5\ED\EA\E0 \E0\E4\E3\E5\E7\E8\E8);
+	double table_AA[][2] = {{0.01, 55270.2},{0.05, 53936.2},{0.10, 1000.2},{0.15, 55270.2},{0.20, 70000.2}};
+
+	//FILE * TST = fopen("Alumo3D_adhes.dat", "w");
+	//for (int k = 6, j = 0; j <= 2000; j += 1) {
+	//	ll = pow(M_PI/(6.*(ff = 0.0001)), 1./3.)-1.; ff = data_grad[k]*0.001; ll = data_grad[k+1];
+	//	ff = 0.002; ll = 1.39761;
+
+	//	AA = 60000.2+j*10.;
+
+	//	KH = TakeSphere_volm_two (ff, nju1, nju2, E1, E2, ll, l2, AA);
+	//	GH = TakeSphere_shear_two(ff, nju1, nju2, E1, E2, ll, l2, AA);
 	//	EH = 9.*KH*fabs(GH)/(3.*KH+fabs(GH));
-	//	nuH = (3.*KH-2.*fabs(GH))/(3.*KH+fabs(GH))*.5;
 
-	//	fprintf(TST, " l1 = %g, l2 = %g, c0 = %g, KH = %g, GH = %g, EH = %g, nuH = %g\n", ll, l2/rad, ff, KH, GH, EH, nuH);
+	//	E_min = 1./(ff/E2+(1.-ff)/E1);
+	//	E_max = ff*E2+(1.-ff)*E1;
+
+	//	//fprintf(TST, " l1 = %g, l2 = %g, c0 = %g, KH = %g, GH = %g, EH = %g, E_min = %g, , E_max = %g, , nuH = %g\n", l1, l2, ff, KH, GH, EH, E_min, E_max, nuH);
+	//	fprintf(TST, " %g, %g, %g, %g\n", ff*100., ll, AA, EH);
 	//}
 	//fclose (TST);
 
-///////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0;
-	//FILE * TST = fopen("Alumo3D_homog.dat", "w");
-	//for (int j = 1; j <= 5000; j += 1) {
-	//	rad = j*0.002; ll = 1.2/*l1/rad*/; E_max = (1.-c0)*E1+c0*E2; 
-	//	//l2 = 1.158; if (ll > l2) ll = l2; 
-	//	//kk  = rad1-0.5*l1/l2-sqrt(0.25*sqr(l1/l2)+rad0-rad1*l1/l2); if (rad >= rad1) ll *= (rad1-kk)/(rad-kk); 
-	//	//kk  = l1+l2*(rad1-rad0)/4.; if (rad0 < rad && rad < rad1) ll = (kk-l2/(rad1-rad0)*sqr(rad-0.5*(rad1+rad0)))/rad; 
-	//	
-	//	sm->set_fasa_hmg(nju1, nju2, G1, G2, \D11 = G1/sqr(ll), G2*100.);
-	//	el->set_fasa_hmg(nju1, nju2, G1, G2);
+////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 \EF\EE \E3\F0\E0\E4\E8\E5\ED\F2\ED\EE\E9 \EC\EE\E4\E5\EB\E8 \F1 \E0\E4\E3\E5\E7\E8\E5\E9;
+	//kk  = strata_approx(N_data, data_grad, ll0 = pow(M_PI/(6.*0.0001), 1./3.)-1.);
 
-	//	KH = sm->TakeEshelby_volm_two (c0);
-	//	GH = sm->TakeEshelby_shear_two(c0);
+	//FILE * TST = fopen("Alumo3D_grad.dat", "w");
+	//for (int j = 1; j <= 2000; j += 1) {
+	//	ff = j*.00001; ll = strata_aglom(ff/0.001, 0.1, kk, ll0);
+	//	rad = aglom_approx(ff/0.001, 4., 0.3, 0.015, 0.1);
+	//	if (ff < 0.0001) rad = l1/ll; l1_limit = rad*(pow(M_PI/(6.*ff), 1./3.)-1.);
 
-	//	K0 = el->TakeEshelby_volm_two (c0);
-	//	G0 = el->TakeEshelby_shear_two(c0);
+	//	AA = 55270.2;
+	//	AA = rigid_approx(ff*100., table_AA[0][1]+20., table_AA[4][1]+20., table_AA[2][1], table_AA[2][0], table_AA[0][1], table_AA[1][1], table_AA[3][1],
+	//		table_AA[0][0]/table_AA[2][0]-1, table_AA[1][0]/table_AA[2][0]-1, table_AA[3][0]/table_EL[2][0]-1);
 
+	//	KH = TakeSphere_volm_two (ff, nju1, nju2, E1, E2, ll, l2, AA);
+	//	GH = TakeSphere_shear_two(ff, nju1, nju2, E1, E2, ll, l2, AA);
 	//	EH = 9.*KH*fabs(GH)/(3.*KH+fabs(GH));
-	//	E0 = 9.*K0*G0/(3.*K0+G0);
+	//	E_max = ff*E2+(1.-ff)*E1;
 
-	//	nuH = (3.*KH-2.*fabs(GH))/(3.*KH+fabs(GH))*.5;
-	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
-
-	//	//fprintf(TST, " l1/rad = %g, rad = %g, KH = %g, GH = %g, EH = %g, E0 = %g, E_max = %g, nuH = %g\n", ll, rad, KH, GH, EH, E0, E_max, nuH);
-	//	fprintf(TST, " %g, %g, %g, %g, %g, %g, %g\n", ll, rad, KH, GH, EH, E0, ll*rad);
-	//}
-	//fclose (TST);
-
-/////////////////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\E3\EB\EE\EC\E5\F0\E0\F2\E0 \EF\EE \EF\EE\F0\E8\F1\F2\EE\F1\F2\E8;
-	//FILE * TST = fopen("Alumo3D_eps.dat", "w");
-	//for (int j = 0; j <= 0; j += 1) {
-	//	ff = eps*0.01;
-	//	el->set_fasa_hmg(nju1, nju2, G1, 0.);
-
-	//	K0 = el->TakeEshelby_volm_two (ff);
-	//	G0 = el->TakeEshelby_shear_two(ff);
-
-	//	E0 = 9.*K0*G0/(3.*K0+G0);
-	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
-
-	//	fprintf(TST, " l1 = %g, l2 = %g, c0 = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", l1, l2, ff, K0, G0, E0, nu0);
-	//}
-	//fclose (TST);
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EF\F0\E5\E4\E5\EB\FC\ED\FB\E9 \F1\EB\EE\E9);
-	//FILE * TST = fopen("Alumo3D_limit.dat", "w");
-	//for (int j = 1; j <= 200; j += 1) {
-	//	ff = j*.00001; ll = pow(M_PI/(6.*ff), 1./3.)-1.;
-	//	ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.);
-
-	//	el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
-
-	//	K0 = el->TakeEshelby_volm (ff, ff_l);
-	//	G0 = el->TakeEshelby_shear(ff, ff_l);
-
-	//	//K0 = el->TakeEshelby_volm_two (ff);
-	//	//G0 = el->TakeEshelby_shear_two(ff);
-
-	//	E0 = 9.*K0*G0/(3.*K0+G0);
-	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
-
-	//	fprintf(TST, " rad = %g, l1/rad = %g, c0 = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", l1/ll, ll, ff, K0, G0, E0, nu0);
+	//	fprintf(TST, " %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n", ff*100., ll, rad, ll*rad, l1_limit, AA, E_max, KH, GH, EH);
 	//}
 	//fclose (TST);
 
@@ -4081,27 +7358,27 @@ int N_spinel = 2;
 {
 //////////////////////////
 //...model initialization;
-	CDraft<double> * el = CreateDraft(LAME3D_DRAFT,  8);
-/////////////////////////////////////////////////////////////////////////
-////...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - \EC\E0\F2\F0\E8\F6\E0 \EF\EE\F0\E8\F1\F2\FB\E9 Al;
-//	double nju1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
-//			 nju3 = 0.30, //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9;
-//			 //E1   = 70.0, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \F1\EF\EB\EE\F8\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-//			 E1   = 18.0, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EF\EE\F0\E8\F1\F2\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-//			 E3   = 57.5, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
-//			 G1   = E1/(1.+nju1)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
-//			 G3   = E3/(1.+nju3)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
-//			 l1	= 0.200, //...\F0\E0\E7\EC\E5\F0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (\EC\EA\EC);
-//			 eps	= 12.0,   //...\EF\EE\F0\E8\F1\F2\EE\F1\F2\FC (%);
-//			 rad_str	= 3.5; //...\F0\E0\E7\EC\E5\F0 \E7\E5\F0\ED\E0 \E2 \F1\F2\F0\F3\EA\F2\F3\F0\E5 (\EC\EA\EC);
+	CDraft<double> * el = CreateDraftR(LAME3D_DRAFT,  8);
+///////////////////////////////////////////////////////////////////////
+//...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - \EC\E0\F2\F0\E8\F6\E0 \EF\EE\F0\E8\F1\F2\FB\E9 Al;
+	double nju1 = 0.33, //...\EF\EE\EB\E8\EC\E5\F0\ED\E0\FF \EC\E0\F2\F0\E8\F6\E0;
+			 nju3 = 0.30, //...\EC\E5\E6\F4\E0\E7\ED\FB\E9 \F1\EB\EE\E9;
+			 //E1   = 70.0, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \F1\EF\EB\EE\F8\ED\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 E1   = 62.0, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EF\EE\F0\E8\F1\F2\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 E3   = 57.5, //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
+			 G1   = E1/(1.+nju1)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\FF\E3\EA\EE\E9 \EC\E0\F2\F0\E8\F6\FB (GPa);
+			 G3   = E3/(1.+nju3)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (GPa);
+			 l1	= 0.200, //...\F0\E0\E7\EC\E5\F0 \EC\E5\E6\F4\E0\E7\ED\EE\E3\EE \F1\EB\EE\FF (\EC\EA\EC);
+			 eps	= 12.0,   //...\EF\EE\F0\E8\F1\F2\EE\F1\F2\FC (%);
+			 rad_str	= 3.5; //...\F0\E0\E7\EC\E5\F0 \E7\E5\F0\ED\E0 \E2 \F1\F2\F0\F3\EA\F2\F3\F0\E5 (\EC\EA\EC);
 /////////////////////////////////////////////////////////
 //...\E4\E0\ED\ED\FB\E5 \E4\EB\FF \F0\E0\F1\F7\E5\F2\EE\E2 \F1 \E4\E8\F1\EF\E5\F0\F1\ED\FB\EC\E8 \F7\E0\F1\F2\E8\F6\E0\EC\E8 - AL2O3;
-	double nju2 = 0.20, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
-			 E2   = 380., //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
+	double nju2 = 0.31, //...\E6\E5\F1\F2\EA\EE\E5 \E2\EA\EB\FE\F7\E5\ED\E8\E5;  
+			 E2   = 205., //...\EC\EE\E4\F3\EB\FC \DE\ED\E3\E0 \E6\E5\F1\F2\EA\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
 			 G2   = E2/(1.+nju2)*.5,  //...\EC\EE\E4\F3\EB\FC \F1\E4\E2\E8\E3\E0 \E4\E8\F1\EF\E5\F0\F1\ED\EE\E3\EE \E2\EA\EB\FE\F7\E5\ED\E8\FF (GPa);
 			 rad = 0.015,  //...\F5\E0\F0\E0\EA\F2\E5\F0\ED\FB\E9 \F0\E0\E4\E8\F3\F1 \ED\E0\ED\EE\E2\EA\EB\FE\F7\E5\ED\E8\E9 (\EC\EA\EC); 
 			 c0  = 0.001,  //...\EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\FF \E2\EA\EB\FE\F7\E5\ED\E8\E9; 
-			 G0, K0, E0, nu0, ff, ff_l, ll, kk;
+			 G0, K0, E0, nu0, ff, ff_l, ll, l2, kk, GH, KH, EH;
 
 //////////////////////////////////////////////////////////////
 //...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \EC\E0\F2\F0\E8\F6\FB \EF\EE \EF\EE\F0\E8\F1\F2\EE\F1\F2\E8;
@@ -4141,25 +7418,43 @@ int N_spinel = 2;
 	//}
 	//fclose (TST);
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \E0\EB\FE\EC\EE\EA\EE\EC\EF\EE\E7\E8\F2\E0 (\F7\E5\F2\FB\F0\E5\F5\F4\E0\E7\ED\E0\FF \EC\EE\E4\E5\EB\FC, \EB\E8\ED\E5\E9\ED\FB\E9 \F0\EE\F1\F2 \F0\E0\E4\E8\F3\F1\E0 \EE\F2 \EA\EE\ED\F6\E5\ED\F2\F0\E0\F6\E8\E8);
-	FILE * TST = fopen("Alumo3D_layer.dat", "w");
-	for (int j = 1; j <= 3500; j += 1) {
-		ff = j*.00001; kk = pow(6.e2, 1./3.)-1.;	ll = kk/sqrt(1.+sqr(0.3*ff/c0)); 
-		if (ll > (kk = pow(1./ff, 1./3.)-1.)) ll = kk; rad = l1/ll;
-		ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.);
+	//FILE * TST = fopen("Alumo3D_layer.dat", "w");
+	//for (int j = 1; j <= 3500; j += 1) {
+	//	ff = j*.00001; kk = pow(6.e2, 1./3.)-1.;	ll = kk/sqrt(1.+sqr(0.3*ff/c0)); 
+	//	if (ll > (kk = pow(1./ff, 1./3.)-1.)) ll = kk; rad = l1/ll;
+	//	ff_l = ff*(sqr(1.+ll)*(1.+ll)-1.);
 
-		el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
+	//	el->set_fasa_hmg(nju1, nju2, G1, G2, nju3, G3);
 
-		K0 = el->TakeEshelby_volm (ff, ff_l);
-		G0 = el->TakeEshelby_shear(ff, ff_l);
+	//	K0 = el->TakeEshelby_volm (ff, ff_l);
+	//	G0 = el->TakeEshelby_shear(ff, ff_l);
 
+	//	E0 = 9.*K0*G0/(3.*K0+G0);
+	//	nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
+
+	//	//fprintf(TST, " c0 = %g, rad = %g, l1/rad = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", ff*100, rad, ll, K0, G0, E0, nu0);
+	//	fprintf(TST, " %g, %g, %g, %g, %g, %g\n", ff*100, rad, ll, K0, G0, E0);
+	//}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8 - \F0\E0\F1\F7\E5\F2 \EA\EE\EC\EF\EE\E7\E8\F2\E0 \EF\EE \E3\F0\E0\E4\E8\E5\ED\F2\ED\EE\E9 \EC\EE\E4\E5\EB\E8 \F1 \E0\E4\E3\E5\E7\E8\E5\E9;
+	FILE * TST = fopen("Alumo3D_adhes.dat", "w");
+	for (int j = 1; j <= 5000; j += 1) {
+		//ff = j*.00001; ll = 7.; l2 = 0.03;
+		ff = j*.0001; ll = 7.; l2 = 0.03;
+
+		KH = TakeSphere_volm_two (ff, nju1, nju2, E1, E2, ll, l2, -0.1*E2);
+		GH = TakeSphere_shear_two(ff, nju1, nju2, E1, E2, ll, l2, -0.1*E2, -0.1*G2);
+		EH = 9.*KH*GH/(3.*KH+GH);
+
+		K0 = TakeSphere_volm_two (ff, nju1, nju2, E1, E2, ll, l2);
+		G0 = TakeSphere_shear_two(ff, nju1, nju2, E1, E2, ll, l2);
 		E0 = 9.*K0*G0/(3.*K0+G0);
-		nu0 = (3.*K0-2.*G0)/(3.*K0+G0)*.5;
 
-		//fprintf(TST, " c0 = %g, rad = %g, l1/rad = %g, K0 = %g, G0 = %g, E0 = %g, nu0 = %g\n", ff*100, rad, ll, K0, G0, E0, nu0);
-		fprintf(TST, " %g, %g, %g, %g, %g, %g\n", ff*100, rad, ll, K0, G0, E0);
+		//fprintf(TST, " c0 = %g, KH = %g, GH = %g, EH = %g\n", ff*100, KH, GH, EH);
+		fprintf(TST, " %g, %g, %g, %g, %g, %g, %g\n", ff*100, K0, G0, E0, KH, GH, EH);
 	}
 	fclose (TST);
 
@@ -4173,7 +7468,7 @@ int N_spinel = 2;
 
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(MINDL2D_DRAFT, 8);
+	CDraft<double> * sm = CreateDraftR(MINDL2D_DRAFT, 8);
 	sm->set_mpls(PackInts(9, 9)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(16, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(0.92);
@@ -4361,7 +7656,7 @@ int N_spinel = 2;
 {
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(HEAT3D_DRAFT);
+	CDraft<double> * sm = CreateDraftR(HEAT3D_DRAFT);
 	double K1 = 1.7,	//...\EE\EA\F1\E8\E4 \F6\E8\F0\EA\EE\ED\E8\FF (matrtix);
 			 K2 = 30.,	//...\EA\EE\F0\F3\ED\E4 (inclusion);
 			 K3 = 3.,	//...\EF\F0\EE\EC\E5\E6\F3\F2\EE\F7\ED\FB\E9 \F1\EB\EE\E9;
@@ -4376,7 +7671,7 @@ int N_spinel = 2;
 		c0 = j*.001;
 		sm->set_fasa_hmg(R1, R1*pow(c0, -1./3.), K1, K2, K3, 1./sqr(ll));
 		
-		KH = ((CHeat3D *)sm)->TakeEshelby_grad(c0);
+		KH	= sm->TakeEshelby_grad(c0);
 		KH_cl = sm->TakeEshelby_two(c0);
 
 		fprintf(TST, " c0 = %g, \F11 = %g, KH = %g\n", c0, c1, KH);
@@ -4390,7 +7685,7 @@ int N_spinel = 2;
 	char * name = "heat1D_nonlinear_layer.dat";
 //////////////////////////
 //...model initialization;
-	CDraft<double> * sm = CreateDraft(HEAT2D_DRAFT);
+	CDraft<double> * sm = CreateDraftR(HEAT2D_DRAFT);
 	int N1 = 20, N2 = 10, N_cells = 5, NN = (N1+N2)*N_cells, m = 1000, MM = 30000, M0 = MM/m, k, j, l;
 	double x = 0., h = 0.05, t = 0., dt = 0.001, alpha = dt/sqr(h), 
 			*T = (double *)new_struct((NN+1)*sizeof(double)), ** out = NULL, 
@@ -4412,8 +7707,8 @@ int N_spinel = 2;
 ///////////////////////////////
 //...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8;
 	for (j = 1; j < MM; j++) {
-		//((CHeat2D *)sm)->TakeStabStep(T, NN, alpha); t += dt;
-		((CHeat2D *)sm)->TakeStabStep_layer(T, N1, N2, N_cells, alpha); t += dt;
+		//sm->TakeStabStep(T, NN, alpha); t += dt;
+		sm->TakeStabStep_layer(T, N1, N2, N_cells, alpha); t += dt;
 		if (!(j%m) && (++l) <= M0) {
 			for (k = 0; k <= NN; k++) out[k][l] = T[k]; 
 			out[k][l] = t;
@@ -4453,7 +7748,7 @@ int N_spinel = 2;
 
 //////////////////////////
 //...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
-	CDraft<double> * sm = CreateDraft(HEAT2D_DRAFT, 8);		
+	CDraft<double> * sm = CreateDraftR(HEAT2D_DRAFT, 8);		
 	sm->set_mpls(PackInts(13, 13)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(16, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(0.92);			//...normalization coefficient;
@@ -4543,8 +7838,8 @@ int N_spinel = 2;
 ///////////////////////////////
 //...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8;
 	for (j = 1; j < MM; j++) {
-		((CHeat2D *)sm)->TakeStabStep(T, NN, alpha); t += dt;
-		//((CHeat2D *)sm)->TakeStabStep_layer(T, N1, N2, N_cells, alpha); t += dt;
+		sm->TakeStabStep(T, NN, alpha); t += dt;
+		//sm->TakeStabStep_layer(T, N1, N2, N_cells, alpha); t += dt;
 		if (!(j%m) && (++l) <= M0) {
 			for (k = 0; k <= NN; k++) out[k][l] = T[k]; 
 			out[k][l] = t;
@@ -4572,7 +7867,7 @@ int N_spinel = 2;
 	double * K1 = (double *)new_struct(nn*sizeof(double)*nn_fast), 
 			 * K2 = (double *)new_struct(nn*sizeof(double)*nn_fast), eps = 1.6e-3; 
 	for (n = 0; n < nn*nn_fast; n++) {
-		dr[n] = CreateDraft(HEAT2D_DRAFT, 8);		
+		dr[n] = CreateDraftR(HEAT2D_DRAFT, 8);		
 		dr[n]->set_mpls(PackInts(13, 13)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 		dr[n]->set_quad(PackInts(16, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 		dr[n]->set_normaliz(0.92);			//...normalization coefficient;
@@ -4756,7 +8051,7 @@ int N_spinel = 2;
 
 //////////////////////////
 //...\E8\ED\E8\F6\E8\E0\EB\E8\E7\E0\F6\E8\FF \EC\EE\E4\E5\EB\E8;
-	CDraft<double> * sm = CreateDraft(HEAT2D_DRAFT, 8);		
+	CDraft<double> * sm = CreateDraftR(HEAT2D_DRAFT, 8);		
 	sm->set_mpls(PackInts(1, 1)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 	sm->set_quad(PackInts(1, 1)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 	sm->set_normaliz(0.92);			//...normalization coefficient;
@@ -4837,8 +8132,8 @@ int N_spinel = 2;
 ///////////////////////////////
 //...\F6\E8\EA\EB \EF\EE \EF\E0\F0\E0\EC\E5\F2\F0\E0\EC \E7\E0\E4\E0\F7\E8;
 	for (j = 1; j < MM; j++) {
-		//((CHeat2D *)sm)->TakeStabStep(T, NN, alpha); t += dt;
-		((CHeat2D *)sm)->TakeStabStep_layer(T, N1, N2, N_cells, alpha); t += dt;
+		//sm->TakeStabStep(T, NN, alpha); t += dt;
+		sm->TakeStabStep_layer(T, N1, N2, N_cells, alpha); t += dt;
 		if (!(j%m) && (++l) <= M0) {
 			for (k = 0; k <= NN; k++) out[k][l] = T[k]; 
 			out[k][l] = t;
@@ -4866,7 +8161,7 @@ int N_spinel = 2;
 	double * K1 = (double *)new_struct(nn*sizeof(double)*nn_fast), 
 			 * K2 = (double *)new_struct(nn*sizeof(double)*nn_fast), eps = 1.6e-3; 
 	for (n = 0; n < nn*nn_fast; n++) {
-		dr[n] = CreateDraft(HEAT2D_DRAFT, 8);		
+		dr[n] = CreateDraftR(HEAT2D_DRAFT, 8);		
 		dr[n]->set_mpls(PackInts(13, 13)); //...\F1\F2\E5\EF\E5\ED\FC \EC\F3\EB\FC\F2\E8\EF\EE\EB\E5\E9;
 		dr[n]->set_quad(PackInts(16, 8)); //...\F1\F2\E5\EF\E5\ED\FC \EA\E2\E0\E4\F0\E0\F2\F3\F0\FB;
 		dr[n]->set_normaliz(0.92);			//...normalization coefficient;
@@ -5084,7 +8379,9 @@ int N_spinel = 2;
 #endif
 err:
 	printf("\nFull time: %ld sec\n", sec = time(NULL)-start);
-	printf("\nTEST >> Is the work finished? (Y/N) : "); //res = scanf("%s", buf);
+	if (yes) {
+		printf("\nTEST >> Is the work finished? (Y/N) : "); res = scanf("%s", buf);
+	}
 	printf("\n");
 
 #ifdef ___IGROUPS_NGROUPS___

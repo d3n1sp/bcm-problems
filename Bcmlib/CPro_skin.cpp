@@ -3,7 +3,7 @@
 #include "cprofile.h"
 #include "cpro_skin.h"
 
-#include "ccebasic.h"
+#include "CCells.h"
 #include "ccedemo.h"
 
 #include "clame2d.h"
@@ -227,7 +227,7 @@ int skin2D_init(void * context, CGrid * block_nd)
                                double P[12] = {0., 0., 0., 2., 0., 0., 2., 1.2, 0., 0., 1.2, 0.}, 
                                       pp[4] = {0., 0., 0., 0.}, A, B, C, D, E, R, Q;
 
-                               CCeBasic * ce = new CCeBasic;
+                               CCells * ce = new CCells;
                                ce->get_facet_directly(P, 4, 0, 2, 0);
 
                                i = cont->sm->B[cont->sm->N-1].bar->bar_add(ce);
@@ -237,7 +237,7 @@ int skin2D_init(void * context, CGrid * block_nd)
                                C = abs_point(P+6, P+9);
                                D = abs_point(P+9, P);   Q = (C+D+E)*.5;
 
-                               ((CCeBasic *)cont->sm->B[cont->sm->N-1].bar)->SetFacetParam(i-1, sqrt(R*(R-A)*(R-B)*(R-E))+sqrt(Q*(Q-C)*(Q-D)*(Q-E)), pp);
+                               ((CCells *)cont->sm->B[cont->sm->N-1].bar)->SetFacetParam(i-1, sqrt(R*(R-A)*(R-B)*(R-E))+sqrt(Q*(Q-C)*(Q-D)*(Q-E)), pp);
                            }
                        }
                   }

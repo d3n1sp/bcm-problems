@@ -1,22 +1,22 @@
 #include "stdafx.h"
+
+#include "shapes.h"
 #include "clame2d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
 
-int CLame2D::NUM_GEOMT = 3;
 int CLame2D::NUM_SHEAR = 4;
 int CLame2D::NUM_SHIFT = 2;
-int CLame2D::MAX_PHASE = 3;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int CLame2D::block_shape_init(Block<double> & B, int id_free)
+int CLame2D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int k, m;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
-		B.shape->add_shape(CreateShapeD(MP2D_POLY_SHAPE));
+		B.shape->add_shape(CreateShape<double>(MP2D_POLY_SHAPE));
 
 ////////////////////////
 //...setting parameters;
@@ -334,7 +334,7 @@ void CLame2D::jump_make_common(int i, int m)
 
 ///////////////////////////////////////////////////////////////////////////
 //...inclusion of the boundary condition data to the solver for all blocks;
-int CLame2D::gram1(CGrid * nd, int i, int id_local)
+Num_State CLame2D::gram1(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, p3, f, P[6];
@@ -416,7 +416,7 @@ int CLame2D::gram1(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...junction data of the periodic boundary condition for all blocks;
-int CLame2D::gram2(CGrid * nd, int i, int id_local)
+Num_State CLame2D::gram2(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, f, P[6], TX, TY, hx, 
@@ -539,7 +539,7 @@ int CLame2D::gram2(CGrid * nd, int i, int id_local)
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m+2], -hx*f);
 				  solver.to_equationHL(k, 1, solver.hh[k][0][m+3], -hx*f);
 				}
-				if (first && solver.mode(REGULARIZATION2)) {//...регул€ризаци€ матрицы через граничное условие;
+				if (first && solver.mode(REGUL_BOUNDARY)) {//...регул€ризаци€ матрицы через граничное условие;
 					if (id_dir == 1 || id_dir == 2) {
 						solver.to_transferTR(i, j, solver.hh[i][0][m+4], solver.hh[k][0][m+4], f);
 						solver.to_transferDD(i, j, solver.hh[i][0][m+4], solver.hh[k][0][m+4], f);
@@ -572,7 +572,7 @@ int CLame2D::gram2(CGrid * nd, int i, int id_local)
 
 ////////////////////////////////////////////////////////////////
 //...inclusion of the joining data to the solver for all blocks;
-int CLame2D::transfer1(CGrid * nd, int i, int k, int id_local)
+Num_State CLame2D::transfer1(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6], 
@@ -657,7 +657,7 @@ int CLame2D::transfer1(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...inclusion conjunction data to the solver for all blocks;
-int CLame2D::transfer2(CGrid * nd, int i, int k, int id_local)
+Num_State CLame2D::transfer2(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B && B[i].link && B[i].link[0] > NUM_PHASE) {
       double G1 = get_param(NUM_SHEAR), f, P[6], 
@@ -754,7 +754,7 @@ int CLame2D::transfer2(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы √рама с учетом функционала энергии;
-int CLame2D::gram3(CGrid * nd, int i, int id_local)
+Num_State CLame2D::gram3(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), AX, AY, f, P[6], TX, TY, hx,  requl = get_param(NUM_GEOMT);
@@ -871,7 +871,7 @@ int CLame2D::gram3(CGrid * nd, int i, int id_local)
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m],   -hx*f);
 				  solver.to_equationHL(k, 1, solver.hh[k][0][m+1], -hx*f);
 				}
-				if (first && solver.mode(REGULARIZATION2)) {//...регул€ризаци€ матрицы через граничное условие;
+				if (first && solver.mode(REGUL_BOUNDARY)) {//...регул€ризаци€ матрицы через граничное условие;
 					if (id_dir == 1 || id_dir == 2) {
 						solver.to_transferTR(i, j, solver.hh[i][0][m+4], solver.hh[k][0][m+4], f);
 						solver.to_transferDD(i, j, solver.hh[i][0][m+4], solver.hh[k][0][m+4], f);
@@ -913,7 +913,7 @@ int CLame2D::gram3(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CLame2D::transfer3(CGrid * nd, int i, int k, int id_local)
+Num_State CLame2D::transfer3(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double G1 = get_param(NUM_SHEAR), f, P[6];
@@ -1027,7 +1027,7 @@ int CLame2D::transfer3(CGrid * nd, int i, int k, int id_local)
 
 ///////////////////////////////////////////////////////////////////////////
 //...inclusion of the boundary condition data to the solver for all blocks;
-int CLame2D::gram4(CGrid * nd, int i, int id_local)
+Num_State CLame2D::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double G1 = get_param(NUM_SHEAR), hx, hy, p3, f, P[6];
@@ -1125,7 +1125,7 @@ int CLame2D::gram4(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////////////
 //...интегрирование Ќƒ— на заданном наборе узлов дл€ периодической задачи;
-int CLame2D::rigidy1(CGrid * nd, int i, double * K)
+Num_State CLame2D::rigidy1(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int l, shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm;
@@ -1199,7 +1199,7 @@ void CLame2D::set_fasa_hmg(double nju1, double nju2, double nju3, double G1, dou
 
 //////////////////////////////////////////////////////////
 //...counting header for solving plane elasticity problem;
-int CLame2D::computing_header(Num_Comput Num)
+Num_State CLame2D::computing_header(Num_Comput Num)
 {
 	int i, j, k, elem, id_dir, n_rhs = 2;
 	char msg[201];

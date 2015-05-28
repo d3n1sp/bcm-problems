@@ -15,9 +15,9 @@
 //...class of acoustic multipoles, based on three plane waves;
 class CMapi3DSpheroid : public CShape<double>  {
 public:
-		int type()          { return MP3D_SPHEROID_SHAPE;}
-		int size_of_param() { return(2);}
+		Num_Shape    type() { return MP3D_SPHEROID_SHAPE;}
 		int freedom (int m) { return 4;} //...вычисляем только четыре функции; 
+		int size_of_param() { return(2);}
 		void set_shape(double R0, double eps = 1., double p1 = 1., double p2 = 0., double p3 = 0., double p4 = 0.);
 public:
 //...initialization and calculation of multipoles;
@@ -36,9 +36,9 @@ public:
 
 class CMapi3DSpheroidFull : public CShape<double>  {
 public:
-		int type()          { return MP3D_SPHEROID_FULL_SHAPE;}
-		int size_of_param() { return(2);}
+		Num_Shape    type() { return MP3D_SPHEROID_FULL_SHAPE;}
 		int freedom(int m)  { return sqr(m+1);}
+		int size_of_param() { return(2);}
 		void set_shape(double R0, double eps = 1., double p1 = 1., double p2 = 0., double p3 = 0., double p4 = 0.);
 public:
 //...initialization and calculation of multipoles;

@@ -19,7 +19,7 @@ public:
 		}
 protected:
 static int NUM_BASIC, NUM_SHIFT, NUM_GEOMT, MAX_PHASE;
-		 int block_shape_init(Block<double> & B, int id_free);
+		 int block_shape_init(Block<double> & B, Num_State id_free);
 //...auxilliary operations with block matrix;
 		void jump1(double * P, int i, int m);
 		void jump2(double * P, int i, int m);
@@ -28,25 +28,29 @@ static int NUM_BASIC, NUM_SHIFT, NUM_GEOMT, MAX_PHASE;
 		void jump4_compos (double * P, int i, int m);
 		void jump1_classic(double * P, int i, int m);
 //...forming block matrix elements;
-		int  gram1    (CGrid * nd, int i, int id_local);
-		int  gram2    (CGrid * nd, int i, int id_local);
-		int  gram2peri(CGrid * nd, int i, int id_local);
-		int  gram3    (CGrid * nd, int i, int id_local);
-		int  gram4    (CGrid * nd, int i, int id_local);
-		int  transfer1(CGrid * nd, int i, int k, int id_local);
-		int  transfer2(CGrid * nd, int i, int k, int id_local);
-		int  trans_esh(CGrid * nd, int i, int k, int id_local);
-		int  transfer3(CGrid * nd, int i, int k, int id_local) { return transfer4(nd, i, k, id_local);}
-		int  transfer4(CGrid * nd, int i, int k, int id_local);
-		int  rigidy1  (CGrid * nd, int i, double * K);
-		int  rigidy2  (CGrid * nd, int i, double * K);
-		int  rigidy5  (CGrid * nd, int i, double * K);
-		int  computing_header(Num_Comput Num);
+		Num_State gram1    (CGrid * nd, int i, int id_local);
+		Num_State gram2    (CGrid * nd, int i, int id_local);
+		Num_State gram2_old(CGrid * nd, int i, int id_local);
+		Num_State gram2peri(CGrid * nd, int i, int id_local);
+		Num_State gram3    (CGrid * nd, int i, int id_local);
+		Num_State gram3_old(CGrid * nd, int i, int id_local);
+		Num_State gram4    (CGrid * nd, int i, int id_local);
+		Num_State transfer1(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer2(CGrid * nd, int i, int k, int id_local);
+		Num_State trans_esh(CGrid * nd, int i, int k, int id_local);
+		Num_State transfer3(CGrid * nd, int i, int k, int id_local) { return transfer4(nd, i, k, id_local);}
+		Num_State transfer4(CGrid * nd, int i, int k, int id_local);
+		Num_State rigidy1  (CGrid * nd, int i, double * K);
+		Num_State rigidy2  (CGrid * nd, int i, double * K);
+		Num_State rigidy5  (CGrid * nd, int i, double * K);
+		Num_State computing_header(Num_Comput Num);
 public:
 //...параметры задачи;
 		void set_fasa_hmg(double K1, double K2, double K3) { set_fasa_hmg (0., 0., K1, K2, K3, 0.);}
 		void set_fasa_hmg(double K1, double K2, double K3, double C) { set_fasa_hmg (0., 0., K1, K2, K3, C);}
+		void set_fasa_hmg(double R1, double R2, double K3, double K1, double K2) { set_fasa_hmg (R1, R2, K3, K1, K2, 0.);}
 		void set_fasa_hmg(double R1, double R2, double K3, double K1, double K2, double C);
+		void set_geometry(double rad, double layer = 0.) { set_param(NUM_GEOMT, rad); set_param(NUM_GEOMT+1, rad+layer);}
 //...результаты решения задачи;
 		void GetFuncAllValues(double X, double Y, double Z, double * F, int id_block, Num_Value id_F, int id_variant = 0, int iparam = 0);
 //...аналитические модели;

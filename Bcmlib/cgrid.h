@@ -129,10 +129,10 @@ static int SPTR_BUF, STRU_BUF;
 protected:
 		double ** pp;	  											  //...table of addiional parameters;
 		int buf_count, buf_X, buf_Y, buf_Z, N_buf, N1buf; //...bufferization;
-		int bufferization (int buf_size, int mm = OK_STATE);
-		int bufferizat_X  (int buf_size, int mm = OK_STATE);
-		int bufferizat_Y  (int buf_size, int mm = OK_STATE);
-		int bufferizat_Z  (int buf_size, int mm = OK_STATE);
+		int bufferization (int buf_size, Num_State mm = OK_STATE);
+		int bufferizat_X  (int buf_size, Num_State mm = OK_STATE);
+		int bufferizat_Y  (int buf_size, Num_State mm = OK_STATE);
+		int bufferizat_Z  (int buf_size, Num_State mm = OK_STATE);
 public:
 		virtual int type() { return NULL_NODES;}
 		void reset_hit	 () { if (hit) memset(hit, -1, N*sizeof(int));}  
@@ -150,7 +150,7 @@ public:
 			zero_grid();
 		}
 //...quadratures;
-		virtual void facet_QG(double * P, int N_elem, int mode = NULL_STATE, int normal = OK_STATE) {}
+		virtual void facet_QG(double * P, int N_elem, Num_State mode = NULL_STATE, Num_State normal = OK_STATE) {}
 		virtual void segms_QG(CMap * mp, int N_elem, int N_max) {}
 		virtual void sphere_intrusion_QG(CMap * mp, int N_elem, double L) {}
 //...quadratures corrections;
@@ -170,11 +170,18 @@ public:
 		virtual int segms_in(CMap * mp, double * P, double eps = EE) { return(0);}
 public:
 		void zero_grid();
-		int  add_new_point  (double X, double Y, double Z, double nX = 0., double nY = 0., double nZ = 1., double * pp = NULL);
-		int  add_new_point  (double * P, double * pp = NULL);
+		int  add_new_point(double X, double Y, double Z, double nX = 0., double nY = 0., double nZ = 1., double * pp = NULL);
+		int  add_new_point(double X, double Y, double Z, double * pp)  { return add_new_point(X, Y, Z, 0., 0., 1., pp); }
+		int  add_new_point(double * P, double * pp = NULL) {
+			if (P) return add_new_point(P[0], P[1], P[2], P[3], P[4], P[5], pp);
+			else   return(0);
+		}
 		int  add_new_point_X(double val, double eps = EE_ker);
 		int  add_new_point_Y(double val, double eps = EE_ker);
 		int  add_new_point_Z(double val, double eps = EE_ker);
+		int  add_new_lattice_X(double val, double eps = 0.);
+		int  add_new_lattice_Y(double val, double eps = 0.);
+		int  add_new_lattice_Z(double val, double eps = 0.);
 		void set_buf_size	  (int buf_size) { N_buf = buf_size;}
 		void add_buffer     (int m) {
 			N -= (m = min(max(0, m), N));
@@ -198,10 +205,11 @@ public:
 		void grid_tria_3D_refine(int N_elem, double * P, double * pp = NULL, int id_block = -1);
 		void grid_quad_3D_refine(int N_elem1, int N_elem2, double * P, double * pp = NULL, int id_block = -1);
 		void grid_quad_3D_refine_spec(int N_elem1, int N_elem2, double * P, double * pp = NULL, int id_block = -1);
+//...operations with grid lattice;
+		void grid_lattice(CGrid * nd, double * par, double eps = 0.);
 //...operations with geometry;
 		void init_geom   (int m = 1) { delete_struct(geom); geom = (int *)new_struct((m+1)*sizeof(int)); };
-		int  stru_install(int k, int ** mm_facet);
-		int  stru_shift  (int shift_num = 0);
+		int  stru_install(int k, int mm_facet[6][5]);
 		int  link_number (Topo * link, int id_arc);
 		int  geom_element(int k);
 		int  geom_add_ptr(int N, int type = GL_POINTS) {
@@ -362,6 +370,12 @@ public:
 			if (pchar && (! ::strncmp(pchar, ".nas", 4) || ! ::strncmp(pchar, ".NAS", 4))) nodes_nas(ch_NODES); else
 			if (pchar && (! ::strncmp(pchar, ".inp", 4) || ! ::strncmp(pchar, ".INP", 4))) nodes_inp(ch_NODES, 1, max_phase);
 		};
+
+//...хачитывание структуры включений с межфазным слоем;
+		int  stru_in(char * id_STRU, unsigned long & count, unsigned long upper_limit, double * par);
+		void stru_in(char * ch_STRU, double * par);
+		void stru_in(const char * ch_STRU, double * par);
+
 //...testing functions;
 		void set_point(double * P, int k,
 							double & CZ, double & SZ, double & CY, double & SY, double & CX, double & SX) {
@@ -413,7 +427,8 @@ public:
 inline void delete_nodes(CGrid *& nd) {
 	delete nd; nd = NULL;
 }
-/////////////////////////////////////////////////////
-//...global function for construction all grid nodes;
+
+//////////////////////////////////////////////////////////////////////////
+//...global function for construction of all existing types of grid nodes;
 CGrid * CreateNodes(Num_Nodes id_NODES = NULL_NODES);
 #endif

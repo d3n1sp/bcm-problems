@@ -421,7 +421,7 @@ lab10:
 
 ///////////////////////////////////////////////////////////
 //...квадратура Гаусса поpядка 2M для прямой (узлы и веса);
-void CGrid_QG::QG2M_line(double * P, int M, const double c2M[][2], int normal)
+void CGrid_QG::QG2M_line(double * P, int M, const double c2M[][2], Num_State normal)
 {
 	double d1 [3] = {.5*(P[3]-P[0]), .5*(P[4]-P[1]), 0.}, 
 			 xm1[3] = { d1[0]+P[0], d1[1]+P[1], 0. },
@@ -431,7 +431,7 @@ void CGrid_QG::QG2M_line(double * P, int M, const double c2M[][2], int normal)
 	int    i;
 
 	F = QG_normal(nX, nY, nZ);
-	if (! normal) QG_normal(nX = d1[0], nY = d1[1], nZ = d1[2]);
+	if (normal == NULL_STATE) QG_normal(nX = d1[0], nY = d1[1], nZ = d1[2]);
 
 	if (N_par < 1) add_params(1-N_par); 
 
@@ -446,7 +446,7 @@ void CGrid_QG::QG2M_line(double * P, int M, const double c2M[][2], int normal)
 
 ///////////////////////////////////////////////////////////////////////
 //...квадратура Гаусса поpядка 2M для треугольной фасеты (узлы и веса);
-void CGrid_QG::QG2M_tria(double * P, int M, const double c2M[][2], int normal)
+void CGrid_QG::QG2M_tria(double * P, int M, const double c2M[][2], Num_State normal)
 {
 	double d [3] = {.5*(P[6]-P[3]), .5*(P[7]-P[4]), .5*(P[8]-P[5])}, 
 			 xm[3] = { d[0]+P[3], d[1]+P[4], d[2]+P[5] },
@@ -469,7 +469,7 @@ void CGrid_QG::QG2M_tria(double * P, int M, const double c2M[][2], int normal)
 		d_i[0] = .5*(xm[0]+dm[0]-P[0]); xm_i[0] = d_i[0]+P[0];
 		d_i[1] = .5*(xm[1]+dm[1]-P[1]); xm_i[1] = d_i[1]+P[1];
 		d_i[2] = .5*(xm[2]+dm[2]-P[2]); xm_i[2] = d_i[2]+P[2];
-		if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 		for (j = 0; j < M; j++) {
 			dm_i[0] = c2M[j][0]*d_i[0];
 			dm_i[1] = c2M[j][0]*d_i[1];
@@ -485,7 +485,7 @@ void CGrid_QG::QG2M_tria(double * P, int M, const double c2M[][2], int normal)
 		d_i[0] = .5*(xm[0]-dm[0]-P[0]); xm_i[0] = d_i[0]+P[0];
 		d_i[1] = .5*(xm[1]-dm[1]-P[1]); xm_i[1] = d_i[1]+P[1];
 		d_i[2] = .5*(xm[2]-dm[2]-P[2]); xm_i[2] = d_i[2]+P[2];
-		if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 		for (j = 0; j < M; j++) {
 			dm_i[0] = c2M[j][0]*d_i[0];
 			dm_i[1] = c2M[j][0]*d_i[1];
@@ -501,7 +501,7 @@ void CGrid_QG::QG2M_tria(double * P, int M, const double c2M[][2], int normal)
 
 ///////////////////////////////////////////////////////////////////////////
 //...квадратура Гаусса поpядка 2M для четырехугольной фасеты (узлы и веса);
-void CGrid_QG::QG2M_quad(double * P, int M, const double c2M[][2], int normal)
+void CGrid_QG::QG2M_quad(double * P, int M, const double c2M[][2], Num_State normal)
 {//...порядок следования точек контура как в OpenGL (m_QUAD = 1);
 	int    i, j, m_QUAD = 1;
 	double d1 [3] = {.5*(P[3]-P[0]), .5*(P[4]-P[1]), .5*(P[5]-P[2])}, 
@@ -546,7 +546,7 @@ void CGrid_QG::QG2M_quad(double * P, int M, const double c2M[][2], int normal)
 		d_i[0] = .5*(xm2[0]+dm2[0]-xm1[0]-dm1[0]); xm_i[0] = d_i[0]+xm1[0]+dm1[0];
 		d_i[1] = .5*(xm2[1]+dm2[1]-xm1[1]-dm1[1]); xm_i[1] = d_i[1]+xm1[1]+dm1[1];
 		d_i[2] = .5*(xm2[2]+dm2[2]-xm1[2]-dm1[2]); xm_i[2] = d_i[2]+xm1[2]+dm1[2];
-		if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 		for (j = 0; j < M; j++) {
 			dm_i[0] = c2M[j][0]*d_i[0];
 			dm_i[1] = c2M[j][0]*d_i[1];
@@ -564,7 +564,7 @@ void CGrid_QG::QG2M_quad(double * P, int M, const double c2M[][2], int normal)
 		d_i[0] = .5*(xm2[0]-dm2[0]-xm1[0]+dm1[0]); xm_i[0] = d_i[0]+xm1[0]-dm1[0];
 		d_i[1] = .5*(xm2[1]-dm2[1]-xm1[1]+dm1[1]); xm_i[1] = d_i[1]+xm1[1]-dm1[1];
 		d_i[2] = .5*(xm2[2]-dm2[2]-xm1[2]+dm1[2]); xm_i[2] = d_i[2]+xm1[2]-dm1[2];
-		if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 		for (j = 0; j < M; j++) {
 			dm_i[0] = c2M[j][0]*d_i[0];
 			dm_i[1] = c2M[j][0]*d_i[1];
@@ -582,7 +582,7 @@ void CGrid_QG::QG2M_quad(double * P, int M, const double c2M[][2], int normal)
 
 /////////////////////////////////////////////////////////////
 //...квадратура Гаусса поpядка 2M-1 для прямой (узлы и веса);
-void CGrid_QG::QG2M1_line(double * P, int M, const double c2M1[][2], int normal)
+void CGrid_QG::QG2M1_line(double * P, int M, const double c2M1[][2], Num_State normal)
 {
 	double d1 [3] = {.5*(P[3]-P[0]), .5*(P[4]-P[1]), 0.}, 
 			 xm1[3] = { d1[0]+P[0], d1[1]+P[1], 0. },
@@ -592,7 +592,7 @@ void CGrid_QG::QG2M1_line(double * P, int M, const double c2M1[][2], int normal)
 	int    i;
 
 	F = QG_normal(nX, nY, nZ);
-	if (! normal) QG_normal(nX = d1[0], nY = d1[1], nZ = d1[2]);
+	if (normal == NULL_STATE) QG_normal(nX = d1[0], nY = d1[1], nZ = d1[2]);
 
 	if (N_par < 1) add_params(1-N_par); 
 
@@ -610,7 +610,7 @@ void CGrid_QG::QG2M1_line(double * P, int M, const double c2M1[][2], int normal)
 
 /////////////////////////////////////////////////////////////////////////
 //...квадратура Гаусса поpядка 2M-1 для треугольной фасеты (узлы и веса);
-void CGrid_QG::QG2M1_tria(double * P, int M, const double c2M1[][2], int normal)
+void CGrid_QG::QG2M1_tria(double * P, int M, const double c2M1[][2], Num_State normal)
 {
 	double d [3] = {.5*(P[6]-P[3]), .5*(P[7]-P[4]), .5*(P[8]-P[5])}, 
 			 xm[3] = { d[0]+P[3], d[1]+P[4], d[2]+P[5] },
@@ -627,7 +627,7 @@ void CGrid_QG::QG2M1_tria(double * P, int M, const double c2M1[][2], int normal)
 	d_i[0] = .5*(xm[0]-P[0]); xm_i[0] = d_i[0]+P[0];
 	d_i[1] = .5*(xm[1]-P[1]); xm_i[1] = d_i[1]+P[1];
 	d_i[2] = .5*(xm[2]-P[2]); xm_i[2] = d_i[2]+P[2];
-	if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+	if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 
 	pp[0] = c2M1[0][1]*c2M1[0][1]*F;
 	add_new_point(xm_i[0], xm_i[1], xm_i[2], nX, nY, nZ, pp); 
@@ -652,7 +652,7 @@ void CGrid_QG::QG2M1_tria(double * P, int M, const double c2M1[][2], int normal)
 		d_i[0] = .5*(xm[0]+dm[0]-P[0]); xm_i[0] = d_i[0]+P[0];
 		d_i[1] = .5*(xm[1]+dm[1]-P[1]); xm_i[1] = d_i[1]+P[1];
 		d_i[2] = .5*(xm[2]+dm[2]-P[2]); xm_i[2] = d_i[2]+P[2];
-		if (! normal) QG_normal (nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal (nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 
 		pp[0] = c2M1[i][1]*c2M1[0][1]*F;
 		add_new_point(xm_i[0], xm_i[1], xm_i[2], nX, nY, nZ, pp); 
@@ -672,7 +672,7 @@ void CGrid_QG::QG2M1_tria(double * P, int M, const double c2M1[][2], int normal)
 		d_i[0] = .5*(xm[0]-dm[0]-P[0]); xm_i[0] = d_i[0]+P[0];
 		d_i[1] = .5*(xm[1]-dm[1]-P[1]); xm_i[1] = d_i[1]+P[1];
 		d_i[2] = .5*(xm[2]-dm[2]-P[2]); xm_i[2] = d_i[2]+P[2];
-		if (! normal) QG_normal (nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal (nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 
 		pp[0] = c2M1[i][1]*c2M1[0][1]*F;
 		add_new_point(xm_i[0], xm_i[1], xm_i[2], nX, nY, nZ, pp); 
@@ -692,7 +692,7 @@ void CGrid_QG::QG2M1_tria(double * P, int M, const double c2M1[][2], int normal)
 
 /////////////////////////////////////////////////////////////////////////////
 //...квадратура Гаусса поpядка 2M-1 для четырехугольной фасеты (узлы и веса);
-void CGrid_QG::QG2M1_quad(double * P, int M, const double c2M1[][2], int normal)
+void CGrid_QG::QG2M1_quad(double * P, int M, const double c2M1[][2], Num_State normal)
 {//...порядок следования точек контура как в OpenGL (m_QUAD = 1);
 	int    i, j, m_QUAD = 1;
 	double d1 [3] = {.5*(P[3]-P[0]), .5*(P[4]-P[1]), .5*(P[5]-P[2])}, 
@@ -731,7 +731,7 @@ void CGrid_QG::QG2M1_quad(double * P, int M, const double c2M1[][2], int normal)
 	d_i[0] = .5*(xm2[0]-xm1[0]); xm_i[0] = d_i[0]+xm1[0];
 	d_i[1] = .5*(xm2[1]-xm1[1]); xm_i[1] = d_i[1]+xm1[1];
 	d_i[2] = .5*(xm2[2]-xm1[2]); xm_i[2] = d_i[2]+xm1[2];
-	if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+	if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 
 	pp[0] = c2M1[0][1]*c2M1[0][1]*(F1+F2+F3+F4);
 	add_new_point(xm_i[0], xm_i[1], xm_i[2], nX, nY, nZ, pp); 
@@ -756,7 +756,7 @@ void CGrid_QG::QG2M1_quad(double * P, int M, const double c2M1[][2], int normal)
 		d_i[0] = .5*(xm2[0]+dm2[0]-xm1[0]-dm1[0]); xm_i[0] = d_i[0]+xm1[0]+dm1[0];
 		d_i[1] = .5*(xm2[1]+dm2[1]-xm1[1]-dm1[1]); xm_i[1] = d_i[1]+xm1[1]+dm1[1];
 		d_i[2] = .5*(xm2[2]+dm2[2]-xm1[2]-dm1[2]); xm_i[2] = d_i[2]+xm1[2]+dm1[2];
-		if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 
 		pp[0] = c2M1[i][1]*c2M1[0][1]*(F1*(1.-c2M1[i][0])+F2*(1.+c2M1[i][0])+F3*(1.-c2M1[i][0])+F4*(1.+c2M1[i][0]));
 		add_new_point(xm_i[0], xm_i[1], xm_i[2], nX, nY, nZ, pp); 
@@ -778,7 +778,7 @@ void CGrid_QG::QG2M1_quad(double * P, int M, const double c2M1[][2], int normal)
 		d_i[0] = .5*(xm2[0]-dm2[0]-xm1[0]+dm1[0]); xm_i[0] = d_i[0]+xm1[0]-dm1[0];
 		d_i[1] = .5*(xm2[1]-dm2[1]-xm1[1]+dm1[1]); xm_i[1] = d_i[1]+xm1[1]-dm1[1];
 		d_i[2] = .5*(xm2[2]-dm2[2]-xm1[2]+dm1[2]); xm_i[2] = d_i[2]+xm1[2]-dm1[2];
-		if (! normal) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
+		if (normal == NULL_STATE) QG_normal(nX = d_i[0], nY = d_i[1], nZ = d_i[2]);
 
 		pp[0] = c2M1[i][1]*c2M1[0][1]*(F1*(1.+c2M1[i][0])+F2*(1.-c2M1[i][0])+F3*(1.+c2M1[i][0])+F4*(1.-c2M1[i][0]));
 		add_new_point(xm_i[0], xm_i[1], xm_i[2], nX, nY, nZ, pp); 
@@ -2339,7 +2339,7 @@ void CGrid_QG::QG_quad_sphere(CMap * mp1, CMap * mp2, double * Po, int N_ini)
 
 //////////////////////////////////////////////////////////////////////////
 //...квадратура Гаусса для плоской фасеты (треугольной и четырехугольной);
-void CGrid_QG::facet_QG(double * P, int N_elem, int mode, int normal)
+void CGrid_QG::facet_QG(double * P, int N_elem, Num_State mode, Num_State normal)
 {
 	int shift = 0;
 	if (! P) return;

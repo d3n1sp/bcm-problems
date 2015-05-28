@@ -5,7 +5,7 @@
 #define ___CCohes3D___
 
 #include "clame3d.h"
-#define real_E double
+#define real_T double
 
 ////////////////////////////////////////////////////////
 //...class of blocks partition for double plane problem;
@@ -18,10 +18,11 @@ public:
 			MAX_PHASE = 2;
 		};
 protected:
-		int  block_shape_init(Block<double> & B, int id_free);
+		int  block_shape_init(Block<double> & B, Num_State id_free);
 public:
 //...параметры задачи;
 		void set_fasa_hmg(double nju1, double nju2, double G1, double G2, double C1, double C2);
+		void set_adhesion(double AA, double BB) { set_param(NUM_ADHES, AA); set_param(NUM_ADHES+1, BB);}
 //...одномерные аналитические модели с межфазным слоем и адгезией;
 		double TakeLayer_kk(int N, double * ff, double * kk, double * ll);
 //...аналитические модели;
@@ -43,10 +44,10 @@ public:
 #undef  DRAFT_N_elem                     //...param(2);
 #define DRAFT_Q_facet               1.   //...normalization coefficient in facet subdivision;
 #undef  DRAFT_Q_facet                    //...param(3);
-#define DRAFT_A                     0.   //...boundary jump coefficient in matrix;
-#undef  DRAFT_A                          //...param(4);
-#define DRAFT_B 							0    //...shear adhesion parameter in matrix;
-#undef  DRAFT_B                          //...param(5);
+#define DRAFT_AA                    0.   //...boundary jump coefficient in matrix;
+#undef  DRAFT_AA                         //...param(4);
+#define DRAFT_BB 							0    //...shear adhesion parameter in matrix;
+#undef  DRAFT_BB                         //...param(5);
 #define DRAFT_reserve_alpha			0.   //...зарезервированный параметр;
 #undef  DRAFT_reserve_alpha              //...param(6);
 #define DRAFT_C1                    0.   //...cohesion parameter in matrix;

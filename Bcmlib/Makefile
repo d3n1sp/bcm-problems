@@ -13,9 +13,9 @@ LINK    =
 LIB     = bcmlib.$a
 LIBOBJS = \
 	./Utils.$o ./Unit_mes.$o ./Kernel.$o ./Nurbs.$o ./Nodes.$o \
-	./Cgrid.$o ./Cgrid_el.$o ./Cgrid_qg.$o ./Ccells.$o ./Ccebasic.$o ./Celltyps.$o \
-	./Shapes.$o ./Cacou.$o ./Cmapi.$o ./Cwave.$o ./Drafts.$o ./Clame2d.$o ./Clame3d.$o \
-	./Cheat2d.$o ./Cheat3d.$o ./Chydro3d.$o ./Ccohes2d.$o ./Ccohes3d.$o ./Cmindl2d.$o ./Cmindl3d.$o \
+	./Cgrid.$o ./Cgrid_el.$o ./Cgrid_qg.$o ./Ccells.$o ./Cacou.$o ./Cmapi.$o ./Cwave.$o \
+	./Drafts.$o ./Clame2d.$o ./Clame3d.$o ./Cheat2d.$o ./Cheat3d.$o ./Ccohes2d.$o \
+	./Ccohes3d.$o ./Cmindl2d.$o ./Cmindl3d.$o ./Cvisco2d_grad.$o\
 #	./Cacou3d.cpp.$o \
 #	./CProfile.$o \
 #	./CPro_bars.$o \
@@ -42,4 +42,5 @@ $(LIB): $(LIBOBJS)
 clean:
 	-rm *.o
 	-rm $(LIB)
+
 

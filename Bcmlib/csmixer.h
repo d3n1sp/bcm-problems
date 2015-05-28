@@ -1,5 +1,5 @@
 /*==========================================*/
-/*                 CSMIXER                  */
+/*                 csmixer.h                  */
 /*==========================================*/
 #ifndef ___CSMIXER___
 #define ___CSMIXER___
@@ -24,14 +24,15 @@ public:
 		int num_usual() {return nm;}
 public:
 		static T * deriv, * p_cpy;	//...derivative and function (technical arrays);
+		static T * d_cmp, * p_cmp;	//...another part (real or imag) of multipokes (technical arrays);
 		static int N_mx;				//...max local freedom of technical arrays;
 public:
-		int type		(int k = 0) { return (shape && k < N_shape ? shape[k]->type() : NULL_SHAPE);}
-		int freedom	(int id_full = NULL_STATE);
+		Num_Shape type	(int k = 0) { return (shape && k < N_shape ? shape[k]->type() : NULL_SHAPE);}
+		int freedom	   (Num_State id_full = NULL_STATE);
 public:
 //...initialization of multipoles;
-		void add_shape(		 CShape<T> * sp, int usual = OK_STATE);
-		void add_shape(int k, CShape<T> * sp, int usual = OK_STATE);
+		void add_shape(		 CShape<T> * sp, int usual = 1);
+		void add_shape(int k, CShape<T> * sp, int usual = 1);
 		void init1(			int N, int m, int dim);
 		void init1(int k, int N, int m, int dim);
 		void init2(			int N, int M, int m, int dim);
@@ -69,18 +70,22 @@ public:
 		void norm_common_T(T * P) { point_iso<T>(P, NULL, CZ,  SZ, CY,  SY, CX,  SX);}
 //...parameters of shape functions;
 		CShape<T> * get_shape(int k = 0) { return (shape ? shape[min(N_shape-1, k)] : NULL);}
-		int	 get_NN	 (int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->NN : 0);}
-		int	 get_N	 (int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->N : 0);}
-		double get_R	 (int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->R0 : 1.);}
-		double get_R_inv(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->R0_inv : 1.);}
-		int	 inverse	 (int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->inverse() : 0);}
-		void	 change	 (int k = 0) { if (shape && k < N_shape) shape[k]->change();}
-		void   set_R	 (			double value); //...устанавливаем на все;
-		void   set_R	 (int k,	double value);
-		void   set_param(		   int m, double value) { set_param(0, m, value);}
-		void   set_param(int k, int m, double value) { if (shape && k < N_shape) shape[k]->set_param(m, value);}
-		double get_param(		   int m) { return get_param(0, m);}
-		double get_param(int k, int m) { return(shape ? shape[min(N_shape-1, k)]->get_param(m) : 0.);}
+		int	 get_NN		(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->NN : 0);}
+		int	 get_N		(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->N : 0);}
+		double get_R		(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->R0 : 1.);}
+		double get_R_inv	(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->R0_inv : 1.);}
+		int	 cmpl			(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->cmpl() : 0);}
+		int	 inverse		(int k = 0) {	return(shape ? shape[min(N_shape-1, k)]->inverse() : 0);}
+		void	 change		(int k = 0) { if (shape && k < N_shape) shape[k]->change();}
+		void	 change_cmpl(double *& pp, double *& dd) { if (cmpl() == 1 && dd)  swap(pp, dd);};
+		void	 set_cmpl	(int k, int m_cmpl) { if (shape && k < N_shape) shape[k]->set_cmpl(m_cmpl);}
+		void	 set_cmpl	(int m_cmpl = 0) { set_cmpl(0, m_cmpl);}
+		void   set_R		(			double value); //...устанавливаем на все;
+		void   set_R		(int k,	double value);
+		void   set_param	(		   int m, double value) { set_param(0, m, value);}
+		void   set_param	(int k, int m, double value) { if (shape && k < N_shape) shape[k]->set_param(m, value);}
+		double get_param	(		   int m) { return get_param(0, m);}
+		double get_param	(int k, int m) { return(shape ? shape[min(N_shape-1, k)]->get_param(m) : 0.);}
 //...calculation shape functions;
 		void parametrization     (			double * P = NULL, int m = 0); //...вычисляем все;
 		void parametrization     (int k, double * P = NULL, int m = 0);
@@ -248,7 +253,7 @@ void CShapeMixer<T>::delete_potential()
 //////////////////////////
 //...auxilliary functions;
 template <typename T>
-int CShapeMixer<T>::freedom(int id_full)
+int CShapeMixer<T>::freedom(Num_State id_full)
 {
 	int k, NN_local = 0;
 	if (shape) {

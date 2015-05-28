@@ -3,10 +3,11 @@
 
 ////////////////////////////////
 //...несколько уровней точности;
-double EE_fine= 1e-21; //...fine accuracty;
-double EE     = 1e-15; //...refine accuracty;
+double EE_fine= 1e-21; //...fine accuracy;
+double EE     = 1e-15; //...refine accuracy;
 double EE_ker = 1e-10; //...accuracy of geometrical kernel operations;
 double EE_dop = 1e-8;  //...middle accuracy for geometrical checkings;
+double EE_usl = 1e-5;  //...middle accuracy for geometrical checkings;
 double EE_fuz = 1e-3;  //...accuracy for chain closing;
 double EE_res = 2e-3;  //...for logarithmic brand under resonance;
 
@@ -17,53 +18,27 @@ int         i_parm[MAX_CMBL];
 double      d_parm[MAX_CMBL];
 complex     c_parm[MAX_CMBL];
 
-///////////////////////////////////////////////////////////////////////
-//...фиксирование времени работы процесса и его перевод в 60-ю систему;
-void timing_process(clock_t start, clock_t inter, int * hund, int * sec, int * min, int * hour)
-{
-	if ((hund || sec || min || hour) && inter >= start) {
-		double        f     = (double)(inter-start)/CLOCKS_PER_SEC+.005;
-		unsigned long sec0  = (unsigned long)f,
-						  hund0 = (unsigned long)(100.*(f-sec0));
-		if (hour) {
-		  * hour = (int)sec0/3600; sec0 -= 3600*(* hour);
-		}
-		if (min ) {
-		  * min  = (int)sec0/60;   sec0 -= 60*(* min);
-		}
-		if (sec ) * sec  = (int)sec0; else hund0 += 100*sec0;
-		if (hund) * hund = (int)hund0;
-	}
-	return;
-}
-clock_t timing_process(clock_t start, int * hund, int * sec, int * min, int * hour)
-{
-	clock_t inter = clock();
-	timing_process(start, inter, hund, sec, min, hour);
-	return(inter);
-}
-
 //////////////////////////////
 //...pаспутывание комментаpия;
-char user_Filtr(char * FILE, unsigned long & k, unsigned long upper_limit)
+char user_Filtr(char * FILE, unsigned long & k, unsigned long upper_limit, Num_State id_toupper)
 {
 	if (k >= upper_limit || ! FILE) return('\xFF');
-	char buf = (char)toupper(FILE[k++])/*(char)(FILE[k++])*/;
+	char buf = id_toupper == OK_STATE ? (char)toupper(FILE[k++]) : (char)(FILE[k++]);
 	if (buf == ';') {
 		while (buf != '\n' && k < upper_limit) buf = FILE[k++];
 		return('\xFF');
 	}
 	if (isalpha(buf) || isdigit(buf) || buf == '+'  || buf == ':' && (k == 1 || isalpha(FILE[k-2])) || 
-													buf == '-'  || buf == '.' || buf == '#' || buf == '_' || 
+			buf == '('  || buf == ')'  || buf == '-'  || buf == '.' || buf == '#' || buf == '_' || 
 													buf == '\x1C' || buf == '!' || buf == '\x2F') return(buf);
 	else return('\xFF');
 }
 
-int user_Read(char * buf, char * FILE, unsigned long & k, unsigned long upper_limit)
+int user_Read(char * buf, char * FILE, unsigned long & k, unsigned long upper_limit, Num_State id_toupper)
 {
 	int l = 0;
 	while (l < BUF_SIZE && k < upper_limit) {
-		char buf0 = user_Filtr(FILE, k, upper_limit);
+		char buf0 = user_Filtr(FILE, k, upper_limit, id_toupper);
 		if (buf0 != '\xFF') buf[l++] = buf0; else
 		if (l != 0) {
 			buf[l] = '\x0'; return(1);
@@ -72,11 +47,11 @@ int user_Read(char * buf, char * FILE, unsigned long & k, unsigned long upper_li
 	buf[l] = '\x0'; return (l != 0);
 }
 
-int user_Read(char * buf, char * FILE, unsigned long & k, unsigned long upper_limit, int m)
+int user_Read(char * buf, char * FILE, unsigned long & k, unsigned long upper_limit, int m, Num_State id_toupper)
 {
 	int l = 0;
 	for (m--; m >= 0; m--) if (l < BUF_SIZE && k < upper_limit)
-	buf [l++]  = (char)toupper(FILE[k++])/*(char)(FILE[k++])*/;
+	buf [l++]  = id_toupper == OK_STATE ? (char)toupper(FILE[k++]) : (char)(FILE[k++]);
 	buf [l]    = '\x0';
 	return (l != 0);
 }
@@ -100,54 +75,74 @@ int user_Count(char * FILE, unsigned long k, unsigned long & upper_limit, char p
 
 ////////////////////////////////////////////
 //...определение длины файла входных данных;
-unsigned long length_ascii(char * cfg_name)
+unsigned long length_ascii(FILE * TXT)
 {
 	unsigned long length = 0;
-	FILE * TXT;
-	if (  (TXT = fopen(cfg_name, "rt")) != NULL) {
+	if (TXT) {
 		fseek (TXT, 0L, SEEK_END);
 		length = (unsigned long) ftell(TXT);
 		fclose(TXT); 
 	}  
 	return(length);
 }
+unsigned long length_ascii(char * cfg_name)
+{
+	FILE * TXT = fopen(cfg_name, "rt");
+	return(length_ascii(TXT));
+}
 unsigned long length_ascii(const char * cfg_name)
 {
-	return length_ascii((char *)cfg_name);
+	FILE * TXT = fopen(cfg_name, "rt");
+	return(length_ascii(TXT));
 }
 
 /////////////////////////////////////
 //...считывание файла входных данных;
+void read_struct_ascii(FILE * device, char * ascii, unsigned long length)
+{
+	if (device) {
+		size_t res = fread(ascii, sizeof(char), length, device);
+		fclose(device);
+	}
+}
 char * read_struct_ascii(char * cfg_name)
 {
 	unsigned long length = length_ascii(cfg_name);
 	char *         ascii = NULL;
 	if (length && (ascii = (char *)new_struct((length+1)*sizeof(char))) != NULL) {
 		FILE * device = fopen(cfg_name, "rb");
-		if (device) {
-			size_t res = fread(ascii, sizeof(char), length, device);
-			fclose(device);
-		}
+		read_struct_ascii(device, ascii, length);
 	}
 	return(ascii);
 }
 char * read_struct_ascii(const char * cfg_name)
 {
-	return read_struct_ascii((char *)cfg_name);
+	unsigned long length = length_ascii(cfg_name);
+	char *         ascii = NULL;
+	if (length && (ascii = (char *)new_struct((length+1)*sizeof(char))) != NULL) {
+		FILE * device = fopen(cfg_name, "rb");
+		read_struct_ascii(device, ascii, length);
+	}
+	return(ascii);
 }
 
 ////////////////////////////////////////////////////
 //...проверка наличия файла входных данных на диске;
-int exist_ascii(char * cfg_name)
+int exist_ascii(FILE * device)
 {
-	FILE  * device = fopen(cfg_name, "rb");
 	int m = device != 0;
 	if (m) fclose (device);
 	return(m);
 }
+int exist_ascii(char * cfg_name)
+{
+	FILE * device = fopen(cfg_name, "rb");
+	return(exist_ascii(device));
+}
 int exist_ascii(const char * cfg_name)
 {
-	return exist_ascii((char *)cfg_name);
+	FILE * device = fopen(cfg_name, "rb");
+	return(exist_ascii(device));
 }
 
 /////////////////////////////////////////////
@@ -167,50 +162,6 @@ double table_approx(double arg, double table[][2], int N_table, int decrease_fla
 		if (0 <= i && i < N_table-1) value -= (table[i+1][0]-arg)*(table[i+1][1]-table[i][1])/(table[i+1][0]-table[i][0]);
 	}
 	return value;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////
-//...пpоцедуpы целочисленного возведения в степень вещественного и комплексного числа;
-double powI(double x, int m)
-{
-  double f = 1.;
-  for (int l = 1; l <= abs(m); l++) f *= x;
-  return f;
-}
-
-complex powC(complex x, int m)
-{
-  complex f = comp(1);
-  for (int l = 1; l <= abs(m); l++) f *= x;
-  return f;
-}
-
-////////////////////////////////////////////////////
-//...вычисление значения аpгумента: arg0([0, 2*pi));
-double arg0(double y, double x)
-{
-	double fi = 0.;
-	if (fabs(x) > fabs(y)) fi = atan(fabs(y/x)); else if (y != 0.) fi = M_PI_2-atan(fabs(x/y));
-	if (x < 0.) if (y <= 0.) fi = M_PI+fi; else fi = M_PI-fi; else if (y < 0.) fi = 2.*M_PI-fi;
-	return(fi);
-}
-double arg0(complex z)
-{
-	return(arg0(imag(z), real(z)));
-}
-
-////////////////////////////////////////////////////
-//...вычисление значения аpгумента: arg2([-pi, pi));
-double arg2(double y, double x)
-{
-	double fi = 0.;
-	if (fabs(x) > fabs(y)) fi = atan(fabs(y/x)); else if (y != 0.) fi = M_PI_2-atan(fabs(x/y));
-	if (x < 0.) if (y <= 0.) fi = -M_PI+fi; else fi = M_PI-fi; else if (y <= 0.) fi = -fi;
-	return fi;
-}
-double arg2(complex z)
-{
-	return (arg2(imag(z), real(z)));
 }
 
 /////////////////////////////////////////////////////////////////////////////////

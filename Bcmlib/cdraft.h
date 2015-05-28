@@ -4,8 +4,11 @@
 #ifndef ___CDRAFT___
 #define ___CDRAFT___
 
+#include "dd_real.h"
+#include "qd_real.h"
+
+#include "ccells.h"
 #include "csmixer.h"
-#include "ccebasic.h"
 #include "cgrid_el.h"
 #include "cblocked.h"
 
@@ -329,7 +332,7 @@ enum Num_Value {
 //...structure of one block;
 template <typename T>
 struct Block {
-		int type;					//...type of element of blocks structure;
+		Num_Block		type;		//...type of element of blocks structure;
 		Block				* B;     //...description of all blocks structure;
 		CCells			* bar;   //...geometry of blocks element;
 		Topo				* link;  //...links of the blocks element;
@@ -383,14 +386,14 @@ public:
 		CCells	* bar;  //...description boundary surface;
 		Topo		* link; //...description types of the boundary components;
 public:
-static int NUM_PHASE, NUM_MPLS, NUM_QUAD, NUM_VIBRO, NUM_TIME, BOX_LINK_PERIOD;
+static int NUM_MPLS, NUM_QUAD, NUM_TIME, NUM_ADHES, NUM_VIBRO, NUM_GEOMT, NUM_PHASE, MAX_PHASE, BOX_LINK_PERIOD;
 		CBlockedSolver<T> solver;
 public:
 		CGrid_el stru;
 		int	 * id_prop; //...types of boundary conditions;
 		double * pp_cond; //...description of the boundary parameters;
       double * src;	   //...description of the point sources;
-		void bnd_marker2D(int j, double * pp) {
+		void bnd_marker2D(Topo j, double * pp) {
 			if (pp) switch (j) { //...задаем граничные условия для помеченных границ;
 				case BOUND1_STATE: pp[0] = 1.; pp[1] = 0.; pp[2] = 1.; break; //...растяжение единичной силой;
 				case BOUND2_STATE: pp[0] = 0.; pp[1] = 0.; pp[2] = 1.; break; //...свободная граница;
@@ -398,7 +401,7 @@ public:
 				case BOUND4_STATE: pp[0] = 1.; pp[1] = 0.; pp[2] = MAX_HIT; break; //...жесткое растяжение;
 			}
 		}
-		void bnd_marker3D(int j, double * pp) {
+		void bnd_marker3D(Topo j, double * pp) {
 			if (pp) switch (j) { //...задаем граничные условия для помеченных границ;
 				case BOUND1_STATE: pp[0] = -1.; pp[1] = 0.; pp[2] =  0.; pp[3] = 1; break; //...растяжение единичной силой;
 				case BOUND2_STATE: pp[0] =  0.; pp[1] = 0.; pp[2] =  0.; pp[3] = 1; break; //...свободная граница;
@@ -419,46 +422,46 @@ protected:
 		virtual void comput5(int opt, T * K, Num_Value _FMF, int id_variant){}
 		virtual void comput6(int opt, T * K, Num_Value _FMF, int id_variant){}
 		virtual void comput7(int opt, T * K){}
-		virtual int	 comput_kernel1(Num_Comput Num) { return NULL_STATE;}
-		virtual int	 comput_kernel2(Num_Comput Num) { return NULL_STATE;}
-		virtual int	 comput_kernel3()	{ return NULL_STATE;}
-		virtual int	 comput_kernel4()	{ return NULL_STATE;}
-		virtual int	 comput_kernel5()	{ return NULL_STATE;}
-		virtual int	 computing_header(Num_Comput Num){ return NULL_STATE;}
-		virtual int	 block_shape_init(Block<T> & B, int id_free) { return NULL_STATE;}
+		virtual Num_State comput_kernel1(Num_Comput Num) { return NULL_STATE;}
+		virtual Num_State comput_kernel2(Num_Comput Num) { return NULL_STATE;}
+		virtual Num_State comput_kernel3()	{ return NULL_STATE;}
+		virtual Num_State comput_kernel4()	{ return NULL_STATE;}
+		virtual Num_State comput_kernel5()	{ return NULL_STATE;}
+		virtual Num_State computing_header(Num_Comput Num){ return NULL_STATE;}
+		virtual int block_shape_init(Block<T> & B, Num_State id_free) { return 0;}
 //...инициализация и линкование блоков;
 		virtual void blocks_release();
-		virtual int  block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max_env, int * block_env, int N_buf);
-		virtual int	 block_iddir_2D (Block<T> & B, int i, int j, double * par, double eps = 0.0005);
-		virtual int  block_iddir_3D (Block<T> & B, int i, double * par, int id_fast = OK_STATE, double eps = 0.0005);
-		virtual int	 block_plink_2D (Block<T> & B, int & i, int & j, int & id_dir, double * par, double eps = 0.0005);
-		virtual int	 block_plink_3D (Block<T> & B, int & i, int & id_dir, double * par, int id_fast = OK_STATE, double eps = 0.0005);
-		virtual int  geom_iddir_2D	 (Block<T> & B, int i, double * par, double eps = 0.0005);
-		virtual int  geom_iddir_3D	 (Block<T> & B, int i, double * par, double eps = 0.0005);
-		virtual int	 geom_plink_2D  (Block<T> & B, int & i, int & id_dir, double * par, double eps = 0.0005);
-		virtual int	 geom_plink_3D  (Block<T> & B, int & i, int & id_dir, double * par, double eps = 0.0005);
-		virtual void bar_activate	 (Block<T> & B, int id_status = OK_STATE, int id_fast = OK_STATE);
+		virtual int  block_geom_link (Block<T> & B, int * geom, int * geom_ptr, int max_env, int * block_env, int N_buf);
+		virtual int	 block_iddir_2D  (Block<T> & B, int i, int j, double * par, double eps = 0.0005);
+		virtual int  block_iddir_3D  (Block<T> & B, int i, double * par, int id_fast = OK_STATE, double eps = 0.0005);
+		virtual int	 block_plink_2D  (Block<T> & B, int & i, int & j, int & id_dir, double * par, double eps = 0.0005);
+		virtual int	 block_plink_3D  (Block<T> & B, int & i, int & id_dir, double * par, int id_fast = OK_STATE, double eps = 0.0005);
+		virtual int  geom_iddir_2D	  (Block<T> & B, int i, double * par, double eps = 0.0005);
+		virtual int  geom_iddir_3D	  (Block<T> & B, int i, double * par, double eps = 0.0005);
+		virtual int	 geom_plink_2D   (Block<T> & B, int & i, int & id_dir, double * par, double eps = 0.0005);
+		virtual int	 geom_plink_3D   (Block<T> & B, int & i, int & id_dir, double * par, double eps = 0.0005);
+		virtual void bar_activate	  (Block<T> & B, int id_status = OK_STATE, int id_fast = OK_STATE);
 //...заполнение блочной матрицы;
-		virtual int	 gram1	 (CGrid * nd, int i, int id_local) { return NULL_STATE;}
-		virtual int	 gram2	 (CGrid * nd, int i, int id_local) { return NULL_STATE;}
-		virtual int	 gram2peri(CGrid * nd, int i, int id_local) { return NULL_STATE;}
-		virtual int	 gram3	 (CGrid * nd, int i, int id_local) { return NULL_STATE;}
-		virtual int	 gram4	 (CGrid * nd, int i, int id_local) { return NULL_STATE;}
-		virtual int	 gram5	 (CGrid * nd, int i, int id_local) { return NULL_STATE;}
-		virtual int	 rigidy1	 (CGrid * nd, int i, T * K) { return NULL_STATE;}
-		virtual int	 rigidy2	 (CGrid * nd, int i, T * K) { return NULL_STATE;}
-		virtual int	 rigidy3	 (CGrid * nd, int i, T * K) { return NULL_STATE;}
-		virtual int	 rigidy4	 (CGrid * nd, int i, T * K) { return NULL_STATE;}
-		virtual int	 rigidy5	 (CGrid * nd, int i, T * K) { return NULL_STATE;}
-		virtual void energy1	 (CGrid * nd, int i, T * energy, int id_variant){}
-		virtual void energy2	 (CGrid * nd, int i, T * energy, int id_variant){}
-		virtual void energy3	 (CGrid * nd, int i, T * energy, int id_variant){}
-		virtual void energy4	 (CGrid * nd, int i, T * energy, int id_variant){}
-		virtual int	 transfer1(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
-		virtual int	 transfer2(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
-		virtual int	 trans_esh(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;};
-		virtual int	 transfer3(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
-		virtual int	 transfer4(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
+		virtual Num_State gram1		(CGrid * nd, int i, int id_local) { return NULL_STATE;}
+		virtual Num_State gram2		(CGrid * nd, int i, int id_local) { return NULL_STATE;}
+		virtual Num_State gram2peri(CGrid * nd, int i, int id_local) { return NULL_STATE;}
+		virtual Num_State gram3		(CGrid * nd, int i, int id_local) { return NULL_STATE;}
+		virtual Num_State gram4		(CGrid * nd, int i, int id_local) { return NULL_STATE;}
+		virtual Num_State gram5		(CGrid * nd, int i, int id_local) { return NULL_STATE;}
+		virtual Num_State rigidy1	(CGrid * nd, int i, T * K) { return NULL_STATE;}
+		virtual Num_State rigidy2	(CGrid * nd, int i, T * K) { return NULL_STATE;}
+		virtual Num_State rigidy3	(CGrid * nd, int i, T * K) { return NULL_STATE;}
+		virtual Num_State rigidy4	(CGrid * nd, int i, T * K) { return NULL_STATE;}
+		virtual Num_State rigidy5	(CGrid * nd, int i, T * K) { return NULL_STATE;}
+		virtual void energy1			(CGrid * nd, int i, T * energy, int id_variant){}
+		virtual void energy2			(CGrid * nd, int i, T * energy, int id_variant){}
+		virtual void energy3			(CGrid * nd, int i, T * energy, int id_variant){}
+		virtual void energy4			(CGrid * nd, int i, T * energy, int id_variant){}
+		virtual Num_State transfer1(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
+		virtual Num_State transfer2(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
+		virtual Num_State trans_esh(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
+		virtual Num_State transfer3(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
+		virtual Num_State transfer4(CGrid * nd, int i, int k, int id_local) { return NULL_STATE;}
 public:
 //...интерфейс вычислительных схем;
 		void computing(int opt = -1, Num_Comput Num = BASIC_COMPUT) {
@@ -472,7 +475,7 @@ public:
 				if (Num ==   VOLUME_COMPUT) comput6(opt, K, _FMF, id_variant);
 				if (Num == COVERING_COMPUT) comput7(opt, K);
 		}
-		int computing_kernel(Num_Comput Num = BASIC_COMPUT) {
+		Num_State computing_kernel(Num_Comput Num = BASIC_COMPUT) {
 				if (Num ==	 BASIC_COMPUT || Num == MAPPING_COMPUT || Num == PERIOD_COMPUT || Num == ESHELBY_COMPUT) return comput_kernel1(Num); else
 				if (Num ==	 BASICtCOMPUT || Num == MAPPINGtCOMPUT) return comput_kernel2(Num); else
 				if (Num == SPECIAL_COMPUT) return comput_kernel3(); else//...дополнительные схемы;
@@ -481,20 +484,20 @@ public:
 		}
 public:
 //...интерфейс заполнения блочной матрицы;
-		int GramAll(CGrid * nd, int i, int id_local = NULL_STATE, Num_Comput Num = BASIC_COMPUT) {
-				if (Num ==    BASIC_COMPUT) return gram1	  (nd, i, id_local); else
-				if (Num ==  E_BASIC_COMPUT) return gram4	  (nd, i, id_local); else
-				if (Num ==	 PERIOD_COMPUT) return gram2	  (nd, i, id_local); else
-				if (Num == E_PERIOD_COMPUT) return gram3	  (nd, i, id_local); else
-				if (Num == 	  BASICtCOMPUT) return gram5	  (nd, i, id_local); else return NULL_STATE;
+		Num_State GramAll(CGrid * nd, int i, int id_local = 0, Num_Comput Num = BASIC_COMPUT) {
+				if (Num ==    BASIC_COMPUT) return gram1(nd, i, id_local); else
+				if (Num ==  E_BASIC_COMPUT) return gram4(nd, i, id_local); else
+				if (Num ==	 PERIOD_COMPUT) return gram2(nd, i, id_local); else
+				if (Num == E_PERIOD_COMPUT) return gram3(nd, i, id_local); else
+				if (Num == 	  BASICtCOMPUT) return gram5(nd, i, id_local); else return NULL_STATE;
 		}
-		int TransferBB(CGrid * nd, int i, int k, int id_local = NULL_STATE, Num_Comput Num = BASIC_COMPUT) {
+		Num_State TransferBB(CGrid * nd, int i, int k, int id_local = 0, Num_Comput Num = BASIC_COMPUT) {
 				if (Num == 	  BASIC_COMPUT) return transfer1(nd, i, k, id_local); else
 				if (Num ==  E_BASIC_COMPUT) return transfer4(nd, i, k, id_local); else
 				if (Num ==	 PERIOD_COMPUT) return transfer2(nd, i, k, id_local); else
 				if (Num == E_PERIOD_COMPUT) return transfer3(nd, i, k, id_local); else return NULL_STATE;
 		}
-		int RigidyAll(CGrid * nd, int i, T * K, Num_Comput Num = BASIC_COMPUT) {
+		Num_State RigidyAll(CGrid * nd, int i, T * K, Num_Comput Num = BASIC_COMPUT) {
 				if (Num ==	  BASIC_COMPUT) return rigidy1(nd, i, K); else
 				if (Num ==   VOLUME_COMPUT) return rigidy2(nd, i, K); else
 				if (Num ==  SPECIAL_COMPUT) return rigidy3(nd, i, K); else
@@ -518,13 +521,14 @@ public:
 		virtual void set_fasa_hmg(double nju1, double nju2, double G1, double G2, double l11, double l12, double l21, double l22, double A, double B){}
 		virtual void set_fasa_hmg(double R1, double R2, double nju1, double nju2, double nju3, double G1, double G2, double G3, double alpha = -1.){}
 		virtual void set_fasa_hmg(double K1, double K2, double G1, double G2, double l1, double l2, double d1, double d2, double A, double B, double d0){}
+		virtual void set_time	 (double d_time = 0.1, double end_time = 1.) {}
+		//	set_param(NUM_TIME+1, 0.); set_param(NUM_TIME+2, d_time); set_param(NUM_TIME+3, end_time);
+		//}
+		virtual void set_adhesion(double AA, double BB){}
 		virtual void set_geometry(double rad, double layer = 0.){}
 		virtual void set_mpls    (double mpls) {set_param(NUM_MPLS, mpls);}
 		virtual void set_quad	 (double quad) {set_param(NUM_QUAD, quad);}
 		virtual void set_vibro   (double Hz)   {set_param(NUM_VIBRO,  Hz);}
-		virtual void set_time	 (double d_time = 0.1, double end_time = 1.) {
-			set_param(NUM_TIME+1, 0.); set_param(NUM_TIME+2, d_time); set_param(NUM_TIME+3, end_time);
-		}
 		virtual void set_lattice (double lattice)  {set_param(NUM_TIME, lattice);}
 		virtual void set_normaliz(double normaliz) {set_param(NUM_MPLS+1,		normaliz);}
 		virtual void set_lagrange(double lagrange) {set_param(size_of_param()-1, lagrange);}
@@ -563,19 +567,23 @@ public:
 		virtual double TakeCylinder			(double ff, double eps = EE) { return 0.;}
 		virtual double TakeEshelby				(double ff, double ff_l)	  { return 0.;}
 		virtual double TakeEshelby_two		(double ff)						  { return 0.;}
+		virtual double TakeEshelby_grad		(double ff)						  { return 0.;}
 		virtual double TakeEshelby_volm		(double ff, double ff_l)	  { return 0.;}
 		virtual double TakeEshelby_volm_two (double ff)						  { return 0.;}
 		virtual double TakeEshelby_volm_sym (double ff)						  { return 0.;}
 		virtual double TakeEshelby_shear		(double ff, double ff_l, double eps = EE, int max_iter = 100) { return 0.;}
 		virtual double TakeEshelby_shear_two(double ff, double eps = EE, int max_iter = 100)				  { return 0.;}
 		virtual double TakeEshelby_shear_sym(double ff, double eps = EE, int max_iter = 100)				  { return 0.;}
-		virtual double TakeEshelby_shear_det(double ff)																	  { return 0.;}
+		virtual double TakeEshelby_shear_det(double ff, double alpha = -1)										  { return 0.;}
 		virtual double TakeLayer_kk(int N, double * ff, double * kk)												  { return 0.;}
 		virtual double TakeLayer_kk(int N, double * ff, double * kk, double * mu)								  { return 0.;}
 		virtual double TakeLayer_kk(int N, double * ff, double * kk, double * mu, double * nj)				  { return 0.;}
 		virtual double TakeLayer_GG(int N, double * ff, double * mu, double * nj)								  { return 0.;}
 		virtual double TakeLayer_GG(int N, double * ff, double * kk, double * mu, double eps = EE, int max_iter = 100) { return 0.;}
 		virtual double TakeLayer_GG(int N, double * ff, double * kp, double * mu, double * nj, double eps = EE, int max_iter = 100) { return 0.;}
+//...функция пересчета полей (температур) согласно схеме установления;
+		virtual void TakeStabStep(double * Temp, int NN, double alpha){};
+		virtual void TakeStabStep_layer(double * Temp, int N_SC, int N_CU, int N_cells, double alpha){};
 public:
 		virtual Num_Draft type() { return NULL_DRAFT;}
 public:
@@ -649,9 +657,9 @@ public:
 //...инициализация блоков;
 		void change_solv(int set_solv = SQUARE_SOLVING, int * save_solv = NULL) { if (save_solv) *save_solv = volm; solv = set_solv;}
 		void change_volm(int set_volm = BOUND_VOLUME,   int * save_volm = NULL) { if (save_volm) *save_volm = volm; volm = set_volm;}
-		void shapes_init  (int id_free);
-		void SetBUniStruct(int type = POLY_BLOCK, int genus = SPHERE_GENUS);
-		void SetBUniStruct(int k, int type, int genus) {
+		void shapes_init  (Num_State id_free);
+		void SetBUniStruct(Num_Block type = POLY_BLOCK, int genus = SPHERE_GENUS);
+		void SetBUniStruct(int k, Num_Block type, int genus) {
 			if (0 <= k && k < N) {
 				B[k].type = type;
 				if (genus > ERR_GENUS) set_block3D(B[k], genus, 1.);
@@ -695,12 +703,17 @@ public:
 		double MaxSkeletonRadius (Block<T> & B, int id_set_origine = NULL_STATE, int id_fast = OK_STATE);
 		double MinSkeletonRadius (Block<T> & B, int id_set_origine = NULL_STATE, int id_fast = OK_STATE);
 		double MaxDirectionRadius(Block<T> & B, int axis = AXIS_X, int id_fast = OK_STATE);
-		void   SkeletonBounding  (Block<T> & B, double * par,   int id_fast = OK_STATE);
-		void   SkeletonRadius (int id_set_origine = NULL_STATE, int id_fast = OK_STATE);
-		void	 SetGeomBounding(double * par);
+		void   SkeletonBounding  (Block<T> & B, double * par,    int id_fast = OK_STATE);
+		void   SkeletonRadius  (int id_set_origine = NULL_STATE, int id_fast = OK_STATE);
+		void	 SetGeomBounding (double * par);
+		void   SetBlockBounding(double * par, int id_fast = OK_STATE, int id_reset = NULL_STATE);
+		void	 SetBounding	  (double * par, int id_fast = OK_STATE) {
+			SetGeomBounding (par);
+			SetBlockBounding(par, id_fast);
+		}
 public:
 //...установки блоков;
-		int  add_block  (int type);
+		int  add_block  (Num_Block type);
 		int  set_block2D(Block<T> & B, int genus, double R, int id_dop = 0,  double x0 = 0., double y0 = 0., int id_local = NULL_STATE);
 		int  set_block3D(Block<T> & B, int genus, double R, int id_dop = 0,  double x0 = 0., double y0 = 0., double z0 = 0., 
 																			 double  fi = 0., double th = 0., double f0 = 0., int id_local = NULL_STATE);
@@ -711,22 +724,42 @@ public:
 		int  bar_condit_in(char	 * id_CONDIT, unsigned long & comput, unsigned long upper_limit, int id_print_stat = NULL_STATE);
 		void bar_condit_in(char	* ch_CONDIT, int id_print_stat = NULL_STATE);
 		void bar_condit_in(const char * ch_CONDIT, int id_print_stat = NULL_STATE);
+//...конвертация плоской структуры в призматическую или цилиндрически симметричную;
+		int  ConvertToBeamStruct(int * NN, double * LL, int m_cell = NULL_STATE, int id_phase = NULL_STATE);
+		void ConvertToCylStruct	(int NN, double axis_dist, double fi0 = 360., int m_close = 1);
+		void CurveCorrect	(double X0, double Y0, double rad, double eps = EE_usl);
 //...идентификация точек внутри системы блоков;
 		int  Poly_struc_in2D (int & k, double X, double Y, int id_fast = ZERO_STATE, double eps = EE_ker);
-		int  Poly_struc_in3D (int & k, double X, double Y, double Z, double eps = EE_ker);
+		int  Poly_struc_in3D (int & k, double X, double Y, double Z, int id_local = ZERO_STATE, double eps = EE_ker);
 		int  Sph_struc_in3D  (int & k, double X, double Y, double Z, int id_map1into = OK_STATE);
 		void StructEllCorrect(int & k, double X, double Y);
+		void hit_beam_struct	(CGrid * nd, int N0, int * NN, double * LL, int axis = AXIS_Z); 
 //...библиотека готовых структур;
-		int GetSphBoxStruct		(double AA, double BB, double CC, double rad = 0., double ll = 0., int id_bound = NULL_STATE);
-		int GetSpheroidBoxStruct(double AA, double BB, double CC, double rad = 0., double delt = 0.5, double fi = 0., double theta = 0., int id_bound = NULL_STATE);
-		int GetPenetrateSphere	(double rad, double L);
+		int GetBoxStruct				 (double AA,	double BB, double CC, int NX = 1, int NY = 1, int NZ = 1);
+		int GetSphBoxStruct			 (double AA, double BB, double CC, double rad = 0., double ll = 0., int id_bound = NULL_STATE);
+		int GetSpheroidBoxStruct	 (double AA, double BB, double CC, double rad = 0., double delt = 0.5, double fi = 0., double theta = 0., int id_bound = NULL_STATE);
+		int GetLatticeBox3DStruct	 (double * X, double * Y, double * Z, int NX, int NY, int NZ);
+		int GetLatticeBox3DStruct	 (double * X, double * Y, double * Z, int NX, int NY, int NZ, Num_Block id_block);
+		int GetOnoBoxStruct			 (double AA,	double BB, double aa, double bb, double rad, int * NN, double * LL, int id_phase, int id_curve, double eps);
+		int GetOnoBoxStruct			 (double AA,	double BB, double aa, double bb, double rad, int * NN, double * LL, char * name, int id_phase = NULL_STATE, int id_curve = OK_STATE, double eps = EE_usl);
+		int GetOnoBoxStruct			 (double AA,	double BB, double aa, double bb, double rad, int * NN, double * LL, const char * name, int id_phase = NULL_STATE, int id_curve = OK_STATE, double eps = EE_usl);
+		int GetPenetrateSphere		 (double rad, double L);
+		int GetCylinderStruct		 (double rad, double R, double length, int NX = 3, int NY = 1, int NZ = 1);
+		int GetCylinderChannelStruct(double rad, double R, double length, int NZ, int id_curve);
+		int GetCylinderChannelStruct(double rad, double R, double length, char * name, int NZ = 1, int id_curve = OK_STATE);
+		int GetCylinderChannelStruct(double rad, double R, double length, const char * name, int NZ = 1, int id_curve = OK_STATE);
+		int GetCylinderChannelStruct(double rad, double R, double length, double r0,  int NX = 3, int NY = 1, int N2 = 1, int NZ = 1);
+		int GetCylSphStruct			 (double ff_vol, double rad, int id_bound = NULL_STATE);
+		int GetCylSphStruct			 (double ff_vol, double rad, double L, int id_bound = NULL_STATE);
+		int GetSph2BodyStruct		 (double ff_vol, double rad, int id_bound = NULL_STATE);
+		int GetBars25Struct			 (CDraft<T> * bars25, double length, int NZ = 1);
 };
-//////////////////////////////////////////////
-//...construction of all existing draft types;
-CDraft<double>  * CreateDraft  (Num_Draft id_DRAFT, int id_dop = 8);
-CDraft<complex> * CreateDraftC (Num_Draft id_DRAFT, int id_dop = 8);
-CDraft<dd_real> * CreateDraftDD(Num_Draft id_DRAFT, int id_dop = 8);
-CDraft<qd_real> * CreateDraftQD(Num_Draft id_DRAFT, int id_dop = 8);
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//...global functions for construction all existing drafts types of in all existing types of numbers;
+CDraft<double>  * CreateDraftR(Num_Draft id_DRAFT = NULL_DRAFT, int id_dop = 8);
+CDraft<complex> * CreateDraftC(Num_Draft id_DRAFT = NULL_DRAFT, int id_dop = 8);
+CDraft<dd_real> * CreateDraftD(Num_Draft id_DRAFT = NULL_DRAFT, int id_dop = 8);
+CDraft<qd_real> * CreateDraftQ(Num_Draft id_DRAFT = NULL_DRAFT, int id_dop = 8);
 
 //////////////////////////////////////////////////////////////////////////
 //          INTERFACE FUNCTIONS FOR EXTERN BLOCK MATRIX SOLVER          //
@@ -997,8 +1030,11 @@ void Right_HandsideC(void * _pBCM, int _BlkRow, void * _refc)
 template <typename T> int CDraft<T>::NUM_MPLS  = 0;
 template <typename T> int CDraft<T>::NUM_QUAD  = 2;
 template <typename T> int CDraft<T>::NUM_TIME  = 4;
+template <typename T> int CDraft<T>::NUM_ADHES = 4;
 template <typename T> int CDraft<T>::NUM_VIBRO = 4;
+template <typename T> int CDraft<T>::NUM_GEOMT = 4;
 template <typename T> int CDraft<T>::NUM_PHASE = 0;
+template <typename T> int CDraft<T>::MAX_PHASE = 3;
 template <typename T> int CDraft<T>::BOX_LINK_PERIOD = 0;
 
 ////////////////////
@@ -1023,7 +1059,7 @@ void CDraft<T>::blocks_release()
 /////////////////////////////////
 //...инициализация функций формы;
 template <typename T> 
-void CDraft<T>::shapes_init(int id_free)
+void CDraft<T>::shapes_init(Num_State id_free)
 {
 	for (int k = 0; B && k < N; k++)
 		block_shape_init(B[k], id_free);
@@ -1032,7 +1068,7 @@ void CDraft<T>::shapes_init(int id_free)
 /////////////////////////////
 //...defining type of blocks;
 template <typename T> 
-void CDraft<T>::SetBUniStruct(int type, int genus)
+void CDraft<T>::SetBUniStruct(Num_Block type, int genus)
 {
 	for (int k = 0; k < N; k++) {
 		B[k].type = type;
@@ -1591,16 +1627,18 @@ int CDraft<T>::block_plink_2D(Block<T> & B, int & i, int & j, int & id_dir, doub
 template <typename T> 
 int CDraft<T>::block_plink_3D(Block<T> & B, int & i, int & id_dir, double * par, int id_fast, double eps)
 {
-	int m, l, s, k = (int)(&B-B.B), j, mm, nn, elem = -1, N_ini = 4; id_dir = 0;
+	int m, l, s, k = (int)(&B-B.B), j, mm, nn, elem = -1, N_ini = 4;
 	double pm[12], pp_cond[12];
 
-	if (0 <= k && k < N && B.bar && 0 <= i && i < B.bar->graph[0] && B.link && B.link[i+1] < 0)
+	if (i >= 0)
+	if (0 <= k && k < N && B.bar && B.link)
+	for (; elem < 0 && i < B.bar->graph[0]; i++) if (B.link[i+1] < 0)
 	IF_ANY_FACET(B.bar, i) {
 
 //////////////////////////////////////////////////////////////
 //...снимаем данные о контуpе в массив, представляющий фасету;
 		int N_arc, arc, prev = B.bar->ce[i]->graph[(N_arc = B.bar->ce[i]->graph[1])+1], 
-			 N_min = min(N_arc, N_ini), m1, m2, NN_min;
+			 N_min = min(N_arc, N_ini), m1, m2, NN_min; id_dir = 0;
 		for (l = 1; l <= N_min; l++, prev = arc) {
 			arc = B.bar->ce[i]->graph[l+1];
 			if (id_fast == OK_STATE) m1 = arc; else {
@@ -1782,7 +1820,7 @@ int CDraft<T>::geom_iddir_2D(Block<T> & B, int i, double * par, double eps)
 template <typename T> 
 int CDraft<T>::geom_iddir_3D(Block<T> & B, int i, double * par, double eps)
 {
-	int l, mf, k, N_ini = 4, * mm_facet[6], id_dir = 0;
+	int l, mf, k, N_ini = 4, id_dir = 0, mm_facet[6][5];
 	double pm[12];
 
 	if ((mf = stru.stru_install(k = (int)(&B-B.B), mm_facet)) != 0 && 
@@ -1889,15 +1927,16 @@ int CDraft<T>::geom_plink_2D(Block<T> & B, int & i, int & id_dir, double * par, 
 template <typename T> 
 int CDraft<T>::geom_plink_3D(Block<T> & B, int & i, int & id_dir, double * par, double eps)
 {
-	int m, j, l, s, mf, nf, mm, nn, k, elem = -1, N_ini = 4, * mm_facet[6], * nn_facet[6]; id_dir = 0;
+	int m, j, l, s, mf, nf, mm, nn, k, elem = -1, N_ini = 4, mm_facet[6][5], nn_facet[6][5];
 	double pm[12], pp[12];
 
-	if (0 <= i && B.link && stru.X && stru.Y && stru.Z &&
-		(mf = stru.stru_install(k = (int)(&B-B.B), mm_facet)) != 0 && i < mf && B.link[i+1] < 0) {
+	if (0 <= i && B.link && stru.X && stru.Y && stru.Z && (mf = stru.stru_install(k = (int)(&B-B.B), mm_facet)) != 0)
+	for (; elem < 0 && i < mf; i++) 
+	if (B.link[i+1] < 0) {
 
 //////////////////////////////////////////////////////////////
 //...снимаем данные о контуpе в массив, представляющий фасету;
-		int N_min = mm_facet[i][0];
+		int N_min = mm_facet[i][0]; id_dir = 0;
 		for (l = 1;	l <= N_min; l++) {
 			pm[3*(l-1)]   = stru.X[mm_facet[i][l]];
 			pm[3*(l-1)+1] = stru.Y[mm_facet[i][l]];
@@ -2035,6 +2074,7 @@ int CDraft<T>::geom_plink_3D(Block<T> & B, int & i, int & id_dir, double * par, 
 		if (elem >= 0 && (solv%ENERGY_SOLVING == PERIODIC_SOLVING)) { //...убрать i++ !!!
 			i++; return(elem);
 		}
+		mf = stru.stru_install(k, mm_facet);
 	}
 	return(-1);
 }
@@ -2046,7 +2086,7 @@ void CDraft<T>::bar_activate(Block<T> & B, int id_status, int id_fast)
 {
 	if (! B.bar) {
 			B.bar = new CCells;
-		((CCeBasic *)B.bar)->get_nd_bar_directly(& stru, (int)(&B-B.B));
+		B.bar->get_nd_bar_directly(& stru, (int)(&B-B.B));
 		
 //////////////////////////////////////////
 //...переустанавливаем нормирующий радиус;
@@ -2063,14 +2103,14 @@ void CDraft<T>::bar_activate(Block<T> & B, int id_status, int id_fast)
 					for (i = 1;	i < NUM_PHASE; i++) if (B.link[i] <= SRF_STATE)
 					for (l = NUM_PHASE; l < B.link[0]; l++)
 					if  (B.link[l+1] >= 0 && B.link[i] == -B.link[l+1]+SRF_STATE)
-					((CCeBasic *)B.bar)->SetFacetParam(i-1, -B.link[l+1]-1.);
+					B.bar->SetFacetParam(i-1, -B.link[l+1]-1.);
 					
 					for (i = 1; i < NUM_PHASE; i++) if (B.link[i] >= 0)
-					((CCeBasic *)B.bar)->SetFacetParam(i-1, -B.link[i]-1.);
+					B.bar->SetFacetParam(i-1, -B.link[i]-1.);
 				}
 				else
 					for (int i = 0; i < B.link[0]; i++) if (B.link[i+1] >= 0)
-					((CCeBasic *)B.bar)->SetFacetParam (i, -B.link[i+1]-1.);
+					B.bar->SetFacetParam (i, -B.link[i+1]-1.);
 			}
 
 /////////////////////////////////////////////////////////////
@@ -2082,9 +2122,9 @@ void CDraft<T>::bar_activate(Block<T> & B, int id_status, int id_fast)
 					if (stru.cond[l = stru.cond_ptr[i]] == GL_PLOAD4 && stru.cond[l+3] == (int)(&B-B.B)) {
 						for (m = id_prop[0]; m > 0; m--) if (id_prop[m*2-1] == stru.cond[l+2]) break;
 						if (m && 
-							(k = ((CCeBasic *)B.bar)->set_nd_bar_condit(stru.cond[l+3], & stru, stru.cond[l+4], stru.cond[l+5], m, pp_cond, id_prop, square)) < 0)
+							(k = B.bar->set_nd_bar_condit(stru.cond[l+3], & stru, stru.cond[l+4], stru.cond[l+5], m, pp_cond, id_prop, square)) < 0)
 //						if (B.B[-k-1].bar)
-						((CCeBasic *)B.B[-k-1].bar)->set_nd_bar_condit(stru.cond[l+3], m, pp_cond, id_prop, square);
+						B.B[-k-1].bar->set_nd_bar_condit(stru.cond[l+3], m, pp_cond, id_prop, square);
 				}
 
 #ifdef  ___CONSTRUCTION___
@@ -2099,7 +2139,7 @@ void CDraft<T>::bar_activate(Block<T> & B, int id_status, int id_fast)
 							for (num = NUM_PHASE; num < B.link[0]; num++) 
 							if (B.link[k] == -B.link[num+1]+SRF_STATE) break;
 							if (num == B.link[0])
-								((CCeBasic *)B.bar)->set_nd_bar_condit(stru.cond[l+3], & stru, -1, -1, m, pp_cond, id_prop, square, k-1);
+								((CCells *)B.bar)->set_nd_bar_condit(stru.cond[l+3], & stru, -1, -1, m, pp_cond, id_prop, square, k-1);
 						}
 					}
 				}
@@ -2112,7 +2152,7 @@ void CDraft<T>::bar_activate(Block<T> & B, int id_status, int id_fast)
 							for (num = NUM_PHASE; num < B.link[0]; num++) 
 							if (B.link[k] == -B.link[num+1]+SRF_STATE) break;
 							if (num == B.link[0])
-								((CCeBasic *)B.bar)->set_nd_bar_condit(stru.cond[l+3], & stru, -1, -1, m, pp_cond, id_prop, square, k-1);
+								((CCells *)B.bar)->set_nd_bar_condit(stru.cond[l+3], & stru, -1, -1, m, pp_cond, id_prop, square, k-1);
 						}
 					}
 				}
@@ -2260,14 +2300,29 @@ void CDraft<T>::SkeletonBounding(Block<T> & B, double * par, int id_fast)
 //...bounding calculation;
 	if (B.bar && B.mp && B.bar->graph && par)
 	for (int m, l, k = 0; k < B.bar->graph[0]; k++)
-	if  (2 == (l = B.bar->ce[k]->cells_dim()) && id_fast == OK_STATE || 1 == l && id_fast != OK_STATE)
-	for (l = 0;  l < B.bar->ce[k]->graph[1];   l++) {
+	if  (2 == ( l = B.bar->ce[k]->cells_dim()) && id_fast == OK_STATE || 1 == l && id_fast != OK_STATE)
+	for (l = 0; l < B.bar->ce[k]->graph[1]; l++) {
 		par[0] = min(par[0], B.bar->ce[m = B.bar->ce[k]->graph[l+2]]->mp[1]);
 		par[1] = max(par[1], B.bar->ce[m                           ]->mp[1]);
 		par[2] = min(par[2], B.bar->ce[m                           ]->mp[2]);
 		par[3] = max(par[3], B.bar->ce[m                           ]->mp[2]);
 		par[4] = min(par[4], B.bar->ce[m                           ]->mp[3]);
 		par[5] = max(par[5], B.bar->ce[m                           ]->mp[3]);
+	}
+}
+
+////////////////////////////////////////////////////////
+//...defining of the bounding box for the all structure;
+template <typename T> 
+void CDraft<T>::SetBlockBounding(double * par, int id_fast, int id_reset)
+{
+	if (N && B[0].bar) {
+		if (par && id_reset) {
+			par[0] = par[2] = par[4] = MAX_HIT;
+			par[1] = par[3] = par[5] = MIN_HIT;
+		}
+		for (int k = 0; k < N; k++) 
+			SkeletonBounding(B[k], par, id_fast);
 	}
 }
 
@@ -2318,7 +2373,7 @@ void CDraft<T>::SetGeomBounding(double * par)
 //////////////////////////////////
 //...blocks increase in structure;
 template <typename T> 
-int CDraft<T>::add_block(int type)
+int CDraft<T>::add_block(Num_Block type)
 {
   if (! buf_count) {
       Block<T> * new_B = (Block<T> *)new_struct((N+N_buf)*sizeof(Block<T>));
@@ -3276,6 +3331,495 @@ void CDraft<T>::bar_condit_in(const char * ch_CONDIT, int id_print_stat)
 	delete_struct(id_CONDIT);
 }
 
+/////////////////////////////////////////////////////
+//...block structure on the base of the plane sample;
+template <typename T> 
+int CDraft<T>::ConvertToBeamStruct(int * NN, double * LL, int m_cell, int id_phase)
+{
+	if (! NN || ! LL || NN[0] <= 0) return(0);
+
+	double pp_cond[] = {0., 0., 0.}, dd, leng;
+	int i, j, k, l, m, n, j_shift, N_arcs, Max_phase, shift = bar ? 2 : 0, N0 = N;
+
+//////////////////////////////////////////
+//...construction of the blocks structure;
+//	for (                           k = 0; k < N0; k++) B[k].bar->bar_invers();
+	for (Max_phase = 0,             k = 0; k < N0; k++) if (B[k].link[NUM_PHASE] < Max_phase) Max_phase = B[k].link[NUM_PHASE];
+	for (leng = 0., j_shift = 0,    n = 0; n < NN[0]; leng = LL[n], n++)
+	for (dd = (LL[n]-leng)/NN[n+1], j = 0; j < NN[n+1]; j_shift++,  j++) if (j || n)
+	for (pp_cond[2] = leng+dd*(j+.5),	  k = 0; k < N0;						 k++) {
+
+/////////////////////////////////
+//...образование геометрии блока;
+		CCells * beam = new CCells;
+
+		beam->get_beam(m_cell ? B[k].bar->bar_cpy(m_cell) : B[k].bar->bar_cpy(), dd);
+		//beam->cells_out("bar_prev");
+
+		beam->segms_bar();
+		//beam->cells_iso(pp_cond);
+		beam->bar_iso(pp_cond);
+		//beam->cells_out("bar");
+
+////////////////////////////////////
+//...достраиваем торцевые сегменты;
+		if ((B[k].type & ERR_MASK) == SUB_UGOLOK_BLOCK && beam->ce[0]->mp[m = size_of_map(beam->ce[0]->mp)] == NULL_CELL) {
+			double A1, B1, X1, Y1, X2, Y2, rr, f0;
+			int k_line, k_point1, k_point2, k_circ;
+
+			k_line   = beam->ce[0]->graph[2];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X1 = beam->ce[k_point1]->mp[1]-beam->ce[k_point2]->mp[1]; 
+			Y1 = beam->ce[k_point1]->mp[2]-beam->ce[k_point2]->mp[2]; 
+			B1 = sqrt(sqr(X1)+sqr(Y1));
+
+			k_line   = beam->ce[0]->graph[3];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X2 = beam->ce[k_point2]->mp[1]-beam->ce[k_point1]->mp[1]; 
+			Y2 = beam->ce[k_point2]->mp[2]-beam->ce[k_point1]->mp[2];
+			A1 = sqrt(sqr(X2)+sqr(Y2));
+
+			k_circ = beam->ce[0]->graph[7];
+			rr = fabs(beam->ce[k_circ]->mp[7]);
+
+			if (beam->ce[beam->ce[0]->graph[2]]->topo_id(k_point2)) { swap(k_point1, k_point2); f0 = -M_PI; }
+			map_iso(beam->ce[0]->mp, NULL, f0 += arg0(comp(X2, Y2))+M_PI*.25);
+			map_iso(beam->ce[1]->mp, NULL, f0);
+			beam->ce[0]->mp[1] = beam->ce[1]->mp[1] = beam->ce[k_point2]->mp[1]-B1*(cos(f0-M_PI*.25)-sin(f0-M_PI*.25));
+			beam->ce[0]->mp[2] = beam->ce[1]->mp[2] = beam->ce[k_point2]->mp[2]-B1*(cos(f0-M_PI*.25)+sin(f0-M_PI*.25));
+
+			if (A1 > B1+rr && add_new_maps(beam->ce[0]->mp, (m = size_of_map(beam->ce[0]->mp))+1, 7)) {
+				beam->ce[0]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[0]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[0]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)rr;
+				beam->ce[0]->mp[++m] = (CMap)0.;
+				beam->ce[0]->mp[++m] = (CMap)270.;
+			}
+			if (A1 > B1+rr && add_new_maps(beam->ce[1]->mp, (m = size_of_map(beam->ce[1]->mp))+1, 7)) {
+				beam->ce[1]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[1]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[1]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)rr;
+				beam->ce[1]->mp[++m] = (CMap)0.;
+				beam->ce[1]->mp[++m] = (CMap)270.;
+			}
+		}
+		if ((B[k].type & ERR_MASK) == SUB_SREZKA_BLOCK && beam->ce[0]->mp[m = size_of_map(beam->ce[0]->mp)] == NULL_CELL) {
+			double A1, B1, X1, Y1, X2, Y2, rr, f0;
+			int k_line, k_point1, k_point2, k_circ;
+
+			k_line   = beam->ce[0]->graph[2];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X1 = beam->ce[k_point1]->mp[1]-beam->ce[k_point2]->mp[1]; 
+			Y1 = beam->ce[k_point1]->mp[2]-beam->ce[k_point2]->mp[2]; 
+			B1 = sqrt(sqr(X1)+sqr(Y1));
+
+			k_line   = beam->ce[0]->graph[3];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X2 = beam->ce[k_point2]->mp[1]-beam->ce[k_point1]->mp[1]; 
+			Y2 = beam->ce[k_point2]->mp[2]-beam->ce[k_point1]->mp[2];
+			A1 = sqrt(sqr(X2)+sqr(Y2));
+
+			k_circ = beam->ce[0]->graph[5];
+			rr = fabs(beam->ce[k_circ]->mp[7]);
+
+			if (beam->ce[beam->ce[0]->graph[2]]->topo_id(k_point2)) { swap(k_point1, k_point2); f0 = -M_PI; }
+			map_iso(beam->ce[0]->mp, NULL, f0 += arg0(comp(X2, Y2))+M_PI*.75);
+			map_iso(beam->ce[1]->mp, NULL, f0);
+			beam->ce[0]->mp[1] = beam->ce[1]->mp[1] = beam->ce[k_point1]->mp[1]+B1*cos(f0+M_PI*.75)-A1*sin(f0+M_PI*.75);
+			beam->ce[0]->mp[2] = beam->ce[1]->mp[2] = beam->ce[k_point1]->mp[2]+B1*cos(f0+M_PI*.75)+A1*sin(f0+M_PI*.75);
+
+			if (B[k].type & ERR_CODE) swap(A1, B1);
+			if (add_new_maps(beam->ce[0]->mp, (m = size_of_map(beam->ce[0]->mp))+1, 7)) {
+				beam->ce[0]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[0]->mp[++m] = (CMap)A1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)A1;
+				beam->ce[0]->mp[++m] = (CMap)rr;
+				beam->ce[0]->mp[++m] = (CMap)0.;
+				beam->ce[0]->mp[++m] = (CMap)90.;
+			}
+			if (add_new_maps(beam->ce[1]->mp, (m = size_of_map(beam->ce[1]->mp))+1, 7)) {
+				beam->ce[1]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)A1;
+				beam->ce[1]->mp[++m] = (CMap)A1;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)rr;
+				beam->ce[1]->mp[++m] = (CMap)0.;
+				beam->ce[1]->mp[++m] = (CMap)90.;
+			}
+		}
+		if ((B[k].type & ERR_MASK) == SUB_UGOLOK2BLOCK && beam->ce[0]->mp[m = size_of_map(beam->ce[0]->mp)] == NULL_CELL) {
+			double A1, B1, X1, Y1, X2, Y2, rr, f0;
+			int k_line, k_point1, k_point2, k_circ;
+
+			k_line   = beam->ce[0]->graph[2];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X1 = beam->ce[k_point1]->mp[1]-beam->ce[k_point2]->mp[1]; 
+			Y1 = beam->ce[k_point1]->mp[2]-beam->ce[k_point2]->mp[2]; 
+			B1 = sqrt(sqr(X1)+sqr(Y1));
+
+			k_line   = beam->ce[0]->graph[3];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X2 = beam->ce[k_point2]->mp[1]-beam->ce[k_point1]->mp[1]; 
+			Y2 = beam->ce[k_point2]->mp[2]-beam->ce[k_point1]->mp[2];
+			A1 = sqrt(sqr(X2)+sqr(Y2));
+
+			k_circ = beam->ce[0]->graph[6];
+			rr = fabs(beam->ce[k_circ]->mp[7]);
+
+			if (beam->ce[beam->ce[0]->graph[2]]->topo_id(k_point2)) { swap(k_point1, k_point2); f0 = -M_PI; }
+			map_iso(beam->ce[0]->mp, NULL, f0 += arg0(comp(X2, Y2))+M_PI*.25);
+			map_iso(beam->ce[1]->mp, NULL, f0);
+			beam->ce[0]->mp[1] = beam->ce[1]->mp[1] = beam->ce[k_point2]->mp[1]-B1*(cos(f0-M_PI*.25)-sin(f0-M_PI*.25));
+			beam->ce[0]->mp[2] = beam->ce[1]->mp[2] = beam->ce[k_point2]->mp[2]-B1*(cos(f0-M_PI*.25)+sin(f0-M_PI*.25));
+
+			if (A1 > B1+rr && add_new_maps(beam->ce[0]->mp, (m = size_of_map(beam->ce[0]->mp))+1, 7)) {
+				beam->ce[0]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[0]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[0]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)rr;
+				beam->ce[0]->mp[++m] = (CMap)0.;
+				beam->ce[0]->mp[++m] = (CMap)270.;
+			}
+			if (A1 > B1+rr && add_new_maps(beam->ce[1]->mp, (m = size_of_map(beam->ce[1]->mp))+1, 7)) {
+				beam->ce[1]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[1]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[1]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)rr;
+				beam->ce[1]->mp[++m] = (CMap)0.;
+				beam->ce[1]->mp[++m] = (CMap)270.;
+			}
+		}
+
+/////////////////////////////////
+//...образование блока в образце;
+		add_block(B[k].type);
+		B[k+j_shift*N0].bar = beam;
+		set_block3D(B[k+j_shift*N0], SPHERE_GENUS, 1.);
+
+//////////////////////////////////
+//...линкование блочной структуры;
+		set_link (B[k+j_shift*N0], max(NUM_PHASE, B[k].link[0]));
+		if (j_shift > 1)
+		B[k+(j_shift-1)*N0].link[2] = k+(j_shift+0)*N0; 
+		B[k+(j_shift+0)*N0].link[1] = k+(j_shift-1)*N0; 
+		if (m_cell) {
+			for (m = min(NUM_PHASE-2, B[k].link[0]), i = 0; i < m; i++)
+				if (B[k].link[i+1] >= 0) B[k+j_shift*N0].link[i+3] = B[k].link[i+1]+j_shift*N0; else
+				if (B[k].link[i+1] <= SRF_STATE) {
+					B[k+j_shift*N0].link[i+3] = B[k].link[i+1]-shift;	
+					for (l = NUM_PHASE; l < B[k].link[0]; l++) //...коррекция многофазных сред;
+						if (B[k].link[l+1] == SRF_STATE-B[k].link[i+1]) {
+							B[k+j_shift*N0].link[i+3] += shift-j_shift*N0; break;
+						}
+				}
+				else B[k+j_shift*N0].link[i+3] = B[k].link[i+1];
+		}
+		else {
+			for (m = min(NUM_PHASE-2, B[k].bar->arcs_number()), i = 0; i < m; i++)
+				if (B[k].link[i+1] >= 0) B[k+j_shift*N0].link[m-i+2] = B[k].link[i+1]+j_shift*N0; else
+				if (B[k].link[i+1] <= SRF_STATE) {
+					B[k+j_shift*N0].link[m-i+2] = B[k].link[i+1]-shift;
+					for (l = NUM_PHASE; l < B[k].link[0]; l++) //...коррекция многофазных сред;
+						if (B[k].link[l+1] == SRF_STATE-B[k].link[i+1]) {
+							B[k+j_shift*N0].link[m-i+2] += shift-j_shift*N0; break;
+						}
+				}
+				else B[k+j_shift*N0].link[m-i+2] = B[k].link[i+1];
+		}
+		for (i = NUM_PHASE; i < B[k+j_shift*N0].link[0]; i++) {
+			if (B[k].link[i+1] >= 0)	B[k+j_shift*N0].link[i+1] = B[k].link[i+1]+j_shift*N0;
+			else								B[k+j_shift*N0].link[i+1] = B[k].link[i+1];
+		}
+		if (B[k].link[0] < NUM_PHASE)	B[k+j_shift*N0].link[0] = 2+B[k].link[0];
+		if (id_phase)						B[k+j_shift*N0].link[NUM_PHASE] = B[k].link[NUM_PHASE]+n*(Max_phase-1);
+		else									B[k+j_shift*N0].link[NUM_PHASE] = B[k].link[NUM_PHASE];
+	}
+
+///////////////////////////////////////////////////////////////
+//...преобразование блоков в нулевом слое и окаймляющего блока;
+	for (dd = LL[0]/NN[1], pp_cond[2] = dd*.5, k = 0; k < N0; k++) {
+		CCells * beam = new CCells;
+
+		beam->get_beam(m_cell ? B[k].bar->bar_cpy(m_cell) : B[k].bar->bar_cpy(), dd);
+		beam->segms_bar();
+		beam->bar_iso(pp_cond); /*beam->cells_iso(pp_cond); */N_arcs = m_cell ? B[k].link[0] : B[k].bar->arcs_number(); delete B[k].bar;
+
+////////////////////////////////////
+//...достраиваем торцевые сегменты;
+		if ((B[k].type & ERR_MASK) == SUB_UGOLOK_BLOCK && beam->ce[0]->mp[m = size_of_map(beam->ce[0]->mp)] == NULL_CELL) {
+			double A1, B1, X1, Y1, X2, Y2, rr, f0;
+			int k_line, k_point1, k_point2, k_circ;
+
+			k_line   = beam->ce[0]->graph[2];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X1 = beam->ce[k_point1]->mp[1]-beam->ce[k_point2]->mp[1]; 
+			Y1 = beam->ce[k_point1]->mp[2]-beam->ce[k_point2]->mp[2]; 
+			B1 = sqrt(sqr(X1)+sqr(Y1));
+
+			k_line   = beam->ce[0]->graph[3];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X2 = beam->ce[k_point2]->mp[1]-beam->ce[k_point1]->mp[1]; 
+			Y2 = beam->ce[k_point2]->mp[2]-beam->ce[k_point1]->mp[2];
+			A1 = sqrt(sqr(X2)+sqr(Y2));
+
+			k_circ = beam->ce[0]->graph[7];
+			rr = fabs(beam->ce[k_circ]->mp[7]);
+
+			if (beam->ce[beam->ce[0]->graph[2]]->topo_id(k_point2)) { swap(k_point1, k_point2); f0 = -M_PI; }
+			map_iso(beam->ce[0]->mp, NULL, f0 += arg0(comp(X2, Y2))+M_PI*.25);
+			map_iso(beam->ce[1]->mp, NULL, f0);
+			beam->ce[0]->mp[1] = beam->ce[1]->mp[1] = beam->ce[k_point2]->mp[1]-B1*(cos(f0-M_PI*.25)-sin(f0-M_PI*.25));
+			beam->ce[0]->mp[2] = beam->ce[1]->mp[2] = beam->ce[k_point2]->mp[2]-B1*(cos(f0-M_PI*.25)+sin(f0-M_PI*.25));
+
+			if (A1 > B1+rr && add_new_maps(beam->ce[0]->mp, (m = size_of_map(beam->ce[0]->mp))+1, 7)) {
+				beam->ce[0]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[0]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[0]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)rr;
+				beam->ce[0]->mp[++m] = (CMap)0.;
+				beam->ce[0]->mp[++m] = (CMap)270.;
+			}
+			if (A1 > B1+rr && add_new_maps(beam->ce[1]->mp, (m = size_of_map(beam->ce[1]->mp))+1, 7)) {
+				beam->ce[1]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[1]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[1]->mp[++m] = (CMap)(A1-B1);
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)rr;
+				beam->ce[1]->mp[++m] = (CMap)0.;
+				beam->ce[1]->mp[++m] = (CMap)270.;
+			}
+		}
+		if ((B[k].type & ERR_MASK) == SUB_SREZKA_BLOCK && beam->ce[0]->mp[m = size_of_map(beam->ce[0]->mp)] == NULL_CELL) {
+			double A1, B1, X1, Y1, X2, Y2, rr, f0;
+			int k_line, k_point1, k_point2, k_circ;
+
+			k_line   = beam->ce[0]->graph[2];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X1 = beam->ce[k_point1]->mp[1]-beam->ce[k_point2]->mp[1]; 
+			Y1 = beam->ce[k_point1]->mp[2]-beam->ce[k_point2]->mp[2]; 
+			B1 = sqrt(sqr(X1)+sqr(Y1));
+
+			k_line   = beam->ce[0]->graph[3];
+			k_point1 = beam->ce[k_line]->graph[2];
+			k_point2 = beam->ce[k_line]->graph[3];
+
+			X2 = beam->ce[k_point2]->mp[1]-beam->ce[k_point1]->mp[1]; 
+			Y2 = beam->ce[k_point2]->mp[2]-beam->ce[k_point1]->mp[2];
+			A1 = sqrt(sqr(X2)+sqr(Y2));
+
+			k_circ = beam->ce[0]->graph[5];
+			rr = fabs(beam->ce[k_circ]->mp[7]);
+
+			if (beam->ce[beam->ce[0]->graph[2]]->topo_id(k_point2)) { swap(k_point1, k_point2); f0 = -M_PI; }
+			map_iso(beam->ce[0]->mp, NULL, f0 += arg0(comp(X2, Y2))+M_PI*.75);
+			map_iso(beam->ce[1]->mp, NULL, f0);
+			beam->ce[0]->mp[1] = beam->ce[1]->mp[1] = beam->ce[k_point1]->mp[1]+B1*cos(f0+M_PI*.75)-A1*sin(f0+M_PI*.75);
+			beam->ce[0]->mp[2] = beam->ce[1]->mp[2] = beam->ce[k_point1]->mp[2]+B1*cos(f0+M_PI*.75)+A1*sin(f0+M_PI*.75);
+
+			if (B[k].type & ERR_CODE) swap(A1, B1);
+			if (add_new_maps(beam->ce[0]->mp, (m = size_of_map(beam->ce[0]->mp))+1, 7)) {
+				beam->ce[0]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[0]->mp[++m] = (CMap)A1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)B1;
+				beam->ce[0]->mp[++m] = (CMap)A1;
+				beam->ce[0]->mp[++m] = (CMap)rr;
+				beam->ce[0]->mp[++m] = (CMap)0.;
+				beam->ce[0]->mp[++m] = (CMap)90.;
+			}
+			if (add_new_maps(beam->ce[1]->mp, (m = size_of_map(beam->ce[1]->mp))+1, 7)) {
+				beam->ce[1]->mp[  m] = (CMap)UGOLOK_CELL;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)A1;
+				beam->ce[1]->mp[++m] = (CMap)A1;
+				beam->ce[1]->mp[++m] = (CMap)B1;
+				beam->ce[1]->mp[++m] = (CMap)rr;
+				beam->ce[1]->mp[++m] = (CMap)0.;
+				beam->ce[1]->mp[++m] = (CMap)90.;
+			}
+		}
+
+//////////////////////////////////////////
+//...преобразуем начальный блок в образце;
+		B[k].bar = beam;
+		set_block3D(B[k], SPHERE_GENUS, 1.);
+
+//////////////////////////////////
+//...линкование блочной структуры;
+		int * link = B[k].link; B[k].link = NULL;
+		set_link (B[k], max(NUM_PHASE, link[0]));
+
+		if (m_cell) {
+			for (m = min(NUM_PHASE-2, N_arcs), i = 0; i < m; i++)
+				if (link[i+1] <= SRF_STATE) {
+					B[k].link[i+3] = link[i+1]-shift;	
+					for (l = NUM_PHASE; l < link[0]; l++) //...коррекция многофазных сред;
+						if (link[l+1] == SRF_STATE-link[i+1]) {
+							B[k].link[i+3] += shift; break;
+						}
+				}
+				else B[k].link[i+3] = link[i+1];
+		}
+		else {
+			for (m = min(NUM_PHASE-2, N_arcs), i = 0; i < m; i++)
+				if (link[i+1] <= SRF_STATE) {
+					B[k].link[m-i+2] = link[i+1]-shift;
+					for (l = NUM_PHASE; l < link[0]; l++) //...коррекция многофазных сред;
+						if (link[l+1] == SRF_STATE-link[i+1]) {
+							B[k].link[m-i+2] += shift; break;
+						}
+				}
+				else B[k].link[m-i+2] = link[i+1];
+		}
+		for (i = NUM_PHASE; i < link[0]; i++)	B[k].link[i+1] = link[i+1];
+		if  (		NUM_PHASE > link[0])				B[k].link[0] = 2+link[0];
+															B[k].link[NUM_PHASE] = link[NUM_PHASE];
+		if (NN[0] > 0 && NN[1] > 1 || NN[0] > 1) 
+		B[k].link[2] = k+N0; else B[k].link[2] = ERR_STATE;
+		B[k].link[1] = ERR_STATE;
+		delete_struct(link);
+	}
+	if (bar) {
+		CCells * beam = new CCells;
+		beam->get_beam(m_cell ? bar->bar_cpy(m_cell) : bar->bar_cpy(), leng);
+		beam->segms_bar(); 
+
+		delete bar; bar = beam;
+	}
+	SkeletonRadius(OK_STATE); return(Max_phase);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//...cylindrical symmetry block structure on the base of the plane sample (not complete code);
+template <typename T> 
+void CDraft<T>::ConvertToCylStruct(int NN, double axis_dist, double fi0, int m_close)
+{
+	double pp_cond[] = {axis_dist, 0., 0.}, delta_fi = (fi0 = m_close ? 360. : fi0)/(NN = m_close ? max(NN, 2) : NN);
+	int k, i, j, N0 = N;
+
+//////////////////////////////////////////
+//...construction of the blocks structure;
+	for (k = 0; k < N0; k++) { B[k].bar->cells_iso(pp_cond); B[k].bar->bar_invers();}
+	for (j = 1; j < NN; j++)
+	for (k = 0; k < N0; k++) {
+
+/////////////////////////////////
+//...образование геометрии блока;
+		CCells * beam = new CCells;
+
+		beam->get_cyl_beam(B[k].bar->bar_cpy(), delta_fi);
+		beam->segms_bar();
+		beam->cells_iso(NULL, 0., delta_fi*(j+.5)*M_PI/180.);
+
+////////////////////////////////////
+//...достраиваем торцевые сегменты;
+
+/////////////////////////////////
+//...образование блока в образце;
+		add_block(B[k].type);
+		B[k+j*N0].bar = beam;
+		set_block(B[k+j*N0], SPHERE_GENUS, 1.);
+
+//////////////////////////////////
+//...линкование блочной структуры;
+		set_link (B[k+j*N0], max(NUM_PHASE, B[k].link[0]));
+		if (j > 1)
+		B[k+(j-1)*N0].link[2] = k+(j+0)*N0; 
+		B[k+(j+0)*N0].link[1] = k+(j-1)*N0; 
+		for (i = 0; i < B[k].link[0]; i++) { 
+			if (B[k].link[i+1] >= 0)			B[k+j*N0].link[i+3] = B[k].link[i+1]+j*N0; else
+			if (B[k].link[i+1] <= SRF_STATE) B[k+j*N0].link[i+3] = B[k].link[i+1]-2;	
+			else										B[k+j*N0].link[i+3] = B[k].link[i+1];
+		}
+	}
+
+///////////////////////////////////////////////////////////////
+//...преобразование блоков в нулевом слое и окаймляющего блока;
+	for (k = 0; k < N0; k++) {
+		CCells * beam = new CCells;
+
+		beam->get_cyl_beam(B[k].bar->bar_cpy(), delta_fi);
+		beam->segms_bar(); 
+		beam->cells_iso(NULL, 0., delta_fi*.5*M_PI/180.); delete B[k].bar;
+
+		B[k].bar = beam;
+		set_block(B[k], SPHERE_GENUS, 1.);
+		for (i = B[k].link[0]; i > 0 ; i--) 
+		B[k].link[i+2] = B[k].link[i];
+		if (NN > 1) {
+			B[k].link[2] = k+N0; 
+			if (m_close) {
+				B[k].link[1] = k+(NN-1)*N0; 
+				B[k+(NN-1)*N0].link[2] = k; 
+			}
+		}
+	}
+	CCells * beam = new CCells;
+	beam->get_cyl_beam(bar->bar_cpy(), fi0);
+	beam->segms_bar(); 
+	beam->cells_iso(NULL, 0., fi0*.5*M_PI/180.);
+
+	delete bar; bar = beam;
+	SkeletonRadius();
+}
+
+//////////////////////////////////////////////////////////////
+//...корректировка криволинейных дуг блоков в плоском образце;
+template <typename T> 
+void CDraft<T>::CurveCorrect(double X0, double Y0, double rad, double eps)
+{
+	for (int j, m, l, k = 0; k < N; k++) 
+	for (j = B[k].link[0]; j > 0; j--) 
+	if ((m = B[k].link[j]) >= 0 && B[k].link[NUM_PHASE] != B[m].link[NUM_PHASE] && B[k].bar && B[k].bar->ce[0] && B[k].bar->ce[0]->graph) {
+		for (l = 0; l < NUM_PHASE; l++) 
+			if (B[k].link[l+1] == -m+SRF_STATE) break;
+			if (l < B[k].bar->ce[0]->graph[1]) {
+				int m1 = get_num(B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->graph, 0),
+					 m2 = get_num(B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->graph, 1);
+				double X1 = B[k].bar->ce[m1]->mp[1], Y1 = B[k].bar->ce[m1]->mp[2],
+						 X2 = B[k].bar->ce[m2]->mp[1], Y2 = B[k].bar->ce[m2]->mp[2];
+				if (fabs(sqr(X1-X0)+sqr(Y1-Y0)-sqr(rad)) < eps && fabs(sqr(X2-X0)+sqr(Y2-Y0)-sqr(rad)) < eps) {
+					B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->cells_to(SPHERE_GENUS);
+					B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->circ_correct(rad, B[k].link[NUM_PHASE] == -1 ? -1 : 1, NULL_STATE);
+				}
+			}
+	}
+}
+
 ///////////////////////////////////////////////////////
 //...идентификация точек внутри системы плоских блоков;
 template <typename T> 
@@ -3294,7 +3838,7 @@ int CDraft<T>::Poly_struc_in2D(int & k, double X, double Y, int id_fast, double 
 ///////////////////////////////////
 //...проверка всего массива блоков;
 		for (int i = 0;  i < N; i++) {
-			//B[i].bar->cells_out("CCeBasic");
+			//B[i].bar->cells_out("CCells");
 			if  (B[i].bar->ce[0]->in_poly_facet(X, Y, 0., id_fast, eps)) {
 				  k = i; return(1);
 			}
@@ -3305,12 +3849,12 @@ int CDraft<T>::Poly_struc_in2D(int & k, double X, double Y, int id_fast, double 
 ////////////////////////////////////////////////////////////////
 //...идентификация точек внутри системы пространственных блоков;
 template <typename T> 
-int CDraft<T>::Poly_struc_in3D(int & k, double X, double Y, double Z, double eps)
+int CDraft<T>::Poly_struc_in3D(int & k, double X, double Y, double Z, int id_local, double eps)
 {
   if (N > 0) {
       k = -1;
       for (int i = 0;  i < N; i++)
-      if  (B[i].bar->in_poly_body(X, Y, Z, NULL_STATE, NULL, eps)) {
+      if  (B[i].bar->in_poly_body(X, Y, Z, id_local, NULL, eps)) {
            k = i; return(1);
       }
       return(1);
@@ -3384,11 +3928,120 @@ void CDraft<T>::StructEllCorrect(int & k, double X, double Y)
 		}
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//...распределение множества точек по номерам блоков для призматической структуры образца;
+template <typename T> 
+void CDraft<T>::hit_beam_struct(CGrid * nd, int N0, int * NN, double * LL, int axis)
+{
+	if (! NN || ! LL || NN[0] <= 0) return;
+
+	double dd, leng;
+
+	if (axis == AXIS_X) {
+		for (int i = 0; i < nd->N;  i++)
+		for (int j = 0; j < nd->N1; j++) {
+			int k, m, n, l;
+			for (leng = 0., l = 0,			  n = 0; n < NN[0]; leng = LL[n], n++)
+			for (dd = (LL[n]-leng)/NN[n+1], m = 0; m < NN[n+1]; l++, m++)
+			if (leng+m*dd <= nd->Y[j] && nd->Y[j] < leng+(m+1.)*dd+EE_ker) {
+				n = NN[0]; break;
+			}
+			for (k = 0; k < N0; k++)
+				if (B[k].bar->ce[0]->in_bar_cell(nd->Z[0], nd->X[i])) break;
+
+			if (k == N0) nd->hit[i+j*nd->N] = ERR_STATE;
+			else			 nd->hit[i+j*nd->N] = k+l*N0;
+		}
+	}
+	else
+	if (axis == AXIS_Y) {
+		for (int i = 0; i < nd->N;  i++)
+		for (int j = 0; j < nd->N1; j++) {
+			int k, m, n, l;
+			for (leng = 0., l = 0,			  n = 0; n < NN[0]; leng = LL[n], n++)
+			for (dd = (LL[n]-leng)/NN[n+1], m = 0; m < NN[n+1]; l++, m++)
+			if (leng+m*dd <= nd->X[i] && nd->X[i] < leng+(m+1.)*dd+EE_ker) {
+				n = NN[0]; break;
+			}
+			for (k = 0; k < N0; k++)
+				if (B[k].bar->ce[0]->in_bar_cell(nd->Y[j], nd->Z[0])) break;
+
+			if (k == N0) nd->hit[i+j*nd->N] = ERR_STATE;
+			else			 nd->hit[i+j*nd->N] = k+l*N0;
+		}
+	}
+	else
+	if (axis == AXIS_Z) {
+		int k, m, n, l;
+		for (leng = 0., l = 0,			  n = 0; n < NN[0]; leng = LL[n], n++)
+		for (dd = (LL[n]-leng)/NN[n+1], m = 0; m < NN[n+1]; l++, m++)
+		if (leng+m*dd <= nd->Z[0] && nd->Z[0] < leng+(m+1.)*dd+EE_ker) {
+			n = NN[0]; break;
+		}
+		for (int i = 0; i < nd->N;  i++)
+		for (int j = 0; j < nd->N1; j++) {
+			for (k = 0; k < N0; k++)
+				if (B[k].bar->ce[0]->in_bar_cell(nd->X[i], nd->Y[j])) break;
+
+			if (k == N0) nd->hit[i+j*nd->N] = ERR_STATE;
+			else			 nd->hit[i+j*nd->N] = k+l*N0;
+		}
+	}
+}
+
 /////////////////////////////////////////////
 //														 //
 //   БИБЛИОТЕКА ГОТОВЫХ БЛОЧНЫХ СТРУКТУР   //
 //														 //
 /////////////////////////////////////////////
+////////////////////////////////////////////////
+//...блочная структура прямоугольного гексаэдра;
+template <typename T> 
+int CDraft<T>::GetBoxStruct(double AA, double BB, double CC, int NX, int NY, int NZ)
+{
+	double delta_A = AA/(NX = max(NX, 1)), delta_B = BB/(NY = max(NY, 1)), P0[3];
+	CCells * ce;
+
+//////////////////////
+//...обнуляем образец;
+	init_blocks(NULL);
+
+//////////////////////////////////////
+//...добавлям описание плоского торца;
+	ce = new CCells;
+	ce->get_sheet(AA, BB);
+	bar = new CCells;	
+	bar->bar_add(ce);
+
+///////////////////////////////////////////////
+//...образуем блочную структуру плоского торца;
+	for (int j = 0; j < NY;  j++)
+	for (int i = 0; i < NX;  i++) {
+		add_block (NULL_BLOCK);
+		ce = new CCells;
+		ce->get_sheet(delta_A, delta_B);
+		P0[0] = (i+.5)*delta_A-AA*.5;
+		P0[1] = (j+.5)*delta_B-BB*.5;
+		P0[2] = 0.;
+		ce->cells_iso(P0);
+		B[i+j*NX].bar = new CCells;
+		B[i+j*NX].bar->bar_add(ce);
+		set_block3D(B[i+j*NX], SPHERE_GENUS, 1.);
+		set_link   (B[i+j*NX], 4);
+		B[i+j*NX].link[1] = j ? i+(j-1)*NX : BOUND4_STATE;
+		B[i+j*NX].link[2] = (i+1)%NX ? (i+1)+j*NX : BOUND5_STATE;
+		B[i+j*NX].link[3] = (j+1)%NY ? i+(j+1)*NX : BOUND6_STATE;
+		B[i+j*NX].link[4] = i ? (i-1)+j*NX : BOUND7_STATE;
+	}
+	SkeletonRadius(OK_STATE);
+///////////////////////////////////
+//...преобразуем геометрию образца;
+	int N0 = N, NN[2] = {1, NZ}, 
+		 N_phase = ConvertToBeamStruct(NN, &CC, OK_STATE);
+	return(N0);
+}
+
 ////////////////////////////////////////////////////////////////////////
 //...блочная структура для сферического включения с промежуточным слоем;
 template <typename T> 
@@ -3403,7 +4056,7 @@ int CDraft<T>::GetSphBoxStruct(double AA, double BB, double CC, double rad, doub
 			 P6[3] = {0.5*AA, -.5*BB, 0.5*CC},
 			 P7[3] = {0.5*AA, 0.5*BB, 0.5*CC},
 			 P8[3] = {-.5*AA, 0.5*BB, 0.5*CC};
-	CCeBasic * ce;
+	CCells * ce;
 
 //////////////////////
 //...обнуляем образец;
@@ -3417,7 +4070,7 @@ int CDraft<T>::GetSphBoxStruct(double AA, double BB, double CC, double rad, doub
 		B[++k].bar = new CCells;
 		B[k].type  = POLY_BLOCK;
 
-		ce = new CCeBasic;
+		ce = new CCells;
 		ce->get_sphere(rad);
 		B[k].bar->bar_add(ce);
 		B[k].bar->bar_ord();
@@ -3435,32 +4088,32 @@ int CDraft<T>::GetSphBoxStruct(double AA, double BB, double CC, double rad, doub
 	B[k].type  = POLY_BLOCK;
 
 	if (rad > 0) {
-		ce = new CCeBasic;
+		ce = new CCells;
 		ce->get_sphere(-rad-ll);
 		B[k].bar->bar_add(ce);
 		B[k].type = ZOOM_BLOCK;
 	}
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P5, P8, P4, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P2, P3, P7, P6, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P2, P6, P5, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P4, P8, P7, P3, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P4, P3, P2, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P5, P6, P7, P8, OK_STATE);
 	B[k].bar->bar_add(ce);
 	B[k].bar->bar_ord();
@@ -3478,11 +4131,11 @@ int CDraft<T>::GetSphBoxStruct(double AA, double BB, double CC, double rad, doub
 		B[++k].bar = new CCells;
 		B[k].type = ZOOM_BLOCK;
 
-		ce = new CCeBasic;
+		ce = new CCells;
 		ce->get_sphere(rad+ll);
 		B[k].bar->bar_add(ce);
 
-		ce = new CCeBasic;
+		ce = new CCells;
 		ce->get_sphere(-rad);
 		B[k].bar->bar_add(ce);
 		B[k].bar->bar_ord();
@@ -3511,7 +4164,7 @@ int CDraft<T>::GetSpheroidBoxStruct(double AA, double BB, double CC, double RR, 
 			 P6[3] = {0.5*AA, -.5*BB, 0.5*CC},
 			 P7[3] = {0.5*AA, 0.5*BB, 0.5*CC},
 			 P8[3] = {-.5*AA, 0.5*BB, 0.5*CC};
-	CCeBasic * ce;
+	CCells * ce;
 
 //////////////////////
 //...обнуляем образец;
@@ -3525,7 +4178,7 @@ int CDraft<T>::GetSpheroidBoxStruct(double AA, double BB, double CC, double RR, 
 		B[++k].bar = new CCells;
 		B[k].type  = POLY_BLOCK;
 
-		ce = new CCeBasic;
+		ce = new CCells;
 		ce->get_spheroid(RR, rr);
 		ce->cells_iso(NULL, fi, theta);
 		B[k].bar->bar_add(ce);
@@ -3543,33 +4196,33 @@ int CDraft<T>::GetSpheroidBoxStruct(double AA, double BB, double CC, double RR, 
 	B[++k].bar = new CCells;
 	B[k].type  = POLY_BLOCK;
 	if (RR > 0 && rr > 0.) {
-		ce = new CCeBasic;
+		ce = new CCells;
 		ce->get_spheroid(-RR, -rr);
 		ce->cells_iso(NULL, fi, theta);
 		B[k].bar->bar_add(ce);
 		B[k].type = ZOOM_BLOCK;
 	}
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P5, P8, P4, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P2, P3, P7, P6, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P2, P6, P5, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P4, P8, P7, P3, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P1, P4, P3, P2, OK_STATE);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_quad_facet(P5, P6, P7, P8, OK_STATE);
 	B[k].bar->bar_add(ce);
 	B[k].bar->bar_ord();
@@ -3583,6 +4236,245 @@ int CDraft<T>::GetSpheroidBoxStruct(double AA, double BB, double CC, double RR, 
 	return(N);
 }
 
+///////////////////////////////////////////////////////////////////////////
+//...блочная структура для 3D прямоугольной решетки (прямое моделирование);
+template <typename T> 
+int CDraft<T>::GetLatticeBox3DStruct(double * X, double * Y, double * Z, int NX, int NY, int NZ)
+{
+	if (! X || ! Y || ! Z || NX < 2 || NY < 2 || NZ < 2) return(0);
+
+//////////////////////
+//...обнуляем образец;
+	int mX, mY, mZ, k = -1;
+	init_blocks();
+
+///////////////////////////////////////////////////////////////////
+//...образуем описание блочной структуры параллелепипедной решетки;
+	for (mZ = 1; mZ < NZ; mZ++)
+	for (mY = 1; mY < NY; mY++)
+	for (mX = 1; mX < NX; mX++) {
+		add_block (NULL_BLOCK);
+		B[++k].bar = new CCells;
+		B[k].type  = POLY_BLOCK;
+
+///////////////////////////////////////////////////////
+//...образуем описание граничных точек параллелепипеда;
+		double P[24];
+		P[0]  = X[mX-1]; P[1]  = Y[mY-1]; P[2]  = Z[mZ-1];
+		P[3]  = X[mX];   P[4]  = Y[mY-1]; P[5]  = Z[mZ-1];
+		P[6]  = X[mX];   P[7]  = Y[mY];   P[8]  = Z[mZ-1];
+		P[9]  = X[mX-1]; P[10] = Y[mY];   P[11] = Z[mZ-1];
+		P[12] = X[mX-1]; P[13] = Y[mY-1]; P[14] = Z[mZ];
+		P[15] = X[mX];   P[16] = Y[mY-1]; P[17] = Z[mZ];
+		P[18] = X[mX];   P[19] = Y[mY];   P[20] = Z[mZ];
+		P[21] = X[mX-1]; P[22] = Y[mY];   P[23] = Z[mZ];
+
+//////////////////////////////////////////////
+//...образуем описание граней параллелепипеда;
+		CCells * ce = new CCells;
+		ce->get_quad_facet(P, P+12, P+21, P+9, OK_STATE);
+		B[k].bar->bar_add(ce);
+
+		ce = new CCells;
+		ce->get_quad_facet(P+3, P+6, P+18, P+15, OK_STATE);
+		B[k].bar->bar_add(ce);
+
+		ce = new CCells;
+		ce->get_quad_facet(P, P+3, P+15, P+12, OK_STATE);
+		B[k].bar->bar_add(ce);
+
+		ce = new CCells;
+		ce->get_quad_facet(P+9, P+21, P+18, P+6, OK_STATE);
+		B[k].bar->bar_add(ce);
+
+		ce = new CCells;
+		ce->get_quad_facet(P, P+9, P+6, P+3, OK_STATE);
+		B[k].bar->bar_add(ce);
+
+		ce = new CCells;
+		ce->get_quad_facet(P+12, P+15, P+18, P+21, OK_STATE);
+		B[k].bar->bar_add(ce);
+		B[k].bar->bar_ord();
+
+//////////////////////////////////////////
+//...образуем описание блока и его связей;
+		set_block3D(B[k], SPHEROID_GENUS, sqrt(sqr(X[mX]-X[mX-1])+sqr(Y[mY]-Y[mY-1])+sqr(Z[mZ]-Z[mZ-1]))*.5, 0,
+					  (X[mX]+X[mX-1])*.5, (Y[mY]+Y[mY-1])*.5, (Z[mZ]+Z[mZ-1])*.5);
+		set_link (B[k], NUM_PHASE);
+		B[k].link[1] = mX > 1    ?				  -1+k : /*NX-2+k*/BOUND2_STATE;
+		B[k].link[2] = mX < NX-1 ?					1+k :/*-NX+2+k*/BOUND2_STATE;
+		B[k].link[3] = mY > 1    ?			  -NX+1+k : /*(NY-2)*(NX-1)+k*/BOUND2_STATE;
+		B[k].link[4] = mY < NY-1 ?				NX-1+k :/*-(NY-2)*(NX-1)+k*/BOUND2_STATE;
+		B[k].link[5] = mZ > 1    ?-(NY-1)*(NX-1)+k : /*(NZ-2)*(NY-1)*(NX-1)+k*/BOUND3_STATE;
+		B[k].link[6] = mZ < NZ-1 ? (NY-1)*(NX-1)+k :/*-(NZ-2)*(NY-1)*(NX-1)+k*/BOUND1_STATE;
+		B[k].link[NUM_PHASE] = -1;
+	}
+	return(N);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+//...блочная структура для 3D прямоугольной решетки (моделирование на уровне геометрии);
+template <typename T> 
+int CDraft<T>::GetLatticeBox3DStruct(double * X, double * Y, double * Z, int NX, int NY, int NZ, Num_Block id_block)
+{
+	if (! X || ! Y || ! Z || NX < 2 || NY < 2 || NZ < 2) return(0);
+	int mX, mY, mZ, k, l, N_geom = 0, m = 0, j = 1;
+
+///////////////////////////////////////////////////////
+//...инициализируем и просчитываем геометрию элементов;
+	stru.zero_grid();
+	for (mZ = 1; mZ < NZ; mZ++)
+	for (mY = 1; mY < NY; mY++)
+	for (mX = 1; mX < NX; mX++) stru.geom_ptr_add(10, N_geom);
+
+
+//////////////////////////////////////////
+//...заполнякм массив геометрии элементов;
+	if ((stru.geom = (int *)new_struct((stru.geom_ptr[N_geom]+1)*sizeof(int))) != NULL) {
+		for (mZ = 0; mZ < NZ-1; mZ++)
+		for (mY = 0; mY < NY-1; mY++)
+		for (mX = 0; mX < NX-1; mX++) {
+			l = stru.geom_ptr[stru.geom[0]++];
+			stru.geom[l]   = GL_BOXS;
+			stru.geom[l+1] = 10;
+			stru.geom[l+2]  = -(++m);
+			stru.geom[l+3]  = -j;
+			stru.geom[l+4]  = (k = mX+NX*(mY+NY*mZ));
+			stru.geom[l+5]  = k+1;
+			stru.geom[l+6]  = k+1+NX;
+			stru.geom[l+7]  = k+NX;
+			stru.geom[l+8]  = (k += NX*NY);
+			stru.geom[l+9]  = k+1;
+			stru.geom[l+10] = k+1+NX;
+			stru.geom[l+11] = k+NX;
+		}
+
+////////////////////////////////////////////////////
+//...образуем формальное описание граничных условий;
+		stru.cond = (int *)new_struct(2*sizeof(int));
+		stru.cond_ptr = (int *)new_struct(2*sizeof(int));
+		stru.cond_ptr[0] = 1;
+
+////////////////////////////////////////////////////////////////////////
+//...заполняем массив граничных точек - вершин параллелепипедных блоков;
+		k = 0;
+		for (mZ = 0; mZ < NZ; mZ++)
+		for (mY = 0; mY < NY; mY++)
+		for (mX = 0; mX < NX; mX++) {
+			stru.add_new_point(X[mX], Y[mY], Z[mZ]); 
+			stru.hit[k] = k+1; ++k;
+		}
+
+/////////////////////////////////////////////
+//...устанавливаем блоки и линкуем структуру;
+		LinkUniStruct();
+		SetBUniStruct(id_block, SPHEROID_GENUS);
+	}
+	return(N_geom);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//...block structure for Ono Box sample on the base of extern description block structure;
+template <typename T> 
+int CDraft<T>::GetOnoBoxStruct(double AA, double BB, double aa, double bb, double rad, int * NN, double * LL, int id_phase, int id_curve, double eps)
+{
+////////////////////////////////////////////
+//...корректируем криволинейные дуги блоков;
+	if (id_curve) {
+		for (int j, m, l, k = 0; k < N; k++) 
+		for (j = B[k].link[0]; j > 0; j--) 
+		if ((m = B[k].link[j]) >= 0 && B[k].link[NUM_PHASE] != B[m].link[NUM_PHASE] && B[k].bar && B[k].bar->ce[0] && B[k].bar->ce[0]->graph) {
+			for (l = 0; l < NUM_PHASE; l++) 
+				if (B[k].link[l+1] == -m+SRF_STATE) break;
+				if (l < B[k].bar->ce[0]->graph[1]) {
+					int m1 = get_num(B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->graph, 0),
+						 m2 = get_num(B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->graph, 1);
+					double X1 = B[k].bar->ce[m1]->mp[1], Y1 = B[k].bar->ce[m1]->mp[2],
+							 X2 = B[k].bar->ce[m2]->mp[1], Y2 = B[k].bar->ce[m2]->mp[2], 
+							 X0 = (AA-aa)*.5+rad, Y0 = (BB-bb)*.5+rad, 
+							 XX = (AA+aa)*.5-rad, YY = (BB+bb)*.5-rad;
+					if (fabs(sqr(X1-X0)+sqr(Y1-Y0)-sqr(rad)) < eps && fabs(sqr(X2-X0)+sqr(Y2-Y0)-sqr(rad)) < eps ||
+						 fabs(sqr(X1-X0)+sqr(Y1-YY)-sqr(rad)) < eps && fabs(sqr(X2-X0)+sqr(Y2-YY)-sqr(rad)) < eps ||
+						 fabs(sqr(X1-XX)+sqr(Y1-Y0)-sqr(rad)) < eps && fabs(sqr(X2-XX)+sqr(Y2-Y0)-sqr(rad)) < eps ||
+						 fabs(sqr(X1-XX)+sqr(Y1-YY)-sqr(rad)) < eps && fabs(sqr(X2-XX)+sqr(Y2-YY)-sqr(rad)) < eps) {
+						B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->cells_to(SPHERE_GENUS);
+						B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->circ_correct(rad, B[k].link[NUM_PHASE] == -1 ? -1 : 1, NULL_STATE);
+					}
+				}
+		}
+	}
+
+////////////////////////////////////////////////////////////////////////////
+//...преобразуем геометрию образца и добавлям описание структуры излучателя;
+	int N0 = N, 
+		 N_phase = ConvertToBeamStruct(NN, LL, OK_STATE, id_phase);
+	if (id_curve) add_cyl_surface(rad, 0., 0., 0.);
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//...раставляем граничные условия на нижнем торце и корректируем связи (убираем включение);
+	int  k;
+	for (k = 0; k < N; k++) {
+		if (B[k].link[1] <= ERR_STATE && B[k].link[NUM_PHASE] == -2) B[k].link[1] = BOUND1_STATE;
+		if (B[k].link[2] <= ERR_STATE)	B[k].link[2] = BOUND3_STATE;
+
+		for (int m = min(NUM_PHASE, B[k].link[0]), i = 0; i < m; i++) if (B[k].link[i+1] <= SRF_STATE)
+		for (int l = NUM_PHASE; l < B[k].link[0]; l++) //...коррекция многофазных сред;
+		if (B[k].link[i+1] == SRF_STATE-B[k].link[l+1]) {
+			 B[k].link[i+1] = B[k].link[l+1]; break;
+		}
+		B[k].link[0] = NUM_PHASE;
+		B[k].link[NUM_PHASE] = B[k].link[NUM_PHASE]/(1-N_phase)-1;
+	}
+
+////////////////////////////////////////////////////////////////////////////////
+//...перемещение линков в конец списка (криволинейную границу не устанавливаем);
+	for (k = 0; k < N; k++)
+	for (int i, j = B[k].link[0]; j > 0; j--) 
+	if ((i = B[k].link[j]) >= 0 && B[k].link[NUM_PHASE] != B[i].link[NUM_PHASE]) {
+		B[k].link[j] =-i+SRF_STATE;
+		link_add(B[k], i);
+		link_add(B[k], ERR_STATE, NULL_STATE);
+	}
+
+////////////////////////////////////
+//...коррекция нескольких включений;
+	if (id_phase == OK_STATE)
+	for (k = 0; k < N; k++)
+	  if (B[k].link[NUM_PHASE] <= -3)
+			B[k].link[NUM_PHASE]  = -1;
+
+	return(N0);
+}
+
+/////////////////////////////////////////////////////////////
+//...строковые варианты функции (зачитывание внешнего файла);
+template <typename T> 
+int CDraft<T>::GetOnoBoxStruct(double AA, double BB, double aa, double bb, double rad, int * NN, double * LL, char * name, int id_phase, int id_curve, double eps)
+{
+////////////////////////////////////////
+//...зачитываем блочную структуру торца;
+	stru.nodes_in(name);
+   bar_condit_in(name);
+	LinkUniStruct();
+	BlockActivate(NULL_STATE);
+//	B[0].bar->cells_out("bar");
+	int	 N0 = GetOnoBoxStruct(AA, BB, aa, bb, rad, NN, LL, id_phase, id_curve, eps);
+	return(N0);
+}
+template <typename T> 
+int CDraft<T>::GetOnoBoxStruct(double AA, double BB, double aa, double bb, double rad, int * NN, double * LL, const char * name, int id_phase, int id_curve, double eps)
+{
+////////////////////////////////////////
+//...зачитываем блочную структуру торца;
+	stru.nodes_in(name);
+   bar_condit_in(name);
+	LinkUniStruct();
+	BlockActivate(NULL_STATE);
+//	B[0].bar->cells_out("bar");
+	int	 N0 = GetOnoBoxStruct(AA, BB, aa, bb, rad, NN, LL, id_phase, id_curve, eps);
+	return(N0);
+}
+
 ///////////////////////////////////////////////////////////////////
 //...блочная структура для взаимопроникающих сферических включений;
 template <typename T> 
@@ -3592,7 +4484,7 @@ int CDraft<T>::GetPenetrateSphere(double rad, double L)
 	double P1[3] = {-L, 0., 0.},
 			 P2[3] = {0., -L, 0.},
 			 P3[3] = {0., 0., -L}, RR = sqrt(rad*rad-L*L);
-	CCeBasic * ce;
+	CCells * ce;
 
 //////////////////////
 //...обнуляем образец;
@@ -3607,33 +4499,33 @@ int CDraft<T>::GetPenetrateSphere(double rad, double L)
 
 ////////////////////////////////////////////////////////////////
 //...образуем геометрию сферического включения с проникновением;
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sph_intrusion(-rad, L);
 	B[k].bar->bar_add(ce);
 
 /////////////////////////////////////////////////
 //...образуем геометрию боковых граней с дырками;
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sheet_intrusion(2.*L, 2.*L, RR); ce->cells_iso(P1, 0., -M_PI_2); P1[0] = -P1[0];
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sheet_intrusion(2.*L, 2.*L, RR); ce->cells_iso(P1, 0., M_PI_2);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sheet_intrusion(2.*L, 2.*L, RR); ce->cells_iso(P2, M_PI_2, -M_PI_2); P2[1] = -P2[1];
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sheet_intrusion(2.*L, 2.*L, RR); ce->cells_iso(P2, M_PI_2, M_PI_2);
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sheet_intrusion(2.*L, 2.*L, RR); ce->cells_iso(P3, 0., M_PI); P3[2] = -P3[2];
 	B[k].bar->bar_add(ce);
 
-	ce = new CCeBasic;
+	ce = new CCells;
 	ce->get_sheet_intrusion(2.*L, 2.*L, RR); ce->cells_iso(P3, 0., 0.);
 	B[k].bar->bar_add(ce);
 	B[k].bar->bar_ord();
@@ -3646,4 +4538,483 @@ int CDraft<T>::GetPenetrateSphere(double rad, double L)
 	return(N);
 }
 
+/////////////////////////////////////////
+//...block structure for cylinder sample;
+template <typename T> 
+int CDraft<T>::GetCylinderStruct(double rad, double R, double length, int NX, int NY, int NZ)
+{
+	double delta_fi = M_PI*2./(NX = max(NX, 2)), delta_rr = (R-rad)/(NY = max(NY, 1));
+	CCells * ce; 
+
+//////////////////////
+//...обнуляем образец;
+   init_blocks(NULL);
+
+//////////////////////////////////////
+//...добавлям описание плоского торца;
+	ce = new CCells;
+	ce->get_ring(rad, R);
+	bar = new CCells;	
+	bar->bar_add(ce);
+
+///////////////////////////////////////////////
+//...образуем блочную структуру плоского торца;
+	for (int j = 0; j < NY;  j++)
+	for (int i = 0; i < NX;  i++) {
+		add_block (NULL_BLOCK);
+		ce = new CCells;
+		ce->get_ring_segment(i*delta_fi, (i+1)*delta_fi, rad+j*delta_rr, rad+(j+1)*delta_rr);
+		B[i+j*NX].bar = new CCells;
+		B[i+j*NX].bar->bar_add(ce);
+		set_block(B[i+j*NX], SPHERE_GENUS, 1.);
+		set_link (B[i+j*NX], 4);
+		B[i+j*NX].link[1] = (i-1+NX)%NX+j*NX;
+		B[i+j*NX].link[2] = (j+1)%NY ? i+(j+1)*NX : SRF_STATE-1;
+		B[i+j*NX].link[3] = (i+1)%NX+j*NX;
+		B[i+j*NX].link[4] = j ? i+(j-1)*NX : SRF_STATE;
+	}
+	SkeletonRadius(OK_STATE);
+///////////////////////////////////
+//...преобразуем геометрию образца;
+	int N0 = N, NN[2] = {1, NZ}, 
+		 N_phase = ConvertToBeamStruct(NN, &length, OK_STATE);
+	return(N0);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//...block structure for cylinder sample on the base of the extern description of the plane structure;
+template <typename T> 
+int CDraft<T>::GetCylinderChannelStruct(double rad, double R, double length, int NZ, int id_curve)
+{
+////////////////////////////////////////////
+//...корректируем криволинейные дуги блоков;
+	if (id_curve) {
+		int k, j, m, l;
+		for (k = 0; k < N; k++)
+		for (j = B[k].link[0]; j > 0; j--)
+		if ((m = B[k].link[j]) >= 0 && B[k].link[NUM_PHASE] != B[m].link[NUM_PHASE] && B[k].bar && B[k].bar->ce[0] && B[k].bar->ce[0]->graph) {
+			for (l = 0; l < NUM_PHASE; l++)
+				if (B[k].link[l+1] == -m+SRF_STATE) break;
+				if (l < B[k].bar->ce[0]->graph[1]) {
+					B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->cells_to(SPHERE_GENUS);
+					B[k].bar->ce[B[k].bar->ce[0]->graph[l+2]]->circ_correct(rad, B[k].link[NUM_PHASE] == -1 ? -1 : 1, NULL_STATE);
+				}
+		}
+		for (k = 0; k < N; k++) if (B[k].bar && B[k].bar->ce[0] && B[k].bar->ce[0]->graph)
+		for (j = min(B[k].bar->ce[0]->graph[1], NUM_PHASE); j > 0; j--)
+		if (B[k].link[j] == ERR_STATE) {
+			B[k].bar->ce[B[k].bar->ce[0]->graph[j+1]]->cells_to(SPHERE_GENUS);
+			B[k].bar->ce[B[k].bar->ce[0]->graph[j+1]]->circ_correct(R, 1, NULL_STATE);
+		}
+	}
+
+////////////////////////////////////////////////////////////////////////////
+//...преобразуем геометрию образца и добавлям описание структуры излучателя;
+	int N0 = N, NN[2] = {1, NZ}, 
+		 N_phase = ConvertToBeamStruct(NN, &length, OK_STATE);
+	add_cyl_surface(rad, 0., 0., 0.);
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//...раставляем граничные условия на нижнем торце и корректируем связи (убираем включение);
+	for (int k = 0; k < N; k++) {
+		if (B[k].link[NUM_PHASE] == -1 && B[k].link[1] <= ERR_STATE) B[k].link[1] = BOUND2_STATE;
+		if (B[k].link[NUM_PHASE] == -2 && B[k].link[1] <= ERR_STATE) B[k].link[1] = BOUND1_STATE;
+
+		for (int m = min(NUM_PHASE, B[k].link[0]), i = 0; i < m; i++) if (B[k].link[i+1] <= SRF_STATE)
+		for (int l = NUM_PHASE; l < B[k].link[0]; l++) //...коррекция многофазных сред;
+		if (B[k].link[i+1] == SRF_STATE-B[k].link[l+1]) {
+			 B[k].link[i+1] = B[k].link[l+1]; break;
+		}
+		B[k].link[0] = B[k].bar->arcs_number();
+	}
+	return(N0);
+}
+
+/////////////////////////////////////////////////////////////
+//...строковые варианты функции (зачитывание внешнего файла);
+template <typename T> 
+int CDraft<T>::GetCylinderChannelStruct(double rad, double R, double length, char * name, int NZ, int id_curve)
+{
+	if (rad >= R) return(0); 
+
+////////////////////////////////////////
+//...зачитываем блочную структуру торца;
+	stru.nodes_in(name);
+   bar_condit_in(name);
+	LinkUniStruct();
+	BlockActivate(NULL_STATE);
+//	B[0].bar->cells_out("bar");
+	int	 N0 = GetCylinderChannelStruct(rad, R, length, name, NZ, id_curve);
+	return(N0);
+}
+template <typename T> 
+int CDraft<T>::GetCylinderChannelStruct(double rad, double R, double length, const char * name, int NZ, int id_curve)
+{
+	if (rad >= R) return(0); 
+
+////////////////////////////////////////
+//...зачитываем блочную структуру торца;
+	stru.nodes_in(name);
+   bar_condit_in(name);
+	LinkUniStruct();
+	BlockActivate(NULL_STATE);
+//	B[0].bar->cells_out("bar");
+	int	 N0 = GetCylinderChannelStruct(rad, R, length, name, NZ, id_curve);
+	return(N0);
+}
+
+/////////////////////////////////////////
+//...block structure for cylinder sample;
+template <typename T> 
+int CDraft<T>::GetCylinderChannelStruct(double rad, double R, double length, double r0, int NX, int NY, int N2, int NZ)
+{
+	if (rad >= R) return(0); 
+
+	double delta_rr = (R-rad )/(NY = max(NY, 1)), delta_fi = M_PI*2./(NX = max(NX, 2)), 
+			 delta_r0 = (rad-r0)/(N2 = max(N2, 1)), RR = rad;
+	CCells * ce;
+
+//////////////////////
+//...обнуляем образец;
+	init_blocks(NULL);
+
+////////////////////////////////////////////
+//...добавлям описание структуры излучателя;
+	ce = new CCells;
+	ce->get_ring(rad, R);
+	bar = new CCells;
+	bar->bar_add(ce);
+
+//	ce = new CCells;
+//	ce->get_disk(rad);
+//	bar = new CCells;
+//	bar->bar_add(ce);
+
+//////////////////////////////////////////////////////
+//...образуем блочную структуру стенки плоского торца;
+	int i, j;
+	for (j = 0; j < NY;  j++)
+	for (i = 0; i < NX;  i++) {
+		add_block (NULL_BLOCK);
+		ce = new CCells;
+		ce->get_ring_segment(i*delta_fi, (i+1)*delta_fi, rad+j*delta_rr, rad+(j+1)*delta_rr);
+		B[i+j*NX].bar = new CCells;
+		B[i+j*NX].bar->bar_add(ce);
+		set_block(B[i+j*NX], SPHERE_GENUS, 1.);
+		set_link (B[i+j*NX], 4);
+		B[i+j*NX].link[1] = (i-1+NX)%NX+j*NX;
+		B[i+j*NX].link[2] = (j+1)%NY ? i+(j+1)*NX : BOUND3_STATE;
+		B[i+j*NX].link[3] = (i+1)%NX+j*NX;
+		B[i+j*NX].link[4] = j ? i+(j-1)*NX : SRF_STATE;
+	}
+
+//////////////////////////////////////////////////////////
+//...образуем блочную структуру излучателя плоского торца;
+	int shift = 0, m0 = NX*NY;
+	if (r0 < rad) {
+		shift = m0; m0 += NX*N2; RR = r0;
+		for (j = 0; j < N2;  j++)
+		for (i = 0; i < NX;  i++) {
+			add_block (NULL_BLOCK);
+			ce = new CCells;
+			ce->get_ring_segment(i*delta_fi, (i+1)*delta_fi, r0+j*delta_r0, r0+(j+1)*delta_r0);
+			B[shift+i+j*NX].bar = new CCells;
+			B[shift+i+j*NX].bar->bar_add(ce);
+			set_block(B[shift+i+j*NX], SPHERE_GENUS, 1.);
+			set_link (B[shift+i+j*NX], 4);
+			B[shift+i+j*NX].link[1] = shift+(i-1+NX)%NX+j*NX;
+			if ((j+1)%N2) B[shift+i+j*NX].link[2] = shift+i+(j+1)*NX;
+			else {
+				B[shift+i+j*NX].link[2] = i;
+				B[i].link[4] = shift+i+j*NX;
+			}
+			B[shift+i+j*NX].link[3] = shift+(i+1)%NX+j*NX;
+			B[shift+i+j*NX].link[4] = j ? shift+i+(j-1)*NX : SRF_STATE;
+		}
+	}
+
+////////////////////////////////////////////////
+//...образуем центральный блок на плоском торце;
+	add_block (NULL_BLOCK);
+	ce = new CCells;
+	for (i = 0; i < NX;  i++) {
+		CCells * arc = new CCells;
+		arc->get_arc(RR, i*delta_fi, (i+1)*delta_fi);
+		ce->bar_add(arc);
+	}
+	ce->bar_invers();
+	ce->bar_generate();
+	CMap * mp = get_map(2, NULL_GENUS, RING_SEGMENT);
+	if (mp) {
+		mp[++(i = size_of_map(2, NULL_GENUS))] = (CMap)M_PI*2.;
+		mp[++i] = (CMap)0.;
+		mp[++i] = (CMap)RR;
+	}
+	ce->bar_span(mp);
+
+	B[m0].bar = new CCells;
+	B[m0].bar->bar_add(ce);
+	set_block(B[m0], SPHERE_GENUS, 1.);
+	set_link (B[m0], NX);
+
+	for (i = 0; i < NX; i++) {
+		B[m0].link[i+1] = shift+i;
+		B[shift+i].link[4] = m0;
+	}
+	SkeletonRadius(OK_STATE);
+
+///////////////////////////////////
+//...преобразуем геометрию образца;
+	int N0 = N, NN[2] = {1, NZ}, 
+		 N_phase = ConvertToBeamStruct(NN, &length, OK_STATE);
+
+//////////////////////////////////////////////////////////
+//...раставляем граничные условия на нижнем плоском торце;
+	for (j = 0; j < NY;  j++)
+	for (i = 0; i < NX;  i++) 
+		B[i+j*NX].link[1] = BOUND2_STATE;
+
+	if (r0 < rad)
+	for (j = 0; j < N2;  j++)
+	for (i = 0; i < NX;  i++) 
+		B[shift+i+j*NX].link[1] = BOUND1_STATE;
+
+	B[m0].link[1] = BOUND1_STATE;
+
+	return(N0);
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//...block structure for cylinder sample with spherical inclusion (equal distance);
+template <typename T> 
+int CDraft<T>::GetCylSphStruct(double ff_vol, double rad, int id_bound)
+{
+	if (ff_vol < EE || ff_vol > 1.-EE) return(0);
+	double R1 = pow(4./(3.*(1.-ff_vol)), 1./3.)*rad;
+	CCells * ce;
+
+//////////////////////
+//...обнуляем образец;
+	int k = -1;
+	init_blocks(NULL);
+
+//////////////////////////////////////////////////////////////
+//...образуем описание первого блока -- сферическое включение;
+	if (rad > 0 && id_bound != OK_STATE) {
+		add_block (NULL_BLOCK);
+		B[++k].bar = new CCells;
+		B[k].type  = POLY_BLOCK;
+
+		ce = new CCells;
+		ce->get_sphere(rad);
+		B[k].bar->bar_add(ce);
+		B[k].bar->bar_ord();
+		
+		set_block(B[k], SPHERE_GENUS, rad);
+		set_link (B[k], NUM_PHASE);
+		B[k].link[1] = k+1;
+		B[k].link[NUM_PHASE] = -2;
+	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//...образуем описание второго блока -- цилиндрическая матрица со сферическим включением;
+	add_block (NULL_BLOCK);
+	B[++k].bar = new CCells;
+	B[k].type  = POLY_BLOCK;
+
+	if (rad > 0) {
+		ce = new CCells;
+		ce->get_sphere(-rad);
+		B[k].bar->bar_add(ce);
+		B[k].type = ZOOM_BLOCK;
+	}
+
+///////////////////////////////////////////////
+//...добавляем два торца и боковую поверхность;
+	ce = new CCells;
+	ce->get_ring_segment(-M_PI, M_PI, R1, 0.);
+	ce->mp[3] = -R1*.5;
+	B[k].bar->bar_add(ce);
+
+	ce = new CCells;
+	ce->get_ring_segment(-M_PI, M_PI, 0., R1);
+	ce->mp[3] = R1*.5;
+	B[k].bar->bar_add(ce);
+
+	ce = new CCells;
+	//ce->get_cyl_segment(R1, -M_PI, M_PI, -R1, R1);
+	ce->get_cylinder(R1);
+	B[k].bar->bar_add(ce);
+	B[k].bar->bar_ord();
+
+	set_block(B[k], SPHEROID_GENUS, M_SQRT2*R1*get_param(NUM_MPLS+1));
+	B[k].mp[8] = rad;
+	set_link (B[k], NUM_PHASE);
+	B[k].link[1] = rad > 0. ? k-1 : ERR_STATE;
+	B[k].link[NUM_PHASE] = -1;
+
+	return(N);
+}
+
+///////////////////////////////////////////////////////////////////
+//...block structure for cylinder sample with spherical inclusion;
+template <typename T> 
+int CDraft<T>::GetCylSphStruct(double ff_vol, double rad, double L, int id_bound)
+{
+	if (ff_vol < EE || ff_vol > 1.-EE) return(0);
+	double R1 = sqrt(rad/(3.*L*(1.-ff_vol)))*2.*rad;
+	CCells * ce;
+
+//////////////////////
+//...обнуляем образец;
+	int k = -1;
+	init_blocks(NULL);
+
+//////////////////////////////////////////////////////////////
+//...образуем описание первого блока -- сферическое включение;
+	if (rad > 0 && id_bound != OK_STATE) {
+		add_block (NULL_BLOCK);
+		B[++k].bar = new CCells;
+		B[k].type  = POLY_BLOCK;
+
+		ce = new CCells;
+		ce->get_sphere(rad);
+		B[k].bar->bar_add(ce);
+		B[k].bar->bar_ord();
+		
+		set_block(B[k], SPHERE_GENUS, rad);
+		set_link (B[k], NUM_PHASE);
+		B[k].link[1] = k+1;
+		B[k].link[NUM_PHASE] = -2;
+	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//...образуем описание второго блока -- цилиндрическая матрица со сферическим включением;
+	add_block (NULL_BLOCK);
+	B[++k].bar = new CCells;
+	B[k].type  = POLY_BLOCK;
+
+	if (rad > 0) {
+		ce = new CCells;
+		ce->get_sphere(-rad);
+		B[k].bar->bar_add(ce);
+		B[k].type = ZOOM_BLOCK;
+	}
+
+///////////////////////////////////////////////
+//...добавляем два торца и боковую поверхность;
+	ce = new CCells;
+	ce->get_ring_segment(-M_PI, M_PI, R1, 0.);
+	ce->mp[3] = -L*.5;
+	B[k].bar->bar_add(ce);
+
+	ce = new CCells;
+	ce->get_ring_segment(-M_PI, M_PI, 0., R1);
+	ce->mp[3] = L*.5;
+	B[k].bar->bar_add(ce);
+
+	ce = new CCells;
+	//ce->get_cyl_segment(R1, -M_PI, M_PI, -L*.5, L*.5);
+	ce->get_cylinder(R1);
+	B[k].bar->bar_add(ce);
+	B[k].bar->bar_ord();
+
+	set_block(B[k], SPHEROID_GENUS, sqrt(R1*R1+L*L*.25)*get_param(NUM_MPLS+1));
+	B[k].mp[8] = rad;
+	set_link (B[k], NUM_PHASE);
+	B[k].link[1] = rad > 0. ? k-1 : ERR_STATE;
+	B[k].link[NUM_PHASE] = -1;
+
+	return(N);
+}
+
+///////////////////////////////////////////////////////////////////
+//...block structure for spherical sample with spherical inclusion;
+template <typename T> 
+int CDraft<T>::GetSph2BodyStruct(double ff_vol, double rad, int id_bound)
+{
+	if (ff_vol < EE || ff_vol > 1.-EE) return(0);
+	double R1 = pow(1./(1.-ff_vol), 1./3.)*rad;
+	CCells * ce;
+
+//////////////////////
+//...обнуляем образец;
+	int k = -1;
+	init_blocks(NULL);
+
+//////////////////////////////////////////////////////////////
+//...образуем описание первого блока -- сферическое включение;
+	if (rad > 0 && id_bound != OK_STATE) {
+		add_block (NULL_BLOCK);
+		B[++k].bar = new CCells;
+		B[k].type  = POLY_BLOCK;
+
+		ce = new CCells;
+		ce->get_sphere(rad);
+		B[k].bar->bar_add(ce);
+		B[k].bar->bar_ord();
+		
+		set_block(B[k], SPHERE_GENUS, rad);
+		set_link (B[k], NUM_PHASE);
+		B[k].link[1] = k+1;
+		B[k].link[NUM_PHASE] = -2;
+	}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//...образуем описание второго блока -- сферическая матрица со сферическим включением;
+	add_block (NULL_BLOCK);
+	B[++k].bar = new CCells;
+	B[k].type  = POLY_BLOCK;
+
+	if (rad > 0) {
+		ce = new CCells;
+		ce->get_sphere(-rad);
+		B[k].bar->bar_add(ce);
+		B[k].type = ZOOM_BLOCK;
+	}
+	ce = new CCells;
+	ce->get_sphere(R1);
+	B[k].bar->bar_add(ce);
+	B[k].bar->bar_ord();
+
+	set_block(B[k], SPHEROID_GENUS, R1);
+	B[k].mp[8] = rad;
+	set_link (B[k], NUM_PHASE);
+	B[k].link[1] = rad > 0. ? k-1 : ERR_STATE;
+	B[k].link[NUM_PHASE] = -1;
+
+	return(N);
+}
+
+///////////////////////////////////////
+//...block structure for Bars25 sample;
+template <typename T> 
+int CDraft<T>::GetBars25Struct(CDraft<T> * bars25, double length, int NZ)
+{
+//////////////////////
+//...обнуляем образец;
+   init_blocks();
+
+//////////////////////////////////////
+//...добавлям описание плоского торца;
+	bar = bars25->bar; bars25->bar = NULL;
+
+///////////////////////////////////////////////
+//...образуем блочную структуру плоского торца;
+	for (int k = 0; k < bars25->N;  k++) {
+		add_block (bars25->B[k].type);
+		B[k].bar = bars25->B[k].bar; bars25->B[k].bar = NULL;
+		B[k].bar->cells_common(bars25->B[k].mp);
+		set_block(B[k], SPHERE_GENUS, 1.);
+		set_link (B[k], bars25->B[k].link[0]);
+		memcpy(B[k].link, bars25->B[k].link, (bars25->B[k].link[0]+1)*sizeof(Topo)); 
+	}
+	SkeletonRadius(OK_STATE);
+
+///////////////////////////////////
+//...преобразуем геометрию образца;
+	int N0 = N, NN[2] = {1, NZ}, 
+		 N_phase = ConvertToBeamStruct(NN, &length, OK_STATE);
+	return(N0);
+}
 #endif

@@ -1,4 +1,6 @@
 #include "stdafx.h"
+
+#include "shapes.h"
 #include "cheat3d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
@@ -10,15 +12,15 @@ int CHeat3D::MAX_PHASE = 3;
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CHeat3D::block_shape_init(Block<double> & B, int id_free)
+int CHeat3D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int m;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
 		if ((B.type & ERR_CODE) == ZOOM_BLOCK && B.mp[0] == ID_MAP(2, SPHEROID_GENUS)) {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE), 1);
-			B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE), 1);
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE), 1);
+			B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE), 1);
 
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			B.shape->set_shape(0, get_param(NUM_MPLS+1)*fabs(B.mp[7]));
@@ -27,7 +29,7 @@ int  CHeat3D::block_shape_init(Block<double> & B, int id_free)
 			B.shape->set_shape(1, fabs(B.mp[8]));
 
 			if (get_param(NUM_GEOMT-1)) { //...подключаем внешнюю систему функций;
-				B.shape->add_shape(CreateShapeD(SK3D_ZOOM_SHAPE, 1));
+				B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE, 1));
 
 				B.shape->init1(2, UnPackInts(get_param(NUM_MPLS), 1), solver.id_norm, draft_dim(type()));
 				B.shape->set_shape(2, fabs(B.mp[8]), sqrt(fabs(get_param(NUM_GEOMT-1))));
@@ -35,8 +37,8 @@ int  CHeat3D::block_shape_init(Block<double> & B, int id_free)
 		}
 		else
 		if ((B.type & ERR_CODE) == ZOOM_BLOCK && B.mp[0] == ID_MAP(2, SPHEROID_GENUS)) {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE), 1);
-			B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE), 1);
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE), 1);
+			B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE), 1);
 
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			B.shape->set_shape(0, fabs(B.mp[7]));
@@ -45,8 +47,8 @@ int  CHeat3D::block_shape_init(Block<double> & B, int id_free)
 			B.shape->set_shape(1, fabs(B.mp[8]));
 
 			if (get_param(NUM_GEOMT-1)) {
-				B.shape->add_shape(CreateShapeD(SK3D_ZOOM_SHAPE, 0)); //...внутренняя система функций;
-				B.shape->add_shape(CreateShapeD(SK3D_ZOOM_SHAPE, 1)); //...подключаем внешнюю систему функций;
+				B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE, 0)); //...внутренняя система функций;
+				B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE, 1)); //...подключаем внешнюю систему функций;
 
 				B.shape->init1(2, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 				B.shape->set_shape(2, fabs(B.mp[7]), sqrt(fabs(get_param(NUM_GEOMT-1))));
@@ -56,11 +58,11 @@ int  CHeat3D::block_shape_init(Block<double> & B, int id_free)
 			}
 		}
 		else {
-			if ((B.type & ERR_CODE) == CLAYER_BLOCK) B.shape->add_shape(CreateShapeD(MP3D_CLAYER_SHAPE), 1); else
-			if ((B.type & ERR_CODE) ==   ELLI_BLOCK) B.shape->add_shape(CreateShapeD(MP3D_ELLI_SHAPE),	1); else
-			if ((B.type & ERR_CODE) == ESHE_BLOCK) B.shape->add_shape(CreateShapeS(MP3D_SPHEROID_SHAPE), 1); else
-			if ((B.type & ERR_CODE) == ESHE_ZOOM_BLOCK) B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE), 1);
-			else													  B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE), 1);
+			if ((B.type & ERR_CODE) ==		CLAYER_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_CLAYER_SHAPE), 1); else
+			if ((B.type & ERR_CODE) ==		  ELLI_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_ELLI_SHAPE),	1); else
+			if ((B.type & ERR_CODE) ==		  ESHE_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_SPHEROID_SHAPE), 1); else
+			if ((B.type & ERR_CODE) == ESHE_ZOOM_BLOCK) B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE), 1);
+			else													  B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE), 1);
 			
 			B.shape->init1(0, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 			if ((B.type & ERR_CODE) == CLAYER_BLOCK) 
@@ -70,7 +72,7 @@ int  CHeat3D::block_shape_init(Block<double> & B, int id_free)
 				B.shape->set_shape(0, fabs(B.mp[7]));
 
 			if (get_param(NUM_GEOMT-1)) { //...внутренняя система функций;
-				B.shape->add_shape(CreateShapeS(SK3D_ZOOM_SHAPE, 0));
+				B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE, 0));
 
 				B.shape->init1(1, UnPackInts(get_param(NUM_MPLS)), solver.id_norm, draft_dim(type()));
 				B.shape->set_shape(1, fabs(B.mp[7]), sqrt(fabs(get_param(NUM_GEOMT-1))));
@@ -203,7 +205,7 @@ void CHeat3D::jump4_compos(double * P, int i, int m)
 
 ////////////////////////////////////////////////////////////////////////////
 //...realization of common jump boundary condition for matrix and inclusion;
-int CHeat3D::gram1(CGrid * nd, int i, int id_local)
+Num_State CHeat3D::gram1(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double hh, p4, f, P[6];
@@ -212,7 +214,7 @@ int CHeat3D::gram1(CGrid * nd, int i, int id_local)
 /////////////////////////////////////
 //...тестовая печать множества узлов;
 		if (solver.mode(PRINT_MODE)) 
-			nd->TestGrid("nodes.bln", 0.002, 10., 20., 30., AXIS_Z, 1);
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////////////////////////
 //...realization of pattern cell boundary condition for Gram matrix;
@@ -257,7 +259,108 @@ int CHeat3D::gram1(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...junction data of the periodic boundary condition for all blocks;
-int CHeat3D::gram2(CGrid * nd, int i, int id_local)
+Num_State CHeat3D::gram2(CGrid * nd, int i, int id_local)
+{
+	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
+		double AX, AY, AZ, f, P[6], 
+				 g1 = .5, f1 = 1., g2 = .5, g0 = -1., TX, TY, TZ, hh;
+      int id_isolated = 0, m = solver.id_norm, id_dir, k, j;
+		if (id_isolated) {
+			g0 = g1 = 1.;
+			f1 = g2 = 0.;
+		}
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
+
+////////////////////////////////////////////////
+//...inclusion data in gram and transfer matrix;
+		for (int l = 0; l < nd->N; l++) if (nd->hit[l]) {
+			AX = nd->get_param(0, l); 
+			AY = nd->get_param(1, l);
+			AZ = nd->get_param(2, l);
+			f  = nd->get_param(4, l);
+
+			for (k  = (int)nd->get_param(5, l), j = 0; j < solver.JR[i][0]; j++) 
+			if ( k == solver.JR[i][j+solver.JR_SHIFT]) {
+				P[0] = nd->X[l]; P[3] = nd->nX[l];
+				P[1] = nd->Y[l]; P[4] = nd->nY[l];
+				P[2] = nd->Z[l]; P[5] = nd->nZ[l];
+				B[i].shape->make_local(P);
+				B[i].shape->norm_local(P+3);
+
+////////////////////////////////////////////////////////////////////////////////////////
+//...вычисляем граничные условия периодического скачка и сдвигаем соответственные блоки;
+				TX = TY = TZ = hh = 0.;
+				switch (abs(id_dir = (int)nd->get_param(3, l))) {
+					case 1: TX =  AX; break;
+					case 2: TX = -AX; break;
+					case 3: TY =  AY; break;
+					case 4: TY = -AY; break;
+					case 5: TZ =  AZ; hh = -AZ; break;
+					case 6: TZ = -AZ; hh =  AZ; break;
+				}
+				B[k].mp[1] -= TX;
+				B[k].mp[2] -= TY;
+				B[k].mp[3] -= TZ; B[k].shape->set_local_P0(B[k].mp+1);
+
+/////////////////////////////
+//...reset auxilliary arrays;
+				for (int num = m+1; num >= m; num--) {
+					 memset(solver.hh[i][0][num], 0, solver.dim[i]*sizeof(double));
+					 memset(solver.hh[k][0][num], 0, solver.dim[k]*sizeof(double));
+				}
+
+/////////////////////////
+//...jump of all moments;
+				B[i].shape->parametrization_grad(P);
+				jump1(P, i, 0); solver.admittance (i, 2, 0., 0, 1.);
+				jump4(P, i, 1); 
+				solver.admittance(i, 0, g1, 1, g2); 
+				solver.admittance(i, 1, g0, 0, f1); 
+
+				B[i].shape->make_common(P);
+				B[i].shape->norm_common(P+3);
+
+				B[k].shape->make_local(P);
+				B[k].shape->norm_local(P+3);
+
+				B[k].shape->parametrization_grad(P);
+				jump1(P, k, 0); solver.admittance (k, 2, 0., 0, 1.);
+				jump4(P, k, 1); 
+				solver.admittance(k, 0, g1, 1, g2); 
+				solver.admittance(k, 1, g0, 0, f1); 
+
+////////////////////////////
+//...composition functional;
+				solver.to_transferTR(i, j, solver.hh[i][0][m],   solver.hh[k][0][m], f);
+				solver.to_transferDD(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
+				solver.to_transferTL(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
+
+				if (fabs(hh) > EE) {
+				  solver.to_equationHH(i, 0, solver.hh[i][0][m  ],  g1*hh*f);
+				  solver.to_equationHL(k, 0, solver.hh[k][0][m+1], -g2*hh*f);
+				}
+				if (solver.mode(REGUL_BOUNDARY) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
+					solver.to_equationDD(i, solver.hh[i][0][m+2], solver.hh[i][0][m+2], f);
+					solver.to_equationDD(k, solver.hh[k][0][m+2], solver.hh[k][0][m+2], f);
+					if (fabs(hh) > EE) {
+					  if (id_dir == 6) solver.to_equationHH(i, 0, solver.hh[i][0][m+2],  hh*f);
+					  if (id_dir == 5) solver.to_equationHL(k, 0, solver.hh[k][0][m+2], -hh*f);
+					}
+				}
+				B[k].mp[1] += TX;
+				B[k].mp[2] += TY;
+				B[k].mp[3] += TZ; B[k].shape->set_local_P0(B[k].mp+1);
+ 			}
+		}
+		return(OK_STATE);
+	}
+	return(ERR_STATE);
+}
+Num_State CHeat3D::gram2_old(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double AX, AY, AZ, f, P[6], 
@@ -267,6 +370,11 @@ int CHeat3D::gram2(CGrid * nd, int i, int id_local)
 			g0 = g1 = 1.;
 			f1 = g2 = 0.;
 		}
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////
 //...inclusion data in gram and transfer matrix;
@@ -334,16 +442,16 @@ int CHeat3D::gram2(CGrid * nd, int i, int id_local)
 ////////////////////////////
 //...composition functional;
 				solver.to_transferTR(i, j, solver.hh[i][0][m],   solver.hh[k][0][m], f);
-				solver.to_transferTT(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
+				solver.to_transferDD(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
 				solver.to_transferTL(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
 
 				if (fabs(hh) > EE) {
 				  solver.to_equationHH(i, 0, solver.hh[i][0][m  ],  g1*hh*f);
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m+1], -g2*hh*f);
 				}
-				if (first && solver.mode(REGULARIZATION2) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
+				if (first && solver.mode(REGUL_BOUNDARY) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
 					solver.to_transferTR(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
-					solver.to_transferTT(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 				}
 				B[k].mp[1] += TX;
@@ -354,7 +462,7 @@ int CHeat3D::gram2(CGrid * nd, int i, int id_local)
 		if (! first) {//...регуляризация матрицы по интегралу первого блока;
 			solver.clean_mode(REGULARIZATION);
 			solver.to_transferTR(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
-			solver.to_transferTT(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
+			solver.to_transferDD(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
 			solver.to_transferTL(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
 		}
 		return(OK_STATE);
@@ -364,7 +472,7 @@ int CHeat3D::gram2(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////////////
 //...формирование матрицы Грама для периодической задачи (один блок);
-int CHeat3D::gram2peri(CGrid * nd, int i, int id_local)
+Num_State CHeat3D::gram2peri(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double AX, AY, AZ, f, P[6], g1 = .5, f1 = 1., g2 = .5, g0 = -1.;
@@ -377,7 +485,7 @@ int CHeat3D::gram2peri(CGrid * nd, int i, int id_local)
 /////////////////////////////////////
 //...тестовая печать множества узлов;
 		if (solver.mode(PRINT_MODE)) 
-			nd->TestGrid("nodes.bln", 0.002, 10., 20., 30., AXIS_Z, 1);
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ///////////////////////////////////
 //...inclusion data in gram matrix;
@@ -419,8 +527,10 @@ int CHeat3D::gram2peri(CGrid * nd, int i, int id_local)
 			B[i].shape->norm_local(P+3);
 
 			B[i].shape->parametrization_grad(P);
-			jump1(P, i, 2); solver.admittance (i, 0, 1., 2, -1.); solver.admittance (i, 2, 2., 0, 1.);
-			jump4(P, i, 3); solver.admittance (i, 1, 1., 3, -1.);
+			jump1(P, i, 2); 
+			solver.admittance (i, 0, 1., 2, -1.); solver.admittance (i, 2, 2., 0, 1.);
+			jump4(P, i, 3); 
+			solver.admittance (i, 1, 1., 3, -1.);
 			if (get_param(NUM_GEOMT-1)) {
 				jump2(P, i, 6); solver.admittance (i, 4, 1., 6, -1.);
 				jump3(P, i, 7); solver.admittance (i, 5, 1., 7, -1.);
@@ -438,7 +548,7 @@ int CHeat3D::gram2peri(CGrid * nd, int i, int id_local)
 				solver.to_equationDD(i, solver.hh[i][0][m+4], solver.hh[i][0][m+4], f);
 				solver.to_equationDD(i, solver.hh[i][0][m+5], solver.hh[i][0][m+5], f);
 			}
-			if (id_dir == 5) {//...регуляризация матрицы и правая часть;
+			if (id_dir == 5) {//...регуляризация матрицы (всегда!) и правая часть;
 				solver.to_equationDD(i, solver.hh[i][0][m+2], solver.hh[i][0][m+2], f);
 				solver.to_equationHH(i, 0,	solver.hh[i][0][m], -g1*AZ*f);
 				solver.to_equationHH(i, 0, solver.hh[i][0][m+1], -g2*AZ*f);
@@ -455,7 +565,7 @@ int CHeat3D::gram2peri(CGrid * nd, int i, int id_local)
 
 //////////////////////////////////////////////////////////////////
 //...inclusion of the stitching data to the solver for all blocks;
-int CHeat3D::transfer1(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat3D::transfer1(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double f, P[6], f0 = 1., g1 = .5, g2 = .5, g0 = -1.;
@@ -464,6 +574,11 @@ int CHeat3D::transfer1(CGrid * nd, int i, int k, int id_local)
 			g0 = g1 = 1.;
 			f0 = g2 = 0.;
 		}
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////
 //...inclusion data in gram and transfer matrix;
@@ -506,7 +621,7 @@ int CHeat3D::transfer1(CGrid * nd, int i, int k, int id_local)
 ////////////////////////////
 //...composition functional;
 				solver.to_transferTR(i, j, solver.hh[i][0][m],   solver.hh[k][0][m], f);
-				solver.to_transferTT(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
+				solver.to_transferDD(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
 				solver.to_transferTL(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
 			}
 		}
@@ -517,7 +632,7 @@ int CHeat3D::transfer1(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...inclusion conjunction data to the solver for all blocks;
-int CHeat3D::transfer2(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat3D::transfer2(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B && B[i].link && B[i].link[0] > NUM_PHASE) {
       double f, P[6], f0 = -1., f1 = 1., f2 = .5, g1 = .5;
@@ -527,6 +642,11 @@ int CHeat3D::transfer2(CGrid * nd, int i, int k, int id_local)
 			f1 = f2 = 0.;
 			id_flag = B[i].link[NUM_PHASE] == -2;
 		}
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////
 //...inclusion data in gram and transfer matrix;
@@ -580,21 +700,21 @@ int CHeat3D::transfer2(CGrid * nd, int i, int k, int id_local)
 //...composition functional;
 				if (id_flag) {
 					solver.to_transferTR(i, j, solver.hh[i][0][m],   solver.hh[k][0][m], f);
-					solver.to_transferTT(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
 					if (get_param(NUM_GEOMT-1)) {
 						solver.to_transferTR(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
-						solver.to_transferTT(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+3], f);
+						solver.to_transferDD(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+3], f);
 						solver.to_transferTL(i, j, solver.hh[i][0][m+3], solver.hh[k][0][m+3], f);
 					}
 				}
 				else {
 					solver.to_transferTR(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
-					solver.to_transferTT(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m],	 solver.hh[k][0][m], f);
 					if (get_param(NUM_GEOMT-1)) {
 						solver.to_transferTR(i, j, solver.hh[i][0][m+3], solver.hh[k][0][m+3], f);
-						solver.to_transferTT(i, j, solver.hh[i][0][m+3], solver.hh[k][0][m+2], f);
+						solver.to_transferDD(i, j, solver.hh[i][0][m+3], solver.hh[k][0][m+2], f);
 						solver.to_transferTL(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					}
 				}
@@ -607,7 +727,7 @@ int CHeat3D::transfer2(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////////
 //...inclusion conjunction data to the solver for Eselby problem;
-int CHeat3D::trans_esh(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat3D::trans_esh(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B && B[i].link && B[i].link[0] > NUM_PHASE) {
       double f, P[6], f0 = -1., f1 = 1., f2 = .5, g1 = .5, hh, pp;
@@ -659,12 +779,12 @@ int CHeat3D::trans_esh(CGrid * nd, int i, int k, int id_local)
 				double lambda = get_param(NUM_BASIC);
 				if (id_flag) {
 					solver.to_transferTR(i, j, solver.hh[i][0][m],   solver.hh[k][0][m], f);
-					solver.to_transferTT(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m],   solver.hh[k][0][m+1], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
 				}
 				else {
 					solver.to_transferTR(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m+1], f);
-					solver.to_transferTT(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m+1], solver.hh[k][0][m], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m],	 solver.hh[k][0][m], f);
 				}
 /////////////////////////////////////
@@ -682,11 +802,114 @@ int CHeat3D::trans_esh(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии;
-int CHeat3D::gram3(CGrid * nd, int i, int id_local)
+Num_State CHeat3D::gram3(CGrid * nd, int i, int id_local)
+{
+	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
+		double AX, AY, AZ, f, P[6], TX, TY, TZ, hh;
+      int m = solver.id_norm, id_dir, k, j;
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
+
+////////////////////////////////////////////////
+//...inclusion data in gram and transfer matrix;
+		for (int l = 0; l < nd->N; l++) if (nd->hit[l]) {
+			AX = nd->get_param(0, l); 
+			AY = nd->get_param(1, l);
+			AZ = nd->get_param(2, l);
+			f  = nd->get_param(4, l);
+
+			for (k  = (int)nd->get_param(5, l), j = 0; j < solver.JR[i][0]; j++) 
+			if ( k == solver.JR[i][j+solver.JR_SHIFT]) {
+				P[0] = nd->X[l]; P[3] = nd->nX[l];
+				P[1] = nd->Y[l]; P[4] = nd->nY[l];
+				P[2] = nd->Z[l]; P[5] = nd->nZ[l];
+				B[i].shape->make_local(P);
+				B[i].shape->norm_local(P+3);
+
+////////////////////////////////////////////////////////////////////////////////////////
+//...вычисляем граничные условия периодического скачка и сдвигаем соответственные блоки;
+				TX = TY = TZ = hh = 0.;
+				switch (abs(id_dir = (int)nd->get_param(3, l))) {
+					case 1: TX =  AX; break;
+					case 2: TX = -AX; break;
+					case 3: TY =  AY; break;
+					case 4: TY = -AY; break;
+					case 5: TZ =  AZ; hh = -AZ; break;
+					case 6: TZ = -AZ; hh =  AZ; break;
+				}
+				B[k].mp[1] -= TX;
+				B[k].mp[2] -= TY;
+				B[k].mp[3] -= TZ; B[k].shape->set_local_P0(B[k].mp+1);
+
+/////////////////////////////
+//...reset auxilliary arrays;
+				for (int num = m+1; num >= m; num--) {
+					 memset(solver.hh[i][0][num], 0, solver.dim[i]*sizeof(double));
+					 memset(solver.hh[k][0][num], 0, solver.dim[k]*sizeof(double));
+				}
+
+///////////////////////////////////////////////////////////////
+//...вычисляем все необходимые моменты коллокационного вектора;
+				B[i].shape->parametrization_grad(P);
+				jump1(P, i, 0); solver.admittance (i, 2, 0., 0, 1.);
+				jump4(P, i, 1); 
+
+				B[i].shape->make_common(P);
+				B[i].shape->norm_common(P+3);
+
+				B[k].shape->make_local(P);
+				B[k].shape->norm_local(P+3);
+
+				B[k].shape->parametrization_grad(P);
+				jump1(P, k, 0); solver.admittance (k, 2, 0., 0, 1.);
+				jump4(P, k, 1); 
+
+//////////////////////////////////////////////////////////////////
+//...сшивка функций и условие скачка методом наименьших квадратов;
+				solver.to_transferTR(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
+				solver.to_transferDD(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
+				solver.to_transferTL(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
+
+				if (fabs(hh) > EE) {
+				  solver.to_equationHH(i, 0, solver.hh[i][0][m],  hh*f);
+				  solver.to_equationHL(k, 0, solver.hh[k][0][m], -hh*f);
+				}
+				if (solver.mode(REGUL_BOUNDARY) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
+					solver.to_equationDD(i, solver.hh[i][0][m+2], solver.hh[i][0][m+2], f);
+					solver.to_equationDD(k, solver.hh[k][0][m+2], solver.hh[k][0][m+2], f);
+					if (fabs(hh) > EE) {
+					  if (id_dir == 6) solver.to_equationHH(i, 0, solver.hh[i][0][m+2],  hh*f);
+					  if (id_dir == 5) solver.to_equationHL(k, 0, solver.hh[k][0][m+2], -hh*f);
+					}
+				}
+
+/////////////////////////////
+//...энергетиеские слагаемые;
+				solver.to_equationER(i, solver.hh[i][0][m], solver.hh[i][0][m+1],  f);
+				solver.to_equationEL(k, solver.hh[k][0][m], solver.hh[k][0][m+1], -f);
+				
+				B[k].mp[1] += TX;
+				B[k].mp[2] += TY;
+				B[k].mp[3] += TZ; B[k].shape->set_local_P0(B[k].mp+1);
+			}
+      }
+		return(OK_STATE);
+	}
+	return(ERR_STATE);
+}
+Num_State CHeat3D::gram3_old(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double AX, AY, AZ, f, P[6], TX, TY, TZ, hh;
       int m = solver.id_norm, id_dir, k, j, first = 1, k0, j0;
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////
 //...inclusion data in gram and transfer matrix;
@@ -750,16 +973,16 @@ int CHeat3D::gram3(CGrid * nd, int i, int id_local)
 //////////////////////////////////////////////////////////////////
 //...сшивка функций и условие скачка методом наименьших квадратов;
 				solver.to_transferTR(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
-				solver.to_transferTT(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
+				solver.to_transferDD(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
 				solver.to_transferTL(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
 
 				if (fabs(hh) > EE) {
 				  solver.to_equationHH(i, 0, solver.hh[i][0][m],  hh*f);
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m], -hh*f);
 				}
-				if (first && solver.mode(REGULARIZATION2) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
+				if (first && solver.mode(REGUL_BOUNDARY) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
 					solver.to_transferTR(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
-					solver.to_transferTT(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					solver.to_transferTL(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 				}
 
@@ -776,7 +999,7 @@ int CHeat3D::gram3(CGrid * nd, int i, int id_local)
 		if (! first) {//...регуляризация матрицы по интегралу первого блока;
 			solver.clean_mode(REGULARIZATION);
 			solver.to_transferTR(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
-			solver.to_transferTT(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
+			solver.to_transferDD(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
 			solver.to_transferTL(i, j0, solver.hh[i][0][m+2], solver.hh[k0][0][m+2], 1.);
 		}
 		return(OK_STATE);
@@ -786,7 +1009,7 @@ int CHeat3D::gram3(CGrid * nd, int i, int id_local)
 
 /////////////////////////////////////////////////////////////
 //...формирование матрицы Грама с учетом функционала энергии;
-int CHeat3D::gram4(CGrid * nd, int i, int id_local)
+Num_State CHeat3D::gram4(CGrid * nd, int i, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N && B[i].shape && B[i].mp) {
 		double hh, p4, f, P[6];
@@ -842,11 +1065,16 @@ int CHeat3D::gram4(CGrid * nd, int i, int id_local)
 
 ///////////////////////////////////////////////////////////////
 //...формирование матриц перехода с учетом функционала энергии;
-int CHeat3D::transfer4(CGrid * nd, int i, int k, int id_local)
+Num_State CHeat3D::transfer4(CGrid * nd, int i, int k, int id_local)
 {
 	if (nd && nd->N && 0 <= i && i < solver.N) {
       double f, P[6];
       int m = solver.id_norm, j, l;
+
+/////////////////////////////////////
+//...тестовая печать множества узлов;
+		 if (solver.mode(PRINT_MODE)) 
+			nd->TestGrid("nodes.bln", 0.02, 10., 20., 30., AXIS_Z, 1);
 
 ////////////////////////////////////////////////
 //...inclusion data in gram and transfer matrix;
@@ -885,7 +1113,7 @@ int CHeat3D::transfer4(CGrid * nd, int i, int k, int id_local)
 /////////////////////////////////////////////////
 //...сшивка функций методом наименьших квадратов;
 				solver.to_transferTR(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
-				solver.to_transferTT(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
+				solver.to_transferDD(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
 				solver.to_transferTL(i, j, solver.hh[i][0][m], solver.hh[k][0][m], f);
 
 /////////////////////////////
@@ -901,7 +1129,7 @@ int CHeat3D::transfer4(CGrid * nd, int i, int k, int id_local)
 
 ////////////////////////////////////////////////////////
 //...интегрирование параметров потока по границе блоков;
-int CHeat3D::rigidy1(CGrid * nd, int i, double * K)
+Num_State CHeat3D::rigidy1(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm, l;
@@ -949,7 +1177,7 @@ int CHeat3D::rigidy1(CGrid * nd, int i, double * K)
 
 ///////////////////////////////////////////////////////
 //...интегрирование параметров потока по объему блоков;
-int CHeat3D::rigidy2(CGrid * nd, int i, double * K)
+Num_State CHeat3D::rigidy2(CGrid * nd, int i, double * K)
 {
 	if (nd) {
       int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, m = solver.id_norm, l;
@@ -1001,7 +1229,7 @@ int CHeat3D::rigidy2(CGrid * nd, int i, double * K)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //...дополнительное интегрирование параметров потока для блоков с усложненными функциями;
-int CHeat3D::rigidy5(CGrid * nd, int i, double * K)
+Num_State CHeat3D::rigidy5(CGrid * nd, int i, double * K)
 {
    int shift = (-B[i].link[NUM_PHASE]-1)*NUM_SHIFT, 
 		N_elem = UnPackInts(get_param(NUM_QUAD)), N_max = UnPackInts(get_param(NUM_QUAD), 1), m, k, l, l0;
@@ -1009,7 +1237,7 @@ int CHeat3D::rigidy5(CGrid * nd, int i, double * K)
 			 R1 = get_param(NUM_GEOMT), R2 = get_param(NUM_GEOMT+1), f, P[6], TH, sum[4];
 
 	if (B[i].shape->type() == MP3D_CLAYER_SHAPE && (R1 || R2))	{
-		CGrid * bound_bnd = CreateNodes();
+		CGrid * bound_bnd = CreateNodes(GRID_QG_NODES);
 				  bound_bnd->add_params(1);
 
 //////////////////////////////////////////
@@ -1144,7 +1372,7 @@ void CHeat3D::set_fasa_hmg(double R1, double R2, double K3, double K1, double K2
 
 ///////////////////////////////////////////////////////
 //...counting header for solving electrostatic problem;
-int CHeat3D::computing_header(Num_Comput Num)
+Num_State CHeat3D::computing_header(Num_Comput Num)
 {
 	int N_elem = UnPackInts(get_param(NUM_QUAD)), i, k, elem, id_dir, n_rhs = 2;
 	char msg[201];
@@ -1158,8 +1386,8 @@ int CHeat3D::computing_header(Num_Comput Num)
 		Message(" ");
 		switch (Num){
 			case	 BASIC_COMPUT: Message("Junction Blocks..."); break;
-			case MAPPING_COMPUT: Message("Mapping  Blocks..."); break;
-			case  PERIOD_COMPUT: Message("Periodic Blocks..."); break;
+			case MAPPING_COMPUT: Message("Mapping Blocks..."); break;
+			case  PERIOD_COMPUT: Message("Periodic Block..."); break;
 		}
 		Message(" ");
 	}
@@ -1177,8 +1405,7 @@ int CHeat3D::computing_header(Num_Comput Num)
 ////////////////////////////////////////////////////////////////////
 //...добавляем блоки на периодических связях и на границе включений;
 	if (solv%ENERGY_SOLVING == PERIODIC_SOLVING) { 
-		double par[6]; SetGeomBounding(par);
-		for (k = 0; k < N; k++) SkeletonBounding(B[k], par);
+		double par[6]; SetBounding(par);
 		for (k = 0; k < N; k++) if (B[k].link && B[k].link[NUM_PHASE] == -1) {
 			i = 0; while ((elem =  geom_plink_3D(B[k], i, id_dir, par)) >= 0)			  
 			solver.add_link(k, elem);
@@ -1236,7 +1463,7 @@ void CHeat3D::GetFuncAllValues(double X, double Y, double Z, double * F, int i, 
 
 //if (sqr(P[0])+sqr(P[1])+sqr(P[2]) < 0.0025) F[0] = F[1] = 0.;
 
-				if (solv ==	SPECIAL_SOLVING) F[0] -= Z;
+				if (solv == PERIODIC_SOLVING || solv == E_PERIODIC_SOLVING) F[1] -= Z;
 			}	break;
 			case HEAT_ESHE_VALUE: {
 ///////////////////////////
@@ -1249,7 +1476,7 @@ void CHeat3D::GetFuncAllValues(double X, double Y, double Z, double * F, int i, 
 					double lambda = get_param(NUM_BASIC);
 					F[0] = (F[1] -= Z/lambda);
 				}
-				if (solv ==	SPECIAL_SOLVING) F[0] -= Z;
+				if (solv ==	PERIODIC_SOLVING) F[1] -= Z;
 			}	break;
 			case FLUX_VALUE: {
 ///////////////////////////
@@ -1505,5 +1732,4 @@ double CHeat3D::TakeEllipsoidEshelby(double ff, double eps, double phi_stream, i
 	}
 	return(KH);
 }
-
 #undef  Message

@@ -13,7 +13,7 @@
 //...class of 2D wave-trasfer multipoles with polynomial behaviour;
 class CWave2DPoly : public CShape<double> {
 public:
-		int type() {return WV2D_POLY_SHAPE;}
+		Num_Shape    type() {return WV2D_POLY_SHAPE;}
 		int freedom(int  m) { return m*2+1; }
 		int size_of_param() { return(3);};
 public:
@@ -40,7 +40,7 @@ public:
 //...class of 3D wave-trasfer multipoles with polynomial behaviour;
 class CWave3DPoly : public CWave2DPoly {
 public:
-		int type()				{ return WV3D_POLY_SHAPE;}
+		Num_Shape     type() { return WV3D_POLY_SHAPE;}
 		int freedom (int  m) { return (m+1)*(m+1); }
 public:
 //...initialization and calculation of multipoles;

@@ -1,31 +1,31 @@
 #include "stdafx.h"
 
-#include "cgrid_el.h"
+#include "shapes.h"
 #include "ccohes3d.h"
 
 #define  Message(Msg)   { printf("%s", Msg);  printf("\n");}
 
 //////////////////////////////////
 //...initialization of the blocks;
-int  CCohes3D::block_shape_init(Block<double> & B, int id_free)
+int CCohes3D::block_shape_init(Block<double> & B, Num_State id_free)
 {
 	int k, m;
 	if (  B.shape && id_free == INITIAL_STATE) delete_shapes(B.shape);
    if (! B.shape && B.mp) {
 		B.shape = new CShapeMixer<double>;
 		if ((B.type & ERR_CODE) == POLY_BLOCK) {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
-			B.shape->add_shape(CreateShapeD(SK3D_ZOOM_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
+			B.shape->add_shape(CreateShape<double>(SK3D_ZOOM_SHAPE));
 			B.shape->set_shape(get_param(1)*fabs( B.mp[7]));
 		}
 		else
 		if ((B.type & ERR_CODE) == ZOOM_BLOCK && B.mp[0] == ID_MAP(2, SPHEROID_GENUS)) {
-			B.shape->add_shape(CreateShapeD(MP3D_ZOOM_SHAPE));
-			B.shape->add_shape(CreateShapeD(SK3D_EXPP_SHAPE, 1));
+			B.shape->add_shape(CreateShape<double>(MP3D_ZOOM_SHAPE));
+			B.shape->add_shape(CreateShape<double>(SK3D_EXPP_SHAPE, 1));
 			B.shape->set_shape(get_param(1)*fabs( B.mp[8]));
 		}
 		else {
-			B.shape->add_shape(CreateShapeD(MP3D_POLY_SHAPE));
+			B.shape->add_shape(CreateShape<double>(MP3D_POLY_SHAPE));
 			B.shape->set_shape(get_param(1)*fabs( B.mp[7]));
 		}
 
@@ -153,15 +153,15 @@ err:
 //...трехфазна€ модель дл€ сферического включени€ (пр€мой алгоритм);
 double CCohes3D::TakeEshelby_volm_two(double c0)
                                 {
-	real_E mu_I = real_E(get_param(NUM_SHEAR+NUM_SHIFT)), nu_I = real_E(get_param(NUM_SHEAR+1+NUM_SHIFT)),
-			 mu_M = real_E(get_param(NUM_SHEAR)), nu_M = real_E(get_param(NUM_SHEAR+1)),
-			 C_I = real_E(get_param(NUM_SHEAR-1+NUM_SHIFT)), ff = real_E(c0), 
-			 C_M = real_E(get_param(NUM_SHEAR-1)), AA = real_E(get_param(NUM_GEOMT)),
+	real_T mu_I = real_T(get_param(NUM_SHEAR+NUM_SHIFT)), nu_I = real_T(get_param(NUM_SHEAR+1+NUM_SHIFT)),
+			 mu_M = real_T(get_param(NUM_SHEAR)), nu_M = real_T(get_param(NUM_SHEAR+1)),
+			 C_I = real_T(get_param(NUM_SHEAR-1+NUM_SHIFT)), ff = real_T(c0), 
+			 C_M = real_T(get_param(NUM_SHEAR-1)), AA = real_T(get_param(NUM_ADHES)),
 			 K_I = 2.*mu_I*(1.+nu_I)/(3.-6.*nu_I), K_M = 2.*mu_M*(1.+nu_M)/(3.-6.*nu_M);	if (C_I == 0. || C_M == 0.) { //...классическа€ трехфазна€ модель;
 		return to_double(K_M+ff*(K_I-K_M)/(1.+(1.-ff)*(K_I-K_M)/(K_M+4./3.*mu_M)));
 	}
-	real_E ku_I = (1.-nu_I)/(.5-nu_I)*mu_I,
-			 ku_M = (1.-nu_M)/(.5-nu_M)*mu_M, RR2 = 1./pow(ff, 1./real_E(3.)), 
+	real_T ku_I = (1.-nu_I)/(.5-nu_I)*mu_I,
+			 ku_M = (1.-nu_M)/(.5-nu_M)*mu_M, RR2 = 1./pow(ff, 1./real_T(3.)), 
 			 kk_I = sqrt(C_I/ku_I), tt_I = exp(-2.*kk_I),
 			 kk_M = sqrt(C_M/ku_M), tt_D = exp(kk_M*(RR2-1.)),
 			 HH1  = ((1.+tt_I)*kk_I-(1.-tt_I))*.5, 
@@ -185,7 +185,7 @@ double CCohes3D::TakeEshelby_volm_two(double c0)
 //...решаем систему линейных уравнений A0, C0, A1, B1, C1, D1, KH;
 	int dim_N = 7, ii[7] = {0, 0, 0, 0, 0, 0, 0}, i, k, l, k0, l0;
 	for (i = 0; i < dim_N; i++) {
-		real_E f = 0.;
+		real_T f = 0.;
 ///////////////////////////////////////
 //...look for position maximal element;
 		for (k = 0; k < dim_N; k++)
@@ -205,7 +205,7 @@ double CCohes3D::TakeEshelby_volm_two(double c0)
 		if (matr[l0][l0] == 0.) return(0.);
 ////////////////////////////////
 //...diagonal row normalization;
-		real_E finv = 1./matr[l0][l0]; matr[l0][l0] = 1.;
+		real_T finv = 1./matr[l0][l0]; matr[l0][l0] = 1.;
 		for (l = 0; l <= dim_N; l++) matr[l0][l] *= finv;
 /////////////////////////////////
 //...elimination all outher rows; 
@@ -226,7 +226,7 @@ double CCohes3D::TakeEshelby_volm_sym(double ff)
 	double mu_I = get_param(NUM_SHEAR+NUM_SHIFT), nu_I = get_param(NUM_SHEAR+1+NUM_SHIFT),
 			 mu_M = get_param(NUM_SHEAR), nu_M = get_param(NUM_SHEAR+1),
 			 C_I = get_param(NUM_SHEAR-1+NUM_SHIFT), 
-			 C_M = get_param(NUM_SHEAR-1), AA = get_param(NUM_GEOMT),
+			 C_M = get_param(NUM_SHEAR-1), AA = get_param(NUM_ADHES),
 			 K_I = 2.*mu_I*(1.+nu_I)/(3.-6.*nu_I), K_M = 2.*mu_M*(1.+nu_M)/(3.-6.*nu_M);
 	if (C_I == 0. || C_M == 0.) { //...классическа€ трехфазна€ модель;
 		return to_double(K_M+ff*(K_I-K_M)/(1.+(1.-ff)*(K_I-K_M)/(K_M+4./3.*mu_M)));
@@ -343,7 +343,7 @@ double take_system(double matrix[14][15], double mu_HM, double nu_H)
 
 /////////////////////////////////////////////////////////////////////////////
 //...алгоритмическое решение системы уравнений Ёшелби с повышенной точностью;
-real_E take_system_E(real_E matrix[14][15], real_E mu_HM, real_E nu_H)
+real_T take_system_E(real_T matrix[14][15], real_T mu_HM, real_T nu_H)
 {
 	int dim_N = 14, ii[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0}, i, k, l, k0, l0;
 //////////////////////////////////////////
@@ -358,7 +358,7 @@ real_E take_system_E(real_E matrix[14][15], real_E mu_HM, real_E nu_H)
 ///////////////////////////////////////
 //...решаем систему линейных уравнений;
 	for (i = 0; i < dim_N; i++) {
-		real_E f = 0.;
+		real_T f = 0.;
 ///////////////////////////////////////
 //...look for position maximal element;
 		for (k = 0; k < dim_N; k++)
@@ -378,7 +378,7 @@ real_E take_system_E(real_E matrix[14][15], real_E mu_HM, real_E nu_H)
 		if (matrix[l0][l0] == 0.) return(0.);
 ////////////////////////////////
 //...diagonal row normalization;
-		real_E finv = 1./matrix[l0][l0]; matrix[l0][l0] = 1.;
+		real_T finv = 1./matrix[l0][l0]; matrix[l0][l0] = 1.;
 		for (l = 0; l <= dim_N; l++) matrix[l0][l] *= finv;
 /////////////////////////////////
 //...elimination all outher rows;
@@ -395,12 +395,12 @@ real_E take_system_E(real_E matrix[14][15], real_E mu_HM, real_E nu_H)
 //...трехфазна€ модель дл€ сферического включени€ (итерационный алгоритм);
 double CCohes3D::TakeEshelby_shear_two(double c0, double eps, int max_iter)
 {
-	real_E mu_I = real_E(get_param(NUM_SHEAR+NUM_SHIFT)), nu_I = real_E(get_param(NUM_SHEAR+1+NUM_SHIFT)),
-			 mu_M = real_E(get_param(NUM_SHEAR)), nu_M = real_E(get_param(NUM_SHEAR+1)),
-			 K1 = 2.*mu_I*(1.+nu_I)/(3.-6.*nu_I), K3 = 2.*mu_M*(1.+nu_M)/(3.-6.*nu_M), ff = real_E(c0),
+	real_T mu_I = real_T(get_param(NUM_SHEAR+NUM_SHIFT)), nu_I = real_T(get_param(NUM_SHEAR+1+NUM_SHIFT)),
+			 mu_M = real_T(get_param(NUM_SHEAR)), nu_M = real_T(get_param(NUM_SHEAR+1)),
+			 K1 = 2.*mu_I*(1.+nu_I)/(3.-6.*nu_I), K3 = 2.*mu_M*(1.+nu_M)/(3.-6.*nu_M), ff = real_T(c0),
 			 KH = K3+ff*(K1-K3)/(1.+(1.-ff)*(K1-K3)/(K3+4./3.*mu_M)),
-			 RR2 = 1./pow(ff, 1./real_E(3.)), fR2 = RR2*RR2, fR5 = ff/fR2, 
-			 mu_MI = mu_M/mu_I, AA = real_E(get_param(NUM_GEOMT))/mu_I, BB = real_E(get_param(NUM_GEOMT+1))/mu_I,
+			 RR2 = 1./pow(ff, 1./real_T(3.)), fR2 = RR2*RR2, fR5 = ff/fR2, 
+			 mu_MI = mu_M/mu_I, AA = real_T(get_param(NUM_ADHES))/mu_I, BB = real_T(get_param(NUM_ADHES+1))/mu_I,
 			 ku_I = (1.-nu_I)/(.5-nu_I)*mu_I,
 			 ku_M = (1.-nu_M)/(.5-nu_M)*mu_M,
 			 QI1 = 3.*nu_I/(7.-4.*nu_I),
@@ -429,7 +429,7 @@ double CCohes3D::TakeEshelby_shear_two(double c0, double eps, int max_iter)
 	int k_iter = 0, k = 0, l;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //...дописываем когезионную часть в матрице (A0, D0, A*0, D*0, A1, B1, C1, D1, A*1, B*1, C*1, D*1, C2, B2);
-	real_E C_I = get_param(NUM_SHEAR-1+NUM_SHIFT), kk_I = sqrt(C_I/ku_I), tt_I = exp(-2.*kk_I), 
+	real_T C_I = get_param(NUM_SHEAR-1+NUM_SHIFT), kk_I = sqrt(C_I/ku_I), tt_I = exp(-2.*kk_I), 
 			 C_M = get_param(NUM_SHEAR-1), kk_M = sqrt(C_M/ku_M), tt_D = exp(kk_M*(RR2-1.)), 
 			 HH1  = ((1.+tt_I)*kk_I-(1.-tt_I))*.5, 
 			 HH2  = ((1.-tt_I)*(sqr(kk_I)+3.)-3.*(1.+tt_I)*kk_I)*.5,
@@ -577,7 +577,7 @@ double CCohes3D::TakeEshelby_shear_sym(double ff, double eps, int max_iter)
 			 K1 = 2.*mu_I*(1.+nu_I)/(3.-6.*nu_I), K3 = 2.*mu_M*(1.+nu_M)/(3.-6.*nu_M),
 			 KH = K3+ff*(K1-K3)/(1.+(1.-ff)*(K1-K3)/(K3+4./3.*mu_M)),
 			 RR2 = 1./pow(ff, 1./3.), fR2 = RR2*RR2, fR5 = ff/fR2, 
-			 mu_MI = mu_M/mu_I, AA = get_param(NUM_GEOMT)/mu_I, BB = get_param(NUM_GEOMT+1)/mu_I,
+			 mu_MI = mu_M/mu_I, AA = get_param(NUM_ADHES)/mu_I, BB = get_param(NUM_ADHES+1)/mu_I,
 			 ku_I = (1.-nu_I)/(.5-nu_I)*mu_I,
 			 ku_M = (1.-nu_M)/(.5-nu_M)*mu_M,
 			 QI1 = 3.*nu_I/(7.-4.*nu_I),

@@ -15,7 +15,7 @@
 //...class of acoustic multipoles, based on plane wave in Z-direction;
 class CAcou3DEll : public CShape<double> {
 public:
-		int type()          { return AU3D_ELLI_SHAPE;}
+		Num_Shape    type() { return AU3D_ELLI_SHAPE;}
 		int freedom (int m) { return (m+1)*(m+2);}
 		int size_of_param() { return(5);};
 public:
@@ -59,7 +59,7 @@ class CAcou3DPoly : public CShape<double> {
 protected:
 		double * au, * E1;
 public:
-		int type()          { return AU3D_POLY_SHAPE;}
+		Num_Shape    type() { return AU3D_POLY_SHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(4);}
 		void release();
@@ -101,7 +101,7 @@ class CAcou3DZoom : public CShape<double> {
 protected:
 		double * au;
 public:
-		int type()          { return AU3D_ZOOM_SHAPE;}
+		Num_Shape    type() { return AU3D_ZOOM_SHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(4);}
 		void release();
@@ -120,7 +120,7 @@ public:
 			param = (Param *)new_struct(size_of_param()*sizeof(Param));
 			au = NULL;
 			id_inverse = inverse;
-//       id_cmpl	  = 1; //...we can install id_cmpl by void change()!!!
+			//id_cmpl	  = 1; //...we can install id_cmpl by void change()!!!
        };
 };
 
@@ -147,7 +147,7 @@ class CAcou3DWave : public CShape<double> {
 protected:
        double * cz, * sz, * cy, * sy;
 public:
-       int type()          { return AU3D_WAVE_SHAPE;}
+       Num_Shape    type() { return AU3D_WAVE_SHAPE;}
 		 int freedom (int m) { return sqr(m+1);}
        int size_of_param() { return(4);}
 public:
@@ -166,7 +166,7 @@ public:
            delete_struct(param);
            param   = (Param *)new_struct(size_of_param()*sizeof(Param));
            cz = sz = cy = sy = NULL;
-           //id_cmpl = 1;
+           id_cmpl = 1;
        };
 //...destructor;
       ~CAcou3DWave (void);
@@ -196,7 +196,7 @@ protected:
 		double  * au, * az, * pim, * pxim, * pyim, * pzim;
 		complex * E1;
 public:
-		int type()          { return AU3D_BEAM_SHAPE;}
+		Num_Shape	 type() { return AU3D_BEAM_SHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(6);}
 public:
@@ -243,7 +243,7 @@ protected:
 		double  * az, * pim, * pxim, * pyim, * pzim;
 		complex * E1;
 public:
-		int type()          { return AU3D_BEAMZSHAPE;}
+		Num_Shape    type() { return AU3D_BEAMZSHAPE;}
 		int freedom (int m) { return sqr(m+1);}
 		int size_of_param() { return(4);};
 		void release();

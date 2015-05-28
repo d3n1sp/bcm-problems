@@ -697,7 +697,7 @@ void CComput3D<T>::comput1(int opt)
 		for (j = 0; j < this->solver.JR[k][0]; j++)
 			bar_activate(this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]], NULL_STATE);
 
-	for (k = 0; k < this->N; k++) SkeletonBounding(this->B[k], par);
+	this->SetBlockBounding(par);
 
 ////////////////////////////////
 //...discrete norm on inclusion;
@@ -1181,7 +1181,7 @@ void CComput3D<T>::comput3(int opt)
 		for (j = 0; j < this->solver.JR[k][0]; j++)
 			bar_activate(this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]], NULL_STATE);
 
-	for (k = 0; k < this->N; k++) SkeletonBounding(this->B[k], par);
+	this->SetBlockBounding(par);
 
 ///////////////////////////////
 //...discrete norm on boundary;
@@ -1309,7 +1309,7 @@ void CComput3D<T>::comput4(int opt)
 		for (j = 0; j < this->solver.JR[k][0]; j++)
 			bar_activate(this->B[this->solver.JR[k][j+this->solver.JR_SHIFT]], NULL_STATE);
 
-	for (k = 0; k < this->N; k++) SkeletonBounding(this->B[k], par);
+	this->SetBlockBounding(par);
 
 ///////////////////////////////////////////
 //...discrete norm on inclusion's boundary;
