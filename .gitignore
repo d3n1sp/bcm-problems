@@ -4,3 +4,6 @@ bcm-start/BsSolver_*.dat
 bcm-start/lame2d-par_comput
 bcm-start/var3_results/
 *~
+/bcm-start/bcm-start
+/bcm-start/heat3d_homog/
+/bcm-start/heat3d_initial.dat
