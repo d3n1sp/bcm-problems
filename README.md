@@ -6,5 +6,5 @@
 
 ### Run
 
-
-       lhead@central:/srv/foamrun/2015/Experiment$ make clean && make run_with_mpi
+       lhead@head:/srv/foamrun$ git clone https://github.com/Solpadin/bcm-problems.git tmp$(date +%Y-%m-%dT%H:%M:%S)
+       lhead@head:/srv/foamrun$ cd tmp* && make
