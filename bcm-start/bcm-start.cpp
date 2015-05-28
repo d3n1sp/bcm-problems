@@ -119,6 +119,7 @@ CMPIComm comm_mpi;
 
 int main(int argc, char* argv[])
 {
+  try {
 #ifdef ___IGROUPS_NGROUPS___
 	int igroup = 1, ngroups = 1;
 #endif
@@ -8391,6 +8392,9 @@ err:
 	MPI_Barrier (MPI_COMM_WORLD);
 	MPI_Finalize();
 #endif
-	return 0;
+  } catch (const char *m) {
+      std::cerr << "error: " << m << std::endl;
+  }
+  return 0;
 }
 
