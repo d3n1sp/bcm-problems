@@ -107,15 +107,16 @@ enum Num_Bnd {
 //////////////////////////////////////////////////////////////////////////////
 //...макросы для поиска ключевого слова и для отделения одной строки в потоке;
 #define PPOS_CUR(id_STREAM, pchar, ppos_cur, upper_limit, id_STRSTR)\
-if ((pchar = strstr(id_STREAM+ppos_cur, id_STRSTR)) != NULL) \
-ppos_cur = (ppos_cur = (unsigned long)(pchar-id_STREAM)+strlen(id_STRSTR)) < upper_limit ? ppos_cur : upper_limit; else \
-ppos_cur = upper_limit;
+if (! (pchar = strstr(id_STREAM+ppos_cur, id_STRSTR)) != 0 ||\
+	upper_limit <= (ppos_cur = (unsigned long)(pchar-id_STREAM)+strlen(id_STRSTR))) {\
+	ppos_cur = upper_limit; pchar = 0;\
+}
 
 #define ONE_LINE(id_STREAM, pchar, ppos_cur, upper_limit, one_line, STR_SIZE)\
 if (ppos_cur < upper_limit && (pchar = strstr(id_STREAM+ppos_cur, "\xA")) != NULL) {\
 	unsigned long count = (unsigned long)(pchar-id_STREAM)+1;\
 	memcpy(one_line, id_STREAM+ppos_cur, min((unsigned long)STR_SIZE, count-ppos_cur));\
-	one_line[min((unsigned long)STR_SIZE, count-ppos_cur)] = '\x0'; ppos_cur = count; \
+	one_line[min((unsigned long)STR_SIZE, count-ppos_cur)] = '\x0'; ppos_cur = count;\
 } else one_line[0] = '\x0';
 
 ///////////////////////////////
@@ -327,12 +328,13 @@ public:
 			}
 			int elem_params = 0;
 			if (elem != ERR_STATE) { //...,определяем число параметров для зачитывания элемента;
-				if (elem == GL_LINE_STRIP) elem_params = quad ?  7 : 6; else
-				if (elem == GL_TRIANGLES)  elem_params = quad ? 10 : 7; else
-				if (elem == GL_QUADS) elem_params = quad ? 12 : 8; else 
-				if (elem == GL_TETRA) elem_params = quad ? 14 : 8; else 
-				if (elem == GL_BOXS)  elem_params = quad ? 24 : 12; else 
-				if (elem == GL_PENTA) elem_params = quad ? 19 : 10;
+				if (elem == GL_LINE_STRIP) elem_params = quad ? 3 : 2; else
+				if (elem == GL_TRIANGLES)  elem_params = quad ? 6 : 3; else
+				if (elem == GL_QUADS) elem_params = quad ?  8 : 4; else 
+				if (elem == GL_TETRA) elem_params = quad ? 10 : 4; else 
+				if (elem == GL_BOXS)  elem_params = quad ? 20 : 8; else 
+				if (elem == GL_PENTA) elem_params = quad ? 15 : 6;
+				elem_params += 5;
 			}
 			return elem_params;
 		}
@@ -348,27 +350,27 @@ public:
 		void nodes_nas(char * ch_NODES, int id_long = 0);
 		void nodes_nas(const char * ch_NODES, int id_long = 0);
 
-		int  converts_inp(char * id_NODES, unsigned long & count, unsigned long upper_limit, int numeration_shift = 0);
+		int  converts_inp(char * id_NODES, unsigned long & count, unsigned long upper_limit);
 		void converts_inp(char * ch_NODES);
 		void converts_inp(const char * ch_NODES);
 
-		int  condit_inp(char * id_NODES, unsigned long & count, unsigned long upper_limit, int numeration_shift = 0, int max_phase = 2, int id_status = OK_STATE);
+		int  condit_inp(char * id_NODES, unsigned long & count, unsigned long upper_limit, int max_phase = 2, int id_status = OK_STATE);
 		void condit_inp(char * ch_NODES);
 		void condit_inp(const char * ch_NODES);
 
 		int  nodes_inp(char * id_NODES, unsigned long & count, unsigned long upper_limit);
-		void nodes_inp(char * ch_NODES, int numeration_shift = 0, int max_phase = 2);
-		void nodes_inp(const char * ch_NODES, int numeration_shift = 0, int max_phase = 2);
+		void nodes_inp(char * ch_NODES, int max_phase = 2);
+		void nodes_inp(const char * ch_NODES, int max_phase = 2);
 
 		void nodes_in (char * ch_NODES, int max_phase = 2) {
 			char * pchar = ::strrchr(ch_NODES, '.');
 			if (pchar && (! ::strncmp(pchar, ".nas", 4) || ! ::strncmp(pchar, ".NAS", 4))) nodes_nas(ch_NODES); else
-			if (pchar && (! ::strncmp(pchar, ".inp", 4) || ! ::strncmp(pchar, ".INP", 4))) nodes_inp(ch_NODES, 1, max_phase);
+			if (pchar && (! ::strncmp(pchar, ".inp", 4) || ! ::strncmp(pchar, ".INP", 4))) nodes_inp(ch_NODES, max_phase);
 		};
 		void nodes_in (const char * ch_NODES, int max_phase = 2) {
 			const char * pchar = ::strrchr(ch_NODES, '.');
 			if (pchar && (! ::strncmp(pchar, ".nas", 4) || ! ::strncmp(pchar, ".NAS", 4))) nodes_nas(ch_NODES); else
-			if (pchar && (! ::strncmp(pchar, ".inp", 4) || ! ::strncmp(pchar, ".INP", 4))) nodes_inp(ch_NODES, 1, max_phase);
+			if (pchar && (! ::strncmp(pchar, ".inp", 4) || ! ::strncmp(pchar, ".INP", 4))) nodes_inp(ch_NODES, max_phase);
 		};
 
 //...хачитывание структуры включений с межфазным слоем;

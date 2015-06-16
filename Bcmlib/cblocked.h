@@ -112,9 +112,10 @@ int CBlockedSolver<T>::solver1(int k)
 ////////////////////////////////
 //...estimation of eigen values;
 		if (this->mode(REDUCED_PRINT) | this->mode(FULLY_MODE)) {
-			memcpy(pivot_C.GetMatrix()[0],   this->TR[this->p[k]][j_diag].GetMatrix()[0], N_dim*sizeof(T));
-			//HQRfunction(pivot_C.GetMatrix(), this->hh[this->p[k]][0].GetMatrix()[n-1], this->hh[this->p[k]][0].GetMatrix()[n-2], N_dim);
-			
+			for (m = 0; m < N_dim; m++)
+				memcpy(pivot_C.GetMatrix()[m], this->TR[this->p[k]][j_diag].GetMatrix()[m], N_dim*sizeof(T));
+			HQRfunction(pivot_C.GetMatrix(), this->hh[this->p[k]][0].GetMatrix()[this->n-1], this->hh[this->p[k]][0].GetMatrix()[this->n-2], N_dim);
+
 			FILE * TST = fopen("eigen_all", k ? "a" : "w");
 			test_gram_matrix(TST, this->p[k], END_STATE, EE);
 			fclose(TST);

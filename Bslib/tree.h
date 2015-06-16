@@ -16,11 +16,6 @@
 #include "Decomp.h"
 #include "smatrix.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 #ifndef __Node
 #define __Node
 
@@ -65,11 +60,7 @@ class CNode
 	int *cpuidarrnode; // cpuidarrnode[nprocnode] is the array that specifies the list of cpu numbers involved in the subtree of current node
 	int *cpuidarrnodeloc; // cpuidarrnodeloc[nprocnode] is the array that specifies the local list of cpu numbers involved in the subtree of current node
 	int *cpuarrndgl2loc; // cpuidarrnode[nprocgl] is the array that specifies the list of cpu numbers involved in the subtree of current node
-#ifdef __FV_2004__
-	::flowvision::CMPIComm commnode; // commnode structure contains current node communicator
-#else
 	CMPIComm commnode; // commnode structure contains current node communicator
-#endif
 public:
 // Functions
 // Constructors and destructor
@@ -97,13 +88,8 @@ public:
 	void SetIndend  (int _indend) {indend = _indend;}; // Set indend
 	void SetIndbegtot (int _indbegtot) {indbegtot = _indbegtot;}; // Set indbegtot
 	void SetIndendtot (int _indendtot) {indendtot = _indendtot;}; // Set indendtot
-#ifdef __FV_2004__
-	::flowvision::CMPIComm & GetCommNode () {return commnode;}; // Get commnode
-	void SetComm (::flowvision::CMPIComm &_comm) {commnode = _comm;}; // Set commnode
-#else
 	CMPIComm & GetCommNode () {return commnode;}; // Get commnode
 	void SetComm (CMPIComm &_comm) {commnode = _comm;}; // Set commnode
-#endif
 // Node functions
 	void OrderIndices (int *_order); // Order node indices inside the node
 	void PackNode (int &_length, char *&_obj); // Pack node data
@@ -111,12 +97,7 @@ public:
 // Input and output
 	friend std::ostream &operator<< (std::ostream &_stream, const CNode &_node); // Output node
 // Friend classes
-#ifdef __FV_2004__
-//	friend class ::flowvision::CDecomp;
 	friend class CDecomp;
-#else
-	friend class CDecomp;
-#endif
 	friend class CTree;
 	friend class CFctDiagR;
 	friend class CFctDiagC;
@@ -166,11 +147,7 @@ class CTree
 	int *blkstree;      // blkstree[nblkstree+1] is the blocks partitioning of the tree
 	int *blk2cputree;   // blk2cputree[nblkstree] is the blocks distribution of the tree
 	CSMatrix ablktree;  // ablktree stores the block sparsity to be defined in a tree
-#ifdef __FV_2004__
-	::flowvision::CMPIComm comm;    // comm structure contains current communicator
-#else
 	CMPIComm comm;    // comm structure contains current communicator
-#endif
 public:
 // Functions
 // Constructors and destructor
@@ -204,21 +181,12 @@ public:
 	void SetNblkstree (int _nblkstree) {nblkstree = _nblkstree;}; // Set nblkstree
 	void SetBlkstree (int * _blkstree) {blkstree = _blkstree;}; // Set blkstree
 	void SetBlk2cputree (int * _blk2cputree) {blk2cputree = _blk2cputree;}; // Set blk2cputree
-#ifdef __FV_2004__
-	const ::flowvision::CMPIComm & GetComm () const {return comm;}; // Get comm
-	::flowvision::CMPIComm & GetComm () {return comm;}; // Get comm
-	void SetComm (::flowvision::CMPIComm &_comm) {comm = _comm; nproc = comm.GetNproc (); myid = comm.GetMyid ();}; // Set comm
-	void SetCommNodes (::flowvision::CMPIComm &_comm); // Set comm for the nodes of the tree
-	void SetCommTreeAndNodes (::flowvision::CMPIComm &_comm); // Set comm for the tree and for the nodes of the tree
-	void SetCommSchur (::flowvision::CMPIComm &_comm); // Set comm
-#else
 	const CMPIComm & GetComm () const {return comm;}; // Get comm
 	CMPIComm & GetComm () {return comm;}; // Get comm
 	void SetComm (CMPIComm &_comm) {comm = _comm; nproc = comm.GetNproc (); myid = comm.GetMyid ();}; // Set comm
 	void SetCommNodes (CMPIComm &_comm); // Set comm for the nodes of the tree
 	void SetCommTreeAndNodes (CMPIComm &_comm); // Set comm for the tree and for the nodes of the tree
 	void SetCommSchur (CMPIComm &_comm); // Set comm
-#endif
 // Operator functions
 	CTree &operator= (const CTree &_tree2); // Equality operator
 // Partitioning
@@ -255,12 +223,7 @@ public:
 	void UnPackTree (int _length, char *_obj); // UnPack tree data
 	friend std::ostream &operator<< (std::ostream &_stream, const CTree &_tree); // Output tree
 // Friend classes
-#ifdef __FV_2004__
-//	friend class ::flowvision::CDecomp;
 	friend class CDecomp;
-#else
-	friend class CDecomp;
-#endif
 	friend class CFctDiagR;
 	friend class CFctDiagC;
 	friend class CMvm;
@@ -277,10 +240,5 @@ public:
 	friend class CSVectorC;
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif
 

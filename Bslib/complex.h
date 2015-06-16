@@ -12,11 +12,6 @@
 #include <iomanip>
 #include <cmath>
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 //////////////////////////////////////////////////////////////////
 //.class of complex numbers (with member operators);
 struct dcmplx_my {
@@ -338,10 +333,5 @@ inline void dcmplx_my::ReadArrAccV (std::istream &_stream, int _isize, dcmplx_my
 	delete [] darr;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif
 
 #endif

@@ -13,11 +13,6 @@
 #ifndef __PARFBSS_DATA_H__
 #define __PARFBSS_DATA_H__
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 class CParFbssData;
 
 class ParFBSS_Array
@@ -184,9 +179,4 @@ private:
 // Internal functions
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

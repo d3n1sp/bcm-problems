@@ -4,6 +4,7 @@
 #ifndef ___CDRAFT___
 #define ___CDRAFT___
 
+#include <typeinfo>
 #include "dd_real.h"
 #include "qd_real.h"
 
@@ -784,9 +785,10 @@ template <typename T>
 void Blocks_Partitioning(void * _pBCM, int * _Blks)
 {
 	_Blks[0] = 0;
-	int * p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-	for (int i = 0; i < ((BCM_draft<T> *)_pBCM)->sm->solver.N; i++) 
-		_Blks[i+1] = _Blks[i]+((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[i]];
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	int * p = sm->solver.p;
+	for (int i = 0; i < sm->solver.N; i++) 
+		_Blks[i+1] = _Blks[i]+sm->solver.dim[p[i]];
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -794,23 +796,24 @@ void Blocks_Partitioning(void * _pBCM, int * _Blks)
 template <typename T> 
 void Blocks_Sparsity(void * _pBCM, int *& _IA, int *& _JA)
 {
-	int  *  p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-	int ** JR = ((BCM_draft<T> *)_pBCM)->sm->solver.JR, i, j;
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	int  *  p = sm->solver.p;
+	int ** JR = sm->solver.JR, i, j;
 
-	for (j = i = 0; i < ((BCM_draft<T> *)_pBCM)->sm->solver.N; i++)
+	for (j = i = 0; i < sm->solver.N; i++)
 		j += JR[i][0]*2-1;
 
-	_IA = (int *)new_struct((((BCM_draft<T> *)_pBCM)->sm->solver.N+1)*sizeof(int));
+	_IA = (int *)new_struct((sm->solver.N+1)*sizeof(int));
 	_JA = (int *)new_struct(j*sizeof(int));
 
-	for (int m = 0, k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.N;  k++) {
+	for (int m = 0, k = 0; k < sm->solver.N;  k++) {
 		for ( i = 0; i < k; i++) {
 			for (j = JR[p[i]][0]; j > 0; j--) 
-			if (JR[p[i]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT-1] == p[k]) break;
+			if (JR[p[i]][j+sm->solver.JR_SHIFT-1] == p[k]) break;
 			if (j) _JA[m++] = i;
 		}
 		for (j = 0; j < JR[p[k]][0]; j++) 
-		_JA[m++] = p[((BCM_draft<T> *)_pBCM)->sm->solver.N+JR[p[k]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]];
+		_JA[m++] = p[sm->solver.N+JR[p[k]][j+sm->solver.JR_SHIFT]];
 		_IA[k+1] = m;
 	}
 }
@@ -820,40 +823,56 @@ void Blocks_Sparsity(void * _pBCM, int *& _IA, int *& _JA)
 template <typename T> 
 void Blocks_Row(void * _pBCM, int _BlkRow, double * _defc)
 {
-	if (! ((BCM_draft<T> *)_pBCM)->sm->solver.mode(PROCESSOR_ID)) {
-		((BCM_draft<T> *)_pBCM)->sm->solver.set_mode(NO_MESSAGE);
-		((BCM_draft<T> *)_pBCM)->sm->computing(_BlkRow, ((BCM_draft<T> *)_pBCM)->Num_computing);
-		((BCM_draft<T> *)_pBCM)->sm->solver.clean_mode(NO_MESSAGE);
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	if (! sm->solver.mode(PROCESSOR_ID)) {
+		
+///////////////////////////
+//...расчет блочной строки;
+		sm->solver.set_mode(NO_MESSAGE);
+		sm->computing(_BlkRow, ((BCM_draft<T> *)_pBCM)->Num_computing);
+		sm->solver.clean_mode(NO_MESSAGE);
 
-		int  *  p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-		int ** JR = ((BCM_draft<T> *)_pBCM)->sm->solver.JR;
-		int ** IL = ((BCM_draft<T> *)_pBCM)->sm->solver.IL, i, j, k, l, m, ii;
-		double alpha = max(1., ((BCM_draft<T> *)_pBCM)->sm->get_param(((BCM_draft<T> *)_pBCM)->sm->size_of_param()-1)), 
-				 beta = 1.-1./alpha;
+////////////////////////////////
+//...сборка диагональных матриц;
+		int  *  p = sm->solver.p;
+		int ** JR = sm->solver.JR;
+		int ** IL = sm->solver.IL, i, j, k, l, m, ii;
+		sm->solver.diagonal(p[_BlkRow], 1.);
 
-		((BCM_draft<T> *)_pBCM)->sm->solver.diagonal(p[_BlkRow], 1.);
+///////////////////////////////
+//...заполнение блочной строки;
+		double alpha = max(1., sm->get_param(sm->size_of_param()-1)), beta = 1.-1./alpha;
+		if (sm->solver.mode(TESTI_GRAM))   alpha = 1., beta = 0.; else
+		if (sm->solver.mode(TESTI_ENERGY)) alpha = 0., beta = 1.;
+
 		for (m = 0, i = 0; i < IL[p[_BlkRow]][0]; i++) {
-			for (j = JR[ii = IL[p[_BlkRow]][i+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]][0]; j > 0; j--)
-			if ( ii != p[_BlkRow] && JR[ii][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT-1] == p[_BlkRow]) break;
+			for (j = JR[ii = IL[p[_BlkRow]][i+sm->solver.JR_SHIFT]][0]; j > 0; j--)
+			if ( ii != p[_BlkRow] && JR[ii][j+sm->solver.JR_SHIFT-1] == p[_BlkRow]) break;
 
 			if (j)
-			for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[ii]; k++)
-			for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; l++) 
-				_defc[m++] = to_double(((BCM_draft<T> *)_pBCM)->sm->solver.TL[ii][j-1][k][l]*alpha);
+			for (k = 0; k < sm->solver.dim[ii]; k++)
+			for (l = 0; l < sm->solver.dim[p[_BlkRow]]; l++) 
+				_defc[m++] = to_double(sm->solver.TL[ii][j-1][k][l]*alpha);
 		}
 		for (j = 0; j < JR[p[_BlkRow]][0]; j++) {
-			if (j != JR[p[_BlkRow]][((BCM_draft<T> *)_pBCM)->sm->solver.JR_DIAG]) {
-				for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[JR[p[_BlkRow]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]]; l++)
-				for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-					_defc[m++] = to_double(((BCM_draft<T> *)_pBCM)->sm->solver.TR[p[_BlkRow]][j][k][l]*alpha);
+			if (j+sm->solver.JR_SHIFT != JR[p[_BlkRow]][sm->solver.JR_DIAG]) {
+				for (l = 0; l < sm->solver.dim[JR[p[_BlkRow]][j+sm->solver.JR_SHIFT]]; l++)
+				for (k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+					_defc[m++] = to_double(sm->solver.TR[p[_BlkRow]][j][k][l]*alpha);
 			}
 			else {
-				for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; l++)
-				for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-					_defc[m++] = to_double(((BCM_draft<T> *)_pBCM)->sm->solver.TR[p[_BlkRow]][j][k][l]*alpha+
-												  ((BCM_draft<T> *)_pBCM)->sm->solver.TL[p[_BlkRow]][j][k][l]*beta);
+				for (l = 0; l < sm->solver.dim[p[_BlkRow]]; l++)
+				for (k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+					_defc[m++] = to_double(sm->solver.TR[p[_BlkRow]][j][k][l]*alpha+
+												  sm->solver.TL[p[_BlkRow]][j][k][l]*beta);
 			}
 		}
+	}
+	else { //...тестовая запись распределения по процессорам;
+#ifdef ___MPI_INIT___
+		extern CMPIComm comm_mpi;
+		sm->solver.hh[sm->solver.p[_BlkRow]][0][sm->solver.id_norm][0] = T(comm_mpi.GetMyid()+1.);
+#endif
 	}
 }
 
@@ -862,13 +881,29 @@ void Blocks_Row(void * _pBCM, int _BlkRow, double * _defc)
 template <typename T> 
 void Right_Handside(void * _pBCM, int _BlkRow, double * _refc)
 {
-	if (! ((BCM_draft<T> *)_pBCM)->sm->solver.mode(PROCESSOR_ID)) {
-		int * p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-		double alpha = max(1., ((BCM_draft<T> *)_pBCM)->sm->get_param(((BCM_draft<T> *)_pBCM)->sm->size_of_param()-1)), 
-				 beta = 1.-1./alpha;
-		for (int k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++)
-			_refc[k] = to_double(((BCM_draft<T> *)_pBCM)->sm->solver.hh[p[_BlkRow]][0][0][k]*alpha+
-										((BCM_draft<T> *)_pBCM)->sm->solver.hh[p[_BlkRow]][2][0][k]*beta);
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	if (! sm->solver.mode(PROCESSOR_ID)) {
+
+		double alpha = max(1., sm->get_param(sm->size_of_param()-1)), beta = 1.-1./alpha;
+		if (sm->solver.mode(TESTI_GRAM))   alpha = 1., beta = 0.; else
+		if (sm->solver.mode(TESTI_ENERGY)) alpha = 0., beta = 1.;
+
+		int * p = sm->solver.p;
+		for (int k = 0; k < sm->solver.dim[p[_BlkRow]]; k++)
+			_refc[k] = to_double(sm->solver.hh[p[_BlkRow]][0][0][k]*alpha+
+										sm->solver.hh[p[_BlkRow]][2][0][k]*beta);
+	}
+	else {//...тестовая запись распределения по процессорам;
+#ifdef ___MPI_INIT___
+		extern CMPIComm comm_mpi;
+		_refc[0] = to_double(comm_mpi.GetMyid()+1.);
+
+		if (sm->solver.mode(PRINT_MODE)) {
+			FILE *  TST = fopen("proceccor_id.dat", "a");
+			fprintf(TST, "%i = %i\n", sm->solver.p[_BlkRow], abs(comm_mpi.GetMyid())+1);
+			fclose (TST);
+		}
+#endif
 	}
 }
 
@@ -877,9 +912,10 @@ void Right_Handside(void * _pBCM, int _BlkRow, double * _refc)
 template <typename T> 
 void Initial_Guess(void * _pBCM, int _BlkRow, double * _refc)
 {
-	int * p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-	for (int k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-		_refc[k] = to_double(((BCM_draft<T> *)_pBCM)->sm->solver.hh[p[_BlkRow]][0][((BCM_draft<T> *)_pBCM)->sm->solver.id_norm][k]);
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	int * p = sm->solver.p;
+	for (int k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+		_refc[k] = to_double(sm->solver.hh[p[_BlkRow]][0][sm->solver.id_norm][k]);
 }
 
 ///////////////////////////////////////
@@ -887,9 +923,10 @@ void Initial_Guess(void * _pBCM, int _BlkRow, double * _refc)
 template <typename T> 
 void Store_Solution(void * _pBCM, int _BlkRow, double * _refc)
 {
-	int * p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-	for (int k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-		((BCM_draft<T> *)_pBCM)->sm->solver.hh[p[_BlkRow]][0][0][k] = T(_refc[k]);
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	int * p = sm->solver.p;
+	for (int k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+		sm->solver.hh[p[_BlkRow]][0][0][k] = T(_refc[k]);
 }
 
 //////////////////////////////////////////////////////////
@@ -897,19 +934,20 @@ void Store_Solution(void * _pBCM, int _BlkRow, double * _refc)
 template <typename T> 
 void Blocks_SparsitySym(void * _pBCM, int *& _IA, int *& _JA)
 {
-	int  *  p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-	int ** JR = ((BCM_draft<T> *)_pBCM)->sm->solver.JR, i, j;
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	int  *  p = sm->solver.p;
+	int ** JR = sm->solver.JR, i, j;
 
-	for (j = i = 0; i < ((BCM_draft<T> *)_pBCM)->sm->solver.N; i++)
+	for (j = i = 0; i < sm->solver.N; i++)
 		j += JR[i][0];
 
-	_IA = (int *)new_struct((((BCM_draft<T> *)_pBCM)->sm->solver.N+1)*sizeof(int));
+	_IA = (int *)new_struct((sm->solver.N+1)*sizeof(int));
 	_JA = (int *)new_struct(j*sizeof(int));
 
-	for (int m = 0, k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.N; k++) {//...fill arrays, mapped rows;
+	for (int m = 0, k = 0; k < sm->solver.N; k++) {//...fill arrays, mapped rows;
 
 		for (int j = 0; j < JR[p[k]][0]; j++) 
-		_JA[m++] = p[((BCM_draft<T> *)_pBCM)->sm->solver.N+JR[p[k]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]];
+		_JA[m++] = p[sm->solver.N+JR[p[k]][j+sm->solver.JR_SHIFT]];
 		_IA[k+1] = m;
 	}
 }
@@ -919,80 +957,70 @@ void Blocks_SparsitySym(void * _pBCM, int *& _IA, int *& _JA)
 template <typename T> 
 void Blocks_RowSym(void * _pBCM, int _BlkRow, double * _defc)
 {
-	int  *  p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-	int ** JR = ((BCM_draft<T> *)_pBCM)->sm->solver.JR;
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	int  *  p = sm->solver.p;
+	int ** JR = sm->solver.JR;
 	for (int m = 0, j = 0; j < JR[p[_BlkRow]][0]; j++)
-	for (int l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[JR[p[_BlkRow]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]]; l++) 
-	for (int k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-		_defc[m++] = to_double(((BCM_draft<T> *)_pBCM)->sm->solver.TR[p[_BlkRow]][j][k][l]);
+	for (int l = 0; l < sm->solver.dim[JR[p[_BlkRow]][j+sm->solver.JR_SHIFT]]; l++) 
+	for (int k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+		_defc[m++] = to_double(sm->solver.TR[p[_BlkRow]][j][k][l]);
 }
+
 ///////////////////////////////////////////////////
 //...заполнение блочной строки комплексной матрицы;
-//#define ___MPI_INIT___
 template <typename T> 
 void Blocks_RowC(void * _pBCM, int _BlkRow, void * _defc)
 {
-	if (! ((BCM_draft<T> *)_pBCM)->sm->solver.mode(PROCESSOR_ID)) {
-		((BCM_draft<T> *)_pBCM)->sm->solver.set_mode(NO_MESSAGE);
-		((BCM_draft<T> *)_pBCM)->sm->computing(_BlkRow, ((BCM_draft<T> *)_pBCM)->Num_computing);
-		((BCM_draft<T> *)_pBCM)->sm->solver.clean_mode(NO_MESSAGE);
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	if (! sm->solver.mode(PROCESSOR_ID)) {
+		if (typeid(T) != typeid(complex)) return;
 
-		int  *  p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-		int ** JR = ((BCM_draft<T> *)_pBCM)->sm->solver.JR;
-		int ** IL = ((BCM_draft<T> *)_pBCM)->sm->solver.IL, i, j, k, l, m, ii;
-		double alpha = max(1., ((BCM_draft<T> *)_pBCM)->sm->get_param(((BCM_draft<T> *)_pBCM)->sm->size_of_param()-1)), 
-				 beta = 1.-1./alpha;
-		//if (((BCM_draft<T> *)_pBCM)->sm->solver.changed(EXTERN_STATE)) TL = TR;
+///////////////////////////
+//...расчет блочной строки;
+		sm->solver.set_mode(NO_MESSAGE);
+		sm->computing(_BlkRow, ((BCM_draft<T> *)_pBCM)->Num_computing);
+		sm->solver.clean_mode(NO_MESSAGE);
 
-		((BCM_draft<T> *)_pBCM)->sm->solver.diagonal(p[_BlkRow], 1.);
+////////////////////////////////
+//...сборка диагональных матриц;
+		int  *  p = sm->solver.p;
+		int ** JR = sm->solver.JR;
+		int ** IL = sm->solver.IL, i, j, k, l, m, ii;
+		sm->solver.diagonal(p[_BlkRow], 1.);
+
+///////////////////////////////
+//...заполнение блочной строки;
+		double alpha = max(1., sm->get_param(sm->size_of_param()-1)), beta = 1.-1./alpha;
+		if (sm->solver.mode(TESTI_GRAM))   alpha = 1., beta = 0.; else
+		if (sm->solver.mode(TESTI_ENERGY)) alpha = 0., beta = 1.;
+
 		for (m = 0, i = 0; i < IL[p[_BlkRow]][0]; i++) {
-			for (j = JR[ii = IL[p[_BlkRow]][i+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]][0]; j > 0; j--)
-			if ( ii != p[_BlkRow] && JR[ii][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT-1] == p[_BlkRow]) break;
+			for (j = JR[ii = IL[p[_BlkRow]][i+sm->solver.JR_SHIFT]][0]; j > 0; j--)
+			if ( ii != p[_BlkRow] && JR[ii][j+sm->solver.JR_SHIFT-1] == p[_BlkRow]) break;
 
 			if (j)
-			for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[ii]; k++)
-			for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; l++) 
-				((complex *)_defc)[m++] = ((BCM_draft<T> *)_pBCM)->sm->solver.TL[ii][j-1][k][l]*alpha;
+			for (k = 0; k < sm->solver.dim[ii]; k++)
+			for (l = 0; l < sm->solver.dim[p[_BlkRow]]; l++) 
+				((T *)_defc)[m++] = sm->solver.TL[ii][j-1][k][l]*alpha;
 		}
 		for (j = 0; j < JR[p[_BlkRow]][0]; j++) {
-			if (j != JR[p[_BlkRow]][((BCM_draft<T> *)_pBCM)->sm->solver.JR_DIAG]) {
-				for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[JR[p[_BlkRow]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]]; l++)
-				for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-					((complex *)_defc)[m++] = ((BCM_draft<T> *)_pBCM)->sm->solver.TR[p[_BlkRow]][j][k][l]*alpha;
+			if (j+sm->solver.JR_SHIFT != JR[p[_BlkRow]][sm->solver.JR_DIAG]) {
+				for (l = 0; l < sm->solver.dim[JR[p[_BlkRow]][j+sm->solver.JR_SHIFT]]; l++)
+				for (k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+					((T *)_defc)[m++] = sm->solver.TR[p[_BlkRow]][j][k][l]*alpha;
 			}
 			else {
-				for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[JR[p[_BlkRow]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]]; l++)
-				for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-					((complex *)_defc)[m++] = ((BCM_draft<T> *)_pBCM)->sm->solver.TR[p[_BlkRow]][j][k][l]*alpha+
-													  ((BCM_draft<T> *)_pBCM)->sm->solver.TL[p[_BlkRow]][j][k][l]*beta;
+				for (l = 0; l < sm->solver.dim[JR[p[_BlkRow]][j+sm->solver.JR_SHIFT]]; l++)
+				for (k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+					((T *)_defc)[m++] = sm->solver.TR[p[_BlkRow]][j][k][l]*alpha+
+											  sm->solver.TL[p[_BlkRow]][j][k][l]*beta;
 			}
 		}
 	}
-	else { //...тестовая запись диагональной матрицы;
-		int  *  p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-		int ** JR = ((BCM_draft<T> *)_pBCM)->sm->solver.JR;
-		int ** IL = ((BCM_draft<T> *)_pBCM)->sm->solver.IL, i, j, k, l, m, ii;
-		for (m = 0, i = 0; i < IL[p[_BlkRow]][0]; i++) {
-			for (j = JR[ii = IL[p[_BlkRow]][i+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]][0]; j > 0; j--)
-			if ( ii != p[_BlkRow] && JR[ii][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT-1] == p[_BlkRow]) break;
-
-			if (j)
-			for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[ii]; k++)
-			for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; l++) ((complex *)_defc)[m++] = comp(0.);
-		}
-		for (j = 0; j < JR[p[_BlkRow]][0]; j++) {
-			if (j != JR[p[_BlkRow]][((BCM_draft<T> *)_pBCM)->sm->solver.JR_DIAG]) {
-				for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[JR[p[_BlkRow]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]]; l++)
-				for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) ((complex *)_defc)[m++] = comp(0.);
-			}
-			else {
-				for (l = 0; l < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[JR[p[_BlkRow]][j+((BCM_draft<T> *)_pBCM)->sm->solver.JR_SHIFT]]; l++)
-				for (k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) if (k != l) ((complex *)_defc)[m++] = comp(0.); else ((complex *)_defc)[m++] = comp(1.);
-			}
-		}
+	else {//...тестовая запись распределения по процессорам;
 #ifdef ___MPI_INIT___
-		extern CMPIComm comm_mpi;//...тестовая запись распределения по процессорам;
-		((BCM_draft<T> *)_pBCM)->sm->solver.h[p[_BlkRow]][1][0] = comp(comm_mpi.GetMyid()+1.);
+		extern CMPIComm comm_mpi;
+		sm->solver.hh[sm->solver.p[_BlkRow]][0][sm->solver.id_norm][0] = T(comm_mpi.GetMyid()+1.);
 #endif
 	}
 }
@@ -1002,27 +1030,32 @@ void Blocks_RowC(void * _pBCM, int _BlkRow, void * _defc)
 template <typename T> 
 void Right_HandsideC(void * _pBCM, int _BlkRow, void * _refc)
 {
-	if (! ((BCM_draft<T> *)_pBCM)->sm->solver.mode(PROCESSOR_ID)) {
-		int * p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-		double alpha = max(1., ((BCM_draft<T> *)_pBCM)->sm->get_param(((BCM_draft<T> *)_pBCM)->sm->size_of_param()-1)), 
-				 beta = 1.-1./alpha;
-		for (int k = 0; k < ((BCM_draft<T> *)_pBCM)->sm->solver.dim[p[_BlkRow]]; k++) 
-			((complex *)_refc)[k] = ((BCM_draft<T> *)_pBCM)->sm->solver.hh[p[_BlkRow]][0][0][k]*alpha+
-											((BCM_draft<T> *)_pBCM)->sm->solver.hh[p[_BlkRow]][2][0][k]*beta;
-	}
-	else {
-#ifdef ___MPI_INIT___
-		extern CMPIComm comm_mpi;//...тестовая запись распределения по процессорам;
-		((complex *)_refc)[0] = comp(comm_mpi.GetMyid()+1.);
+	CDraft<T> * sm = ((BCM_draft<T> *)_pBCM)->sm;
+	if (! sm->solver.mode(PROCESSOR_ID)) {
+		if (typeid(T) != typeid(complex)) return;
 
-		//int  * p = ((BCM_draft<T> *)_pBCM)->sm->solver.p;
-		//FILE *  TST = fopen("proceccor_id.dat", "a");
-		//fprintf(TST, "%i = %i\n", p[_BlkRow], abs(comm_mpi.GetMyid())+1);
-		//fclose (TST);
+		double alpha = max(1., sm->get_param(sm->size_of_param()-1)), beta = 1.-1./alpha;
+		if (sm->solver.mode(TESTI_GRAM))   alpha = 1., beta = 0.; else
+		if (sm->solver.mode(TESTI_ENERGY)) alpha = 0., beta = 1.;
+
+		int * p = sm->solver.p;
+		for (int k = 0; k < sm->solver.dim[p[_BlkRow]]; k++) 
+			((T *)_refc)[k] = sm->solver.hh[p[_BlkRow]][0][0][k]*alpha+
+									sm->solver.hh[p[_BlkRow]][2][0][k]*beta;
+	}
+	else {//...тестовая запись распределения по процессорам;
+#ifdef ___MPI_INIT___
+		extern CMPIComm comm_mpi;
+		((T *)_refc)[0] = T(comm_mpi.GetMyid()+1.);
+
+		if (sm->solver.mode(PRINT_MODE)) {
+			FILE *  TST = fopen("proceccor_id.dat", "a");
+			fprintf(TST, "%i = %i\n", sm->solver.p[_BlkRow], abs(comm_mpi.GetMyid())+1);
+			fclose (TST);
+		}
 #endif
 	}
 }
-//#undef ___MPI_INIT___
 
 ////////////////////////////////////////////////////
 //          TEMPLATE VARIANT OF CDRAFT            //
@@ -1110,7 +1143,7 @@ void CDraft<T>::LinkUniStruct()
 		for (l = 0; l < stru.N; l++) node_env[l][0] = N_buf;
 
 		for (i = 1, k = 0; k < stru.geom[0]; k++, i += stru.geom[++i]+1) 
-		for (j = 2; j < stru.geom[i+1]; j++) if ((l  = stru.geom[i+j+2]) >= 0 && l < stru.N) {
+		for (j = 3; j < stru.geom[i+1]; j++) if ((l  = stru.geom[i+j+2]) >= 0 && l < stru.N) {
 
 //////////////////////////////////////////
 //...буфферизация вспомогательной матрицы;
@@ -1139,7 +1172,7 @@ void CDraft<T>::LinkUniStruct()
 
 ////////////////////////////
 //...заносим индексы блоков;
-			for (j = 2; j < stru.geom[i+1]; j++) if ((l  = stru.geom[i+j+2]) >= 0 && l < stru.N) {
+			for (j = 3; j < stru.geom[i+1]; j++) if ((l  = stru.geom[i+j+2]) >= 0 && l < stru.N) {
 				env_ptr = node_env[l];
 				do {
 ///////////////////////////////////////////
@@ -1195,11 +1228,11 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 /////////////////////////////////////
 //...forming links of block elements;
 	switch (geom[i = geom_ptr[(int)(&B-B.B)]]) {
-		case GL_LINE_STRIP: if (geom[i+1] == 4) {
+		case GL_LINE_STRIP: if (geom[i+1] == 5) {
 			set_link(B, N_buf = max(N_buf, max(NUM_PHASE, 2)));	
-			m1 = geom[i+4];
-			m2 = geom[i+5];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1 = geom[i+5];
+			m2 = geom[i+6];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 2;
 /////////////////////
 //...all environment;
@@ -1216,12 +1249,12 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 				}
 			}
 		}  break;
-		case GL_TRIANGLES: if (geom[i+1] == 5) {
+		case GL_TRIANGLES: if (geom[i+1] == 6) {
 			set_link(B, N_buf = max(N_buf, 3));	
-			m1 = geom[i+4];
-			m2 = geom[i+5];
-			m3 = geom[i+6];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1 = geom[i+5];
+			m2 = geom[i+6];
+			m3 = geom[i+7];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 3;
 ////////////
 //...side 1;
@@ -1245,13 +1278,14 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 				break;
 			}
 		}  break;
-		case GL_QUADS: if (geom[i+1] == 6) {
+		case GL_QUADS:
+		case GL_QUAD_STRIP: if (geom[i+1] == 7) {
 			set_link(B, N_buf = max(N_buf, 4));	
-			m1 = geom[i+4];
-			m2 = geom[i+5];
-			m3 = geom[i+6];
-			m4 = geom[i+7];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1 = geom[i+5];
+			m2 = geom[i+6];
+			m3 = geom[i+7];
+			m4 = geom[i+8];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 4;
 ////////////
 //...side 1;
@@ -1282,17 +1316,17 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 				break;
 			}
 		}  break;
-		case GL_BOXS: if (geom[i+1] == 10) {
+		case GL_BOXS: if (geom[i+1] == 11) {
 			set_link(B, N_buf = max(N_buf, 6));	
-			m1   = geom[i+4];
-			m2   = geom[i+5];
-			m3   = geom[i+6];
-			m4   = geom[i+7];
-			m5   = geom[i+8];
-			m6   = geom[i+9];
-			m7   = geom[i+10];
-			m8   = geom[i+11];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1   = geom[i+5];
+			m2   = geom[i+6];
+			m3   = geom[i+7];
+			m4   = geom[i+8];
+			m5   = geom[i+9];
+			m6   = geom[i+10];
+			m7   = geom[i+11];
+			m8   = geom[i+12];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 6;
 /////////////
 //...face X';
@@ -1337,15 +1371,15 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 				break;
 			}
 		}  break;
-		case GL_PENTA: if (geom[i+1] == 8) {
+		case GL_PENTA: if (geom[i+1] == 9) {
 			set_link(B, N_buf = max(N_buf, 5));	
-			m1   = geom[i+4];
-			m2   = geom[i+5];
-			m3   = geom[i+6];
-			m4   = geom[i+7];
-			m5   = geom[i+8];
-			m6   = geom[i+9];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1   = geom[i+5];
+			m2   = geom[i+6];
+			m3   = geom[i+7];
+			m4   = geom[i+8];
+			m5   = geom[i+9];
+			m6   = geom[i+10];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 5;
 ////////////////////
 //...face lateral 1;
@@ -1383,13 +1417,13 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 				break;
 			}
 		}  break;
-		case GL_TETRA: if (geom[i+1] == 6 || geom[i+1] == 12) {
+		case GL_TETRA: if (geom[i+1] == 7 || geom[i+1] == 13) {
 			set_link(B, N_buf = max(N_buf, 4));	
-			m1   = geom[i+4];
-			m2   = geom[i+5];
-			m3   = geom[i+6];
-			m4   = geom[i+7];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1   = geom[i+5];
+			m2   = geom[i+6];
+			m3   = geom[i+7];
+			m4   = geom[i+8];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 4;
 ///////////////
 //...lateral 1;
@@ -1420,14 +1454,14 @@ int CDraft<T>::block_geom_link(Block<T> & B, int * geom, int * geom_ptr, int max
 				break;
 			}
 		}  break;
-		case GL_PYRAMID: if (geom[i+1] == 7) {
+		case GL_PYRAMID: if (geom[i+1] == 8) {
 			set_link(B, N_buf = max(N_buf, 5));	
-			m1   = geom[i+4];
-			m2   = geom[i+5];
-			m3   = geom[i+6];
-			m4   = geom[i+7];
-			m5   = geom[i+8];
-			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+3]; 
+			m1   = geom[i+5];
+			m2   = geom[i+6];
+			m3   = geom[i+7];
+			m4   = geom[i+8];
+			m5   = geom[i+9];
+			if (NUM_PHASE && N_buf >= NUM_PHASE) B.link[B.link[0] = NUM_PHASE] = geom[i+4]; 
 			else											 B.link[0] = 5;
 ///////////////
 //...lateral 1;
@@ -1802,9 +1836,9 @@ int CDraft<T>::geom_iddir_2D(Block<T> & B, int i, double * par, double eps)
 {
    int m, m1, m2, j, k, id_dir = 0;
 	if (i >= 0 && stru.geom && stru.geom_ptr && stru.X && stru.Y)
-	for (m = stru.geom[(j = stru.geom_ptr[k = (int)(&B-B.B)])+1]-2; i < m; i++) {
-		m1 = stru.geom[j+4+i%m];
-		m2 = stru.geom[j+4+(i+1)%m];
+	for (m = stru.geom[(j = stru.geom_ptr[k = (int)(&B-B.B)])+1]-3; i < m; i++) {
+		m1 = stru.geom[j+5+i%m];
+		m2 = stru.geom[j+5+(i+1)%m];
 		double X0 = stru.X[m1], Y0 = stru.Y[m1], 
 				 X1 = stru.X[m2], Y1 = stru.Y[m2];
 		if (Y1 < Y0 && fabs(X0-par[0]) < eps && fabs(X1-par[0]) < eps) id_dir = 1; else
@@ -1883,10 +1917,10 @@ int CDraft<T>::geom_plink_2D(Block<T> & B, int & i, int & id_dir, double * par, 
 {
    int m, m1, m2, j, k, l, s, r, elem = -1; id_dir = 0;
 	if (i >= 0 && B.link && stru.geom && stru.geom_ptr && stru.X && stru.Y) {
-		for (m = stru.geom[(j = stru.geom_ptr[k = (int)(&B-B.B)])+1]-2; elem < 0 && i < m; i++) 
+		for (m = stru.geom[(j = stru.geom_ptr[k = (int)(&B-B.B)])+1]-3; elem < 0 && i < m; i++) 
 		if (B.link[i+1] < 0) {
-			m1 = stru.geom[j+4+i%m];
-			m2 = stru.geom[j+4+(i+1)%m];
+			m1 = stru.geom[j+5+i%m];
+			m2 = stru.geom[j+5+(i+1)%m];
 			double X0 = stru.X[m1], Y0 = stru.Y[m1], 
 					 X1 = stru.X[m2], Y1 = stru.Y[m2];
 			if (Y1 < Y0 && fabs(X0-par[0]) < eps && fabs(X1-par[0]) < eps) id_dir = 1; else
@@ -1899,10 +1933,10 @@ int CDraft<T>::geom_plink_2D(Block<T> & B, int & i, int & id_dir, double * par, 
 //...определяем номер соответственной ячейки;
 			if (id_dir && (solv%ENERGY_SOLVING == PERIODIC_SOLVING))
 			for (s = 0; elem < 0 && s < stru.geom[0]; s++) if (s != k && B.B[s].link && B.B[s].link[NUM_PHASE] == B.link[NUM_PHASE])
-			for (r = stru.geom[(j = stru.geom_ptr[s])+1]-2, l = 0; elem < 0 && l < r; l++) 
+			for (r = stru.geom[(j = stru.geom_ptr[s])+1]-3, l = 0; elem < 0 && l < r; l++) 
 			if (B.B[s].link[l+1] < 0) {
-				m1 = stru.geom[j+4+l%r];
-				m2 = stru.geom[j+4+(l+1)%r];
+				m1 = stru.geom[j+5+l%r];
+				m2 = stru.geom[j+5+(l+1)%r];
 				double XX0 = stru.X[m1], YY0 = stru.Y[m1], 
 						 XX1 = stru.X[m2], YY1 = stru.Y[m2];
 				if (id_dir == 1 && YY0 < YY1 && fabs(XX0-par[1]) < eps && fabs(XX1-par[1]) < eps && (fabs(Y1-YY0) < eps || fabs(Y0-YY0) < eps) && (fabs(Y0-YY1) < eps || fabs(Y1-YY1) < eps) ||
@@ -4325,7 +4359,7 @@ int CDraft<T>::GetLatticeBox3DStruct(double * X, double * Y, double * Z, int NX,
 	stru.zero_grid();
 	for (mZ = 1; mZ < NZ; mZ++)
 	for (mY = 1; mY < NY; mY++)
-	for (mX = 1; mX < NX; mX++) stru.geom_ptr_add(10, N_geom);
+	for (mX = 1; mX < NX; mX++) stru.geom_ptr_add(11, N_geom);
 
 
 //////////////////////////////////////////
@@ -4336,17 +4370,18 @@ int CDraft<T>::GetLatticeBox3DStruct(double * X, double * Y, double * Z, int NX,
 		for (mX = 0; mX < NX-1; mX++) {
 			l = stru.geom_ptr[stru.geom[0]++];
 			stru.geom[l]   = GL_BOXS;
-			stru.geom[l+1] = 10;
-			stru.geom[l+2]  = -(++m);
-			stru.geom[l+3]  = -j;
-			stru.geom[l+4]  = (k = mX+NX*(mY+NY*mZ));
-			stru.geom[l+5]  = k+1;
-			stru.geom[l+6]  = k+1+NX;
-			stru.geom[l+7]  = k+NX;
-			stru.geom[l+8]  = (k += NX*NY);
-			stru.geom[l+9]  = k+1;
-			stru.geom[l+10] = k+1+NX;
-			stru.geom[l+11] = k+NX;
+			stru.geom[l+1] = 11;
+			stru.geom[l+2]  = -1;
+			stru.geom[l+3]  = -(++m);
+			stru.geom[l+4]  = -j;
+			stru.geom[l+5]  = (k = mX+NX*(mY+NY*mZ));
+			stru.geom[l+6]  = k+1;
+			stru.geom[l+7]  = k+1+NX;
+			stru.geom[l+8]  = k+NX;
+			stru.geom[l+9]  = (k += NX*NY);
+			stru.geom[l+10]  = k+1;
+			stru.geom[l+11] = k+1+NX;
+			stru.geom[l+12] = k+NX;
 		}
 
 ////////////////////////////////////////////////////

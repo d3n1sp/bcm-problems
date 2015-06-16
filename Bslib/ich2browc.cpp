@@ -25,11 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CFctDiagC: Init scaling for the current block row
 //========================================================================================
@@ -1944,8 +1939,3 @@ void CFctC::Ich2UpdateBlkRow (int _iblkrow, const CSlvParam &_param, // Perform 
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

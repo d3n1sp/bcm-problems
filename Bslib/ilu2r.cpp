@@ -21,10 +21,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Author: Kharchenko S.A.
 // CSMatrixR: Allocate double data and init scaling for Ilu2
@@ -2071,8 +2067,3 @@ void CSMatrixR::Ilu2DynamicByBlocks (ofstream &_fout, CSlvParam &_param, // Seco
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

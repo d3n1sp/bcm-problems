@@ -18,11 +18,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A. 
 // Description: Memory allocation zero data constructor
 // CCorrectorC::CCorrectorC()
@@ -744,7 +739,3 @@ ostream &operator<< (ostream &_stream, const CCorrectorC &_corr) { // Output cor
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

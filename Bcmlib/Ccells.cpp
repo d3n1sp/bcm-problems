@@ -3956,10 +3956,10 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 //...forming surface geometry of element;
 	cells_new (1, 2, 0);
 	switch (nd->geom[i = nd->geom_ptr[k]]) {
-		case GL_LINE_STRIP: if (nd->geom[i+1] >= 4) { //...composite line;
-			for (l = nd->geom[i+1]-2; l >= 2; l--) {
-				m1 = nd->geom[i+l+2];
-				m2 = nd->geom[i+l+3];
+		case GL_LINE_STRIP: if (nd->geom[i+1] >= 5) { //...composite line;
+			for (l = nd->geom[i+1]-3; l >= 2; l--) {
+				m1 = nd->geom[i+l+3];
+				m2 = nd->geom[i+l+4];
 
 				P[0] = nd->X[m1]; P[1] = nd->Y[m1]; P[2] = nd->Z[m1];
 				P[3] = nd->X[m2]; P[4] = nd->Y[m2]; P[5] = nd->Z[m2];
@@ -3968,10 +3968,10 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 				i = bar_add(ce);
 			}
 		}  break;
-		case GL_TRIANGLES: if (nd->geom[i+1] == 5) {
-			m1   = nd->geom[i+4];
-			m2   = nd->geom[i+5];
-			m3   = nd->geom[i+6];
+		case GL_TRIANGLES: if (nd->geom[i+1] == 6) {
+			m1   = nd->geom[i+5];
+			m2   = nd->geom[i+6];
+			m3   = nd->geom[i+7];
 ////////////////
 //...tria facet;
 			P[0] = nd->X[m1]; P[1]  = nd->Y[m1]; P[2]  = nd->Z[m1];
@@ -3985,11 +3985,11 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 			E = abs_point(P,   P+6); R = (A+B+E)*.5;
 			SetFacetParam(i-1, sqrt(fabs(R*(R-A)*(R-B)*(R-E))), pp);
 		}  break;
-		case GL_QUADS: if (nd->geom[i+1] == 6) {
-			m1   = nd->geom[i+4];
-			m2   = nd->geom[i+5];
-			m3   = nd->geom[i+6];
-			m4   = nd->geom[i+7];
+		case GL_QUADS: if (nd->geom[i+1] == 7) {
+			m1   = nd->geom[i+5];
+			m2   = nd->geom[i+6];
+			m3   = nd->geom[i+7];
+			m4   = nd->geom[i+8];
 ////////////////
 //...quad facet;
 			P[0] = nd->X[m1]; P[1]  = nd->Y[m1]; P[2]  = nd->Z[m1];
@@ -4006,15 +4006,15 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 			D = abs_point(P+9, P);   Q = (C+D+E)*.5;
 			SetFacetParam(i-1, sqrt(fabs(R*(R-A)*(R-B)*(R-E)))+sqrt(fabs(Q*(Q-C)*(Q-D)*(Q-E))), pp);
 		}  break;
-		case GL_BOXS: if (nd->geom[i+1] == 10) {
-			m1   = nd->geom[i+4];
-			m2   = nd->geom[i+5];
-			m3   = nd->geom[i+6];
-			m4   = nd->geom[i+7];
-			m5   = nd->geom[i+8];
-			m6   = nd->geom[i+9];
-			m7   = nd->geom[i+10];
-			m8   = nd->geom[i+11];
+		case GL_BOXS: if (nd->geom[i+1] == 11) {
+			m1   = nd->geom[i+5];
+			m2   = nd->geom[i+6];
+			m3   = nd->geom[i+7];
+			m4   = nd->geom[i+8];
+			m5   = nd->geom[i+9];
+			m6   = nd->geom[i+10];
+			m7   = nd->geom[i+11];
+			m8   = nd->geom[i+12];
 /////////////
 //...face X';
 			P[0] = nd->X[m1]; P[1]  = nd->Y[m1]; P[2]  = nd->Z[m1];
@@ -4106,13 +4106,13 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 			D = abs_point(P+9, P);   Q = (C+D+E)*.5;
 			SetFacetParam(i-1, sqrt(fabs(R*(R-A)*(R-B)*(R-E)))+sqrt(fabs(Q*(Q-C)*(Q-D)*(Q-E))), pp);
 		}  break;
-		case GL_PENTA: if (nd->geom[i+1] == 8) {
-			m1   = nd->geom[i+4];
-			m2   = nd->geom[i+5];
-			m3   = nd->geom[i+6];
-			m4   = nd->geom[i+7];
-			m5   = nd->geom[i+8];
-			m6   = nd->geom[i+9];
+		case GL_PENTA: if (nd->geom[i+1] == 9) {
+			m1   = nd->geom[i+5];
+			m2   = nd->geom[i+6];
+			m3   = nd->geom[i+7];
+			m4   = nd->geom[i+8];
+			m5   = nd->geom[i+9];
+			m6   = nd->geom[i+10];
 ////////////////////
 //...face lateral 1;
 			P[0] = nd->X[m1]; P[1]  = nd->Y[m1]; P[2]  = nd->Z[m1];
@@ -4183,11 +4183,11 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 			E = abs_point(P,   P+6); R = (A+B+E)*.5;
 			SetFacetParam(i-1, sqrt(fabs(R*(R-A)*(R-B)*(R-E))), pp);
 		}  break;
-		case GL_TETRA: if (nd->geom[i+1] == 6 || nd->geom[i+1] == 12) {
-			m1   = nd->geom[i+4];
-			m2   = nd->geom[i+5];
-			m3   = nd->geom[i+6];
-			m4   = nd->geom[i+7];
+		case GL_TETRA: if (nd->geom[i+1] == 7 || nd->geom[i+1] == 13) {
+			m1   = nd->geom[i+5];
+			m2   = nd->geom[i+6];
+			m3   = nd->geom[i+7];
+			m4   = nd->geom[i+8];
 ///////////////
 //...lateral 1;
 			P[0] = nd->X[m1]; P[1] = nd->Y[m1]; P[2] = nd->Z[m1];
@@ -4237,12 +4237,12 @@ void CCells::get_nd_bar_directly(CGrid * nd, int k)
 			E = abs_point(P,   P+6); R = (A+B+E)*.5;
 			SetFacetParam(i-1, sqrt(fabs(R*(R-A)*(R-B)*(R-E))), pp);
 		}  break;
-		case GL_PYRAMID: if (nd->geom[i+1] == 7) {
-			m1   = nd->geom[i+4];
-			m2   = nd->geom[i+5];
-			m3   = nd->geom[i+6];
-			m4   = nd->geom[i+7];
-			m5   = nd->geom[i+8];
+		case GL_PYRAMID: if (nd->geom[i+1] == 8) {
+			m1   = nd->geom[i+5];
+			m2   = nd->geom[i+6];
+			m3   = nd->geom[i+7];
+			m4   = nd->geom[i+8];
+			m5   = nd->geom[i+9];
 ///////////////
 //...lateral 1;
 			P[0] = nd->X[m1]; P[1] = nd->Y[m1]; P[2] = nd->Z[m1];
@@ -4338,15 +4338,15 @@ int CCells::set_nd_bar_condit(int k, CGrid * nd, int k1, int k2, int id_property
 ////////////////////////////////////
 //...setting new boundary condition;
 	switch (nd->geom[i = nd->geom_ptr[k]]) {
-		case GL_BOXS: if (nd->geom[i+1] == 10) {
-			m1 = nd->geom[i+4];
-			m2 = nd->geom[i+5];
-			m3 = nd->geom[i+6];
-			m4 = nd->geom[i+7];
-			m5 = nd->geom[i+8];
-			m6 = nd->geom[i+9];
-			m7 = nd->geom[i+10];
-			m8 = nd->geom[i+11];
+		case GL_BOXS: if (nd->geom[i+1] == 11) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			m5 = nd->geom[i+9];
+			m6 = nd->geom[i+10];
+			m7 = nd->geom[i+11];
+			m8 = nd->geom[i+12];
 /////////////
 //...face X';
 			if (id_facet == 0 || geom_link_id4(m1, m5, m8, m4, k1, k2)) {
@@ -4474,13 +4474,13 @@ int CCells::set_nd_bar_condit(int k, CGrid * nd, int k1, int k2, int id_property
 				else       return(0);  
 			}
 		}  break;
-		case GL_PENTA: if (nd->geom[i+1] == 8) {
-			m1 = nd->geom[i+4];
-			m2 = nd->geom[i+5];
-			m3 = nd->geom[i+6];
-			m4 = nd->geom[i+7];
-			m5 = nd->geom[i+8];
-			m6 = nd->geom[i+9];
+		case GL_PENTA: if (nd->geom[i+1] == 9) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			m5 = nd->geom[i+9];
+			m6 = nd->geom[i+10];
 ////////////////////
 //...face lateral 1;
 			if (id_facet == 0 || geom_link_id4(m1, m2, m5, m4, k1, k2)) {
@@ -4581,11 +4581,11 @@ int CCells::set_nd_bar_condit(int k, CGrid * nd, int k1, int k2, int id_property
 				else       return(0);  
 			}
 		}  break;
-		case GL_TETRA: if (nd->geom[i+1] == 6) {
-			m1 = nd->geom[i+4];
-			m2 = nd->geom[i+5];
-			m3 = nd->geom[i+6];
-			m4 = nd->geom[i+7];
+		case GL_TETRA: if (nd->geom[i+1] == 7) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
 ///////////////
 //...lateral 1;
 			if (id_facet == 0 || k2 == m4 && (k1 == m1 || k1 == m2 || k1 == m3)) {
@@ -4659,12 +4659,12 @@ int CCells::set_nd_bar_condit(int k, CGrid * nd, int k1, int k2, int id_property
 				else       return(0);  
 			}
 		}  break;
-		case GL_PYRAMID: if (nd->geom[i+1] == 7) {
-			m1 = nd->geom[i+4];
-			m2 = nd->geom[i+5];
-			m3 = nd->geom[i+6];
-			m4 = nd->geom[i+7];
-			m5 = nd->geom[i+8];
+		case GL_PYRAMID: if (nd->geom[i+1] == 8) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			m5 = nd->geom[i+9];
 ///////////////
 //...lateral 1;
 			if (id_facet == 0 || geom_link_id3(m1, m2, m5, k1)) { //...не проверена идентификация?????

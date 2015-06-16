@@ -10,11 +10,6 @@
 
 #include "globals.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Qrd.h: Description of the QR decomposition support data
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -197,9 +192,4 @@ public:
 // Friend classes
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

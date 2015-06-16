@@ -27,15 +27,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
-#ifdef __FV_2004__
-using namespace flowvision;
-#endif
-
 // Author: Kharchenko S.A.
 // CFctDiagR: Send scaling data
 //========================================================================================
@@ -1596,11 +1587,7 @@ void CQrd::UpdateQrd (const CTree &_tree, // Update QR decomposition of the bloc
 	if (nfiles == 0) {
 
 //		flowvision::EqnSolver::UpdateQrd (_m, _ibeg, _iend, _a, _lda, _tau);
-#ifdef __FV_2004__
-		flowvision::EqnSolver::UpdateQrd (_m, _ibeg, _iend, _a, _lda, _tau);
-#else
 		::UpdateQrd (_m, _ibeg, _iend, _a, _lda, _tau);
-#endif
 
 	} else {
 
@@ -1610,17 +1597,10 @@ void CQrd::UpdateQrd (const CTree &_tree, // Update QR decomposition of the bloc
 		FPut (files[ifile], blksiz*_lda, _a, ibs);
 
 //		flowvision::EqnSolver::UpdateQrd (_m, iblk, blksiz,
-#ifdef __FV_2004__
-		flowvision::EqnSolver::UpdateQrd (_m, iblk, blksiz,
-						files, bl2file, bsblk, 
-						_lda, _tau,
-						_a);
-#else
 		::UpdateQrd (_m, iblk, blksiz,
 						files, bl2file, bsblk, 
 						_lda, _tau,
 						_a);
-#endif
 
 	};
 
@@ -1630,22 +1610,12 @@ void CQrd::UpdateQrd (const CTree &_tree, // Update QR decomposition of the bloc
 
 	if (nfiles == 0) {
 //		flowvision::EqnSolver::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#ifdef __FV_2004__
-		flowvision::EqnSolver::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#else
 		::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#endif
 	} else {
 //		flowvision::EqnSolver::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
-#ifdef __FV_2004__
-		flowvision::EqnSolver::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
-						files, bl2file, bsblk, 
-						_lda, qsendarr, ldqsend);
-#else
 		::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
 						files, bl2file, bsblk, 
 						_lda, qsendarr, ldqsend);
-#endif
 	};
 
 // Allocate work array
@@ -1872,29 +1842,16 @@ void CQrd::MvmQBlk (const CTree &_tree, // Multiply Q factor by the current bloc
 // Perform multiplication of the local part of the decomposition
 
 	if (nfiles == 0) {
-#ifdef __FV_2004__
-		flowvision::EqnSolver::MvmQBlk (_m, _n, _nrhs, _q, _ldq, _tau, 
-					qrecvarr, ldqrecv, _qx, _ldqx);
-#else
 		::MvmQBlk (_m, _n, _nrhs, _q, _ldq, _tau, 
 					qrecvarr, ldqrecv, _qx, _ldqx);
-#endif
 	} else {
 
 		int nblk = _n / _nrhs;
 
-#ifdef __FV_2004__
-		flowvision::EqnSolver::MvmQBlk (_m, nblk, blksiz, _nrhs,
-					files, bl2file, bsblk, _ldq, _tau,
-					qrecvarr, ldqrecv, _qx, _ldqx,
-					_q);
-#else
 		::MvmQBlk (_m, nblk, blksiz, _nrhs,
 					files, bl2file, bsblk, _ldq, _tau,
 					qrecvarr, ldqrecv, _qx, _ldqx,
 					_q);
-#endif
-
 	};
 
 // Free work arrays
@@ -1931,11 +1888,7 @@ void CQrdC::UpdateQrd (const CTree &_tree, // Update QR decomposition of the blo
 	if (nfiles == 0) {
 
 //		flowvision::EqnSolver::UpdateQrd (_m, _ibeg, _iend, _a, _lda, _tau);
-#ifdef __FV_2004__
-		flowvision::EqnSolver::UpdateQrd (_m, _ibeg, _iend, _a, _lda, _tau);
-#else
 		::UpdateQrd (_m, _ibeg, _iend, _a, _lda, _tau);
-#endif
 
 	} else {
 
@@ -1945,18 +1898,10 @@ void CQrdC::UpdateQrd (const CTree &_tree, // Update QR decomposition of the blo
 		FPut (files[ifile], blksiz*_lda, _a, ibs);
 
 //		flowvision::EqnSolver::UpdateQrd (_m, iblk, blksiz,
-#ifdef __FV_2004__
-		flowvision::EqnSolver::UpdateQrd (_m, iblk, blksiz,
-						files, bl2file, bsblk, 
-						_lda, _tau,
-						_a);
-#else
 		::UpdateQrd (_m, iblk, blksiz,
 						files, bl2file, bsblk, 
 						_lda, _tau,
 						_a);
-#endif
-
 	};
 
 // Get R part of the data and put it into send array
@@ -1965,22 +1910,12 @@ void CQrdC::UpdateQrd (const CTree &_tree, // Update QR decomposition of the blo
 
 	if (nfiles == 0) {
 //		flowvision::EqnSolver::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#ifdef __FV_2004__
-		flowvision::EqnSolver::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#else
 		::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#endif
 	} else {
 //		flowvision::EqnSolver::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
-#ifdef __FV_2004__
-		flowvision::EqnSolver::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
-						files, bl2file, bsblk, 
-						_lda, qsendarr, ldqsend);
-#else
 		::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
 						files, bl2file, bsblk, 
 						_lda, qsendarr, ldqsend);
-#endif
 	};
 
 // Allocate work array
@@ -2102,22 +2037,12 @@ void CQrdC::UpdateQrdRPart (const CTree &_tree, // Update QR decomposition of th
 
 	if (nfiles == 0) {
 //		flowvision::EqnSolver::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#ifdef __FV_2004__
-		flowvision::EqnSolver::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#else
 		::GetRPartQrd (_m, _ibeg, _iend, _a, _lda, qsendarr, ldqsend);
-#endif
 	} else {
 //		flowvision::EqnSolver::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
-#ifdef __FV_2004__
-		flowvision::EqnSolver::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
-						files, bl2file, bsblk, 
-						_lda, qsendarr, ldqsend);
-#else
 		::GetRPartQrd (_m, iblk, iblk+1, blksiz, 
 						files, bl2file, bsblk, 
 						_lda, qsendarr, ldqsend);
-#endif
 	};
 
 // Allocate work array
@@ -2346,29 +2271,16 @@ void CQrdC::MvmQBlk (const CTree &_tree, // Multiply Q factor by the current blo
 // Perform multiplication of the local part of the decomposition
 
 	if (nfiles == 0) {
-#ifdef __FV_2004__
-		flowvision::EqnSolver::MvmQBlk (_m, _n, _nrhs, _q, _ldq, _tau, 
-					qrecvarr, ldqrecv, _qx, _ldqx);
-#else
 		::MvmQBlk (_m, _n, _nrhs, _q, _ldq, _tau, 
 					qrecvarr, ldqrecv, _qx, _ldqx);
-#endif
 	} else {
 
 		int nblk = _n / _nrhs;
 
-#ifdef __FV_2004__
-		flowvision::EqnSolver::MvmQBlk (_m, nblk, blksiz, _nrhs,
-					files, bl2file, bsblk, _ldq, _tau,
-					qrecvarr, ldqrecv, _qx, _ldqx,
-					_q);
-#else
 		::MvmQBlk (_m, nblk, blksiz, _nrhs,
 					files, bl2file, bsblk, _ldq, _tau,
 					qrecvarr, ldqrecv, _qx, _ldqx,
 					_q);
-#endif
-
 	};
 
 // Free work arrays
@@ -2482,8 +2394,3 @@ void FinTracing (ofstream &_fout, char *_fname, double *_times) { // Finalize ti
 	_fout << _fname << ": wall time = " << wtime1-_times[0] << std::endl;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

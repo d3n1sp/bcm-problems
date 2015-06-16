@@ -19,11 +19,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrixR: Memory allocation zero data constructor
 //========================================================================================
@@ -4217,8 +4212,3 @@ void CSMatrixR::UnPackMatrix (int _length, char *_obj) { // UnPack matrix data
 	for(j = 0; j < nza;     j++) a[j] = pa[j];
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

@@ -23,11 +23,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CMvmC: Constructor
 //========================================================================================
@@ -5584,8 +5579,3 @@ void CParSchurMvmSlvCS::CreateIbssup () { // Create ibssup data for local operat
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

@@ -20,11 +20,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrixRS: Allocate double data and init scaling for Ich2
 //========================================================================================
@@ -2451,8 +2446,3 @@ CSMatrixRS CSMatrixRS::Ich2 (ofstream &_fout, // Second order Incomplete Choless
 	return temp;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

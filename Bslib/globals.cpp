@@ -1902,13 +1902,6 @@ void MemoryFail (const char *_funcname) { // Memory allocation failed
 
 	cout << " Memory allocation failed in function " << _funcname << endl;
 
-#ifdef __FV_2004__
-   std::string str1 (" Memory allocation failed in function ");
-   std::string str2 (_funcname);
-   std::string str = str1 + str2;
-   ErrSolverMessage (false, FVE_MATRIXSOLVERERROR,  str);
-#endif
-
 	throw " Memory allocation failed";
 
 };
@@ -3748,7 +3741,3 @@ ExitElem:;
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

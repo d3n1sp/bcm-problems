@@ -16,10 +16,6 @@
 #include "tree.h"
 #include "mvm.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 static ParFBSS_Array myObjPar;
 
@@ -2515,7 +2511,3 @@ CParFbssData::~CParFbssData () {
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

@@ -610,22 +610,22 @@ void Convert3D_gmt(char * ch_NODES, CGrid * nd, int ID_part)
 			fprintf(GMT, "[MESH NAME]\n%s\n%s\n<END>\n%i   // размерность пространства\n", job_name, model_name, dim);
 			fprintf(GMT, "//------------------------------------------------------------------------------\n");
 
-//////////////////////////////////////
-//...ищем конец узлов заданного *Part;
-			for ( j = 0; j < nd->N; j++) 
-			if (nd->hit[j] == 1) {//...первый узел part'а (с номером 1);
+///////////////////////////////////////////////
+//...ищем начало и конец узлов заданного *Part;
+			for (N_part_nodes_beg = j = 0; j < nd->N; j++) if (! j || nd->hit[j] < nd->hit[j-1]) {//...первый узел part'а;
 				if (N_part--) N_part_nodes_beg = j;				
 				else break;
 			}
 			N_part_nodes_end = j;
 
-//////////////////////////////////////////
-//...ищем конец элементов заданного *Part;
-			for (N_part = ID_part, j = 0; j < nd->geom[0]; j++) 
-			if (nd->geom[nd->geom_ptr[j]+2]+1 == 0) {//...первый элемент part'а (с номером 1);
-				if (N_part--) N_part_element_beg = j;				
-				else break;
-			}
+///////////////////////////////////////////////////
+//...ищем начало и конец элементов заданного *Part;
+			for (j = 0; j < nd->geom[0]; j++) 
+				if (nd->geom[nd->geom_ptr[j]+2]+ID_part == 0) break;
+			N_part_element_beg = j;				
+
+			for (j = N_part_element_beg; j < nd->geom[0]; j++) 
+				if (nd->geom[nd->geom_ptr[j]+2]+ID_part != 0) break;
 			N_part_element_end = j;
 
 /////////////////////////////////
@@ -706,13 +706,13 @@ void Convert3D_gmt(char * ch_NODES, CGrid * nd, int ID_part)
 			fprintf(GMT, "//_ID__mat__type_____1_____2_____3_____4_____5_____6_____7_____8    базовые узлы\n");
 			fprintf(GMT, "// дополнительные узлы (по 10)\n//              _____9____10____11____12____13____14____15____16____17____18____19\n//              ____20____21 ... номера узлов\n");
 			fprintf(GMT, "//кол-во добавочных узлов на рёбрах:   __1__2__3__4__5:\n");
-			if (nd->geom && nd->geom_ptr) {
+			if (nd->geom && nd->geom_ptr && nd->hit) {
 				for (l = nd->geom_ptr[k = N_part_element_beg];	k < N_part_element_end; l = nd->geom_ptr[++k]) { //...базовые элементы;
 					if (nd->geom[l] == (int)GL_BOXS)	 m = ID_hexa_elem; else m = ERR_STATE;
 					if (m != ERR_STATE) {
-						fprintf(GMT, "%7i   %7i   %7i", -nd->geom[l+2], -nd->geom[l+3], m);
-						for (j = 2; j < nd->geom[l+1]; j++)
-						fprintf(GMT, "   %7i", nd->geom[l+j+2]);
+						fprintf(GMT, "%7i   %7i   %7i", -nd->geom[l+3], -nd->geom[l+4], m);
+						for (j = 3; j < nd->geom[l+1]; j++) if (nd->geom[l+j+2] < nd->N)
+						fprintf(GMT, "   %7i", nd->hit[nd->geom[l+j+2]]);
 						fprintf(GMT, "\n");
 					}
 				}
@@ -727,145 +727,145 @@ void Convert3D_gmt(char * ch_NODES, CGrid * nd, int ID_part)
 
 /////////////////////////////////
 //...установка нагруженных узлов;
-void SetLoading_nodes(CGrid * nd, int elem_pernum, int k_side, int * node_pernum, int node_min)
+void SetLoading_nodes(CGrid * nd, int elem_int, int k_side)
 {
 	int i, m1, m2, m3, m4, m5, m6, m7, m8;
-	switch (nd->geom[i = nd->geom_ptr[elem_pernum]]) {
-		case GL_BOXS: if (nd->geom[i+1] == 10) {
-			m1 = node_pernum[nd->geom[i+4]-node_min];
-			m2 = node_pernum[nd->geom[i+5]-node_min];
-			m3 = node_pernum[nd->geom[i+6]-node_min];
-			m4 = node_pernum[nd->geom[i+7]-node_min];
-			m5 = node_pernum[nd->geom[i+8]-node_min];
-			m6 = node_pernum[nd->geom[i+9]-node_min];
-			m7 = node_pernum[nd->geom[i+10]-node_min];
-			m8 = node_pernum[nd->geom[i+11]-node_min];
-			if (k_side == 1) {//...face X';
+	switch (nd->geom[i = nd->geom_ptr[elem_int]]) {
+		case GL_BOXS: if (nd->geom[i+1] == 11) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			m5 = nd->geom[i+9];
+			m6 = nd->geom[i+10];
+			m7 = nd->geom[i+11];
+			m8 = nd->geom[i+12];
+			if (k_side == 6) {//...face lateral S6;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 				nd->hit[m8] = -abs(nd->hit[m8]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 			}
-			if (k_side == 2) {//...face X;
+			if (k_side == 4) {//...face lateral S4;
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m7] = -abs(nd->hit[m7]);
 				nd->hit[m6] = -abs(nd->hit[m6]);
 			}
-			if (k_side == 3) {//...face Y';
+			if (k_side == 3) {//...face lateral S3;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m6] = -abs(nd->hit[m6]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 			}
-			if (k_side == 4) {//...face Y;
+			if (k_side == 5) {//...face lateral S5;
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m8] = -abs(nd->hit[m8]);
 				nd->hit[m7] = -abs(nd->hit[m7]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 			}
-			if (k_side == 5) {//...face Z';
+			if (k_side == 1) {//...face basis S1;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 			}
-			if (k_side == 6) {//...face Z;
+			if (k_side == 2) {//...face basis S2;
 				nd->hit[m5] = -abs(nd->hit[m5]);
 				nd->hit[m6] = -abs(nd->hit[m6]);
 				nd->hit[m7] = -abs(nd->hit[m7]);
 				nd->hit[m8] = -abs(nd->hit[m8]);
 			}
 		}  break;
-		case GL_PENTA: if (nd->geom[i+1] == 8) {
-			m1 = node_pernum[nd->geom[i+4]-node_min];
-			m2 = node_pernum[nd->geom[i+5]-node_min];
-			m3 = node_pernum[nd->geom[i+6]-node_min];
-			m4 = node_pernum[nd->geom[i+7]-node_min];
-			m5 = node_pernum[nd->geom[i+8]-node_min];
-			m6 = node_pernum[nd->geom[i+9]-node_min];
-			if (k_side == 1) {//...face lateral 1;
+		case GL_PENTA: if (nd->geom[i+1] == 9) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			m5 = nd->geom[i+9];
+			m6 = nd->geom[i+10];
+			if (k_side == 3) {//...face lateral S3;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 			}
-			if (k_side == 2) {//...face lateral 2;
+			if (k_side == 4) {//...face lateral S4;
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m6] = -abs(nd->hit[m6]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 			}
-			if (k_side == 3) {//...face lateral 3;
+			if (k_side == 5) {//...face lateral S5;
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m6] = -abs(nd->hit[m6]);
 			}
-			if (k_side == 4) {//...face Z';
+			if (k_side == 1) {//...face basis S1;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 			}
-			if (k_side == 5) {//...face Z;
+			if (k_side == 2) {//...face basis S2;
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 				nd->hit[m6] = -abs(nd->hit[m6]);
 			}
 		}  break;
-		case GL_TETRA: if (nd->geom[i+1] == 6) {
-			m1 = node_pernum[nd->geom[i+4]-node_min];
-			m2 = node_pernum[nd->geom[i+5]-node_min];
-			m3 = node_pernum[nd->geom[i+6]-node_min];
-			m4 = node_pernum[nd->geom[i+7]-node_min];
-			if (k_side == 1) {//...face lateral 1;
+		case GL_TETRA: if (nd->geom[i+1] == 7) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			if (k_side == 1) {//...face basis S1;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 			}
-			if (k_side == 2) {//...face lateral 2;
+			if (k_side == 3) {//...face lateral S3;
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 			}
-			if (k_side == 3) {//...face lateral 3;
+			if (k_side == 4) {//...face lateral S4;
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 			}
-			if (k_side == 4) {//...face lateral 4;
+			if (k_side == 2) {//...face lateral S2;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 			}  
 		}  break;
-		case GL_PYRAMID: if (nd->geom[i+1] == 7) {
-			m1 = node_pernum[nd->geom[i+4]-node_min];
-			m2 = node_pernum[nd->geom[i+5]-node_min];
-			m3 = node_pernum[nd->geom[i+6]-node_min];
-			m4 = node_pernum[nd->geom[i+7]-node_min];
-			m5 = node_pernum[nd->geom[i+8]-node_min];
-			if (k_side == 1) {//...face lateral 1;
+		case GL_PYRAMID: if (nd->geom[i+1] == 8) {
+			m1 = nd->geom[i+5];
+			m2 = nd->geom[i+6];
+			m3 = nd->geom[i+7];
+			m4 = nd->geom[i+8];
+			m5 = nd->geom[i+9];
+			if (k_side == 2) {//...face lateral S2;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 			}
-			if (k_side == 2) {//...face lateral 2;
+			if (k_side == 3) {//...face lateral S3;
 				nd->hit[m2] = -abs(nd->hit[m2]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 			}
-			if (k_side == 3) {//...face lateral 3;
+			if (k_side == 4) {//...face lateral S4;
 				nd->hit[m3] = -abs(nd->hit[m3]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 			}
-			if (k_side == 4) {//...face lateral 4;
+			if (k_side == 5) {//...face lateral S5;
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m5] = -abs(nd->hit[m5]);
 			}  
-			if (k_side == 5) {//...basis 5;
+			if (k_side == 1) {//...fase basis S1;
 				nd->hit[m1] = -abs(nd->hit[m1]);
 				nd->hit[m4] = -abs(nd->hit[m4]);
 				nd->hit[m3] = -abs(nd->hit[m3]);
@@ -996,16 +996,16 @@ void Convert3D_prb(char * ch_NODES, CGrid * nd, int ID_part)
 				}
 ///////////////////////////////////
 //...запись конкретных закреплений;
-				if (nd->cond_ptr && nd->cond) {
+				if (nd->cond_ptr && nd->cond && nd->hit) {
 					l = nd->cond_ptr[k];
 					if (nd->cond[l] == (int)GL_NODES) {
-						for (j = 2; j <= nd->cond[l+1]; j++) 
-							fprintf(PRB, "    0   %7i   %7i   %7i   %7i\n", nd->cond[l+1+j], m[0], m[1], m[2]);
+						for (j = 2; j <= nd->cond[l+1]; j++) if (nd->cond[l+1+j] < nd->N)
+							fprintf(PRB, "    0   %7i   %7i   %7i   %7i\n", nd->hit[nd->cond[l+1+j]], m[0], m[1], m[2]);
 					}
 					else
 					if (nd->cond[l] == (int)GL_NODES_GENERATE) {
-						for (j = nd->cond[l+3]; j <= nd->cond[l+4]; j += nd->cond[l+5]) 
-							fprintf(PRB, "    0   %7i   %7i   %7i   %7i\n", j, m[0], m[1], m[2]);
+						for (j = nd->cond[l+3]; j <= nd->cond[l+4]; j += nd->cond[l+5]) if (j < nd->N)
+							fprintf(PRB, "    0   %7i   %7i   %7i   %7i\n", nd->hit[j], m[0], m[1], m[2]);
 					}
 				}
 				PPOS_CUR(id_NODES, pchar, ppos_cur, upper, "*Boundary"); m[0] = m[1] = m[2] = 0;
@@ -1195,27 +1195,6 @@ void Convert3D_prb(char * ch_NODES, CGrid * nd, int ID_part)
 			fprintf(PRB, "0   // есть/нет изменяемые материалы (\"0\" - нет)\n");
 			fprintf(PRB, "0   //<<< признак конца набора\n");
 			fprintf(PRB, "//------------------------------------------------------------------------------\n");
-
-///////////////////////////////////////////////
-//...готовим недостающие таблицы перенумераций;
-			int * node_pernum = NULL, * elem_pernum = NULL, node_max = 0, node_min = 0, elem_max = 0, elem_min = 0;
-			if (nd->geom && nd->geom_ptr && nd->hit) {
-				node_max = nd->hit[0]; node_min = node_max; 
-				elem_max = -nd->geom[nd->geom_ptr[0]+2]; elem_min = elem_max; 
-				for (k = 0; k < nd->N; k++) {
-					if (nd->hit[k] < node_min) node_min = nd->hit[k];
-					if (nd->hit[k] > node_max) node_max = nd->hit[k];
-				}
-				for (k = 0; k < nd->geom[0]; k++) {
-					if (-nd->geom[nd->geom_ptr[k]+2] < elem_min) elem_min = -nd->geom[nd->geom_ptr[k]+2];
-					if (-nd->geom[nd->geom_ptr[k]+2] > elem_max) elem_max = -nd->geom[nd->geom_ptr[k]+2];
-				}
-				node_pernum = (int *)new_struct((node_max-node_min+1)*sizeof(int)); 
-				elem_pernum = (int *)new_struct((elem_max-elem_min+1)*sizeof(int));
-
-				for (k = 0; k < nd->N;       k++) node_pernum[ nd->hit[k]-node_min] = k;
-				for (k = 0; k < nd->geom[0]; k++) elem_pernum[-nd->geom[nd->geom_ptr[k]+2]-elem_min] = k;
-			}
 				 
 /////////////////////////////////////
 //...поиск и запись нагрузок в шагах;
@@ -1233,143 +1212,147 @@ void Convert3D_prb(char * ch_NODES, CGrid * nd, int ID_part)
 
 				if ((ppos = strstr(one_line, ",")) != NULL) step = user_strtod(ppos+1);
 				else													  step = 1.;
-
-///////////////////////////////////
-//...ищем объемную нагрузку в шаге;
 				count_beg = ppos_cur;
-				PPOS_CUR(id_NODES, pchar, ppos_cur, upper, "*Dload");
-				if (pchar != NULL) {
-						ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
-						ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
 
+/////////////////////////////////////////////////
+//...ищем все вхождения объемной нагрузки в шаге;
+				while (ppos_cur < upper) {
+					PPOS_CUR(id_NODES, pchar, ppos_cur, upper, "*Dload");
+					if (pchar != NULL) {
+							ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
+							ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
 ////////////////////////////////////////////////////
 //...зачитываем имя объемной нагрузки и ее атрибуты;
-						pchar = strstr(one_line, ","); swap(temp, pchar[0]); 
-						if (! ::strncmp (pchar+1, " GRAV", 5)) {
-							double grav = 0., nX = 0., nY = -1., nZ = 0.;
-							if ((ppos = strstr(pchar+1, ",")) != NULL) {
-								grav = user_strtod(ppos+1);
-								if ((ppos = strstr(ppos+1, ",")) != NULL) {
-									nX	= user_strtod(ppos+1);
+							pchar = strstr(one_line, ","); swap(temp, pchar[0]); 
+							if (! ::strncmp (pchar+1, " GRAV", 5)) {
+								double grav = 0., nX = 0., nY = -1., nZ = 0.;
+								if ((ppos = strstr(pchar+1, ",")) != NULL) {
+									grav = user_strtod(ppos+1);
 									if ((ppos = strstr(ppos+1, ",")) != NULL) {
-										nY	= user_strtod(ppos+1);
-										if ((ppos = strstr(ppos+1, ",")) != NULL) nZ = user_strtod(ppos+1);
+										nX	= user_strtod(ppos+1);
+										if ((ppos = strstr(ppos+1, ",")) != NULL) {
+											nY	= user_strtod(ppos+1);
+											if ((ppos = strstr(ppos+1, ",")) != NULL) nZ = user_strtod(ppos+1);
+										}
 									}
 								}
-							}
-
 //////////////////////////////////
 //...запись нагрузки - гравитации;
-							fprintf(PRB, "103   // тип нагрузки - собственный вес\n<сила тяжести>   // название нагрузки\n");
-							fprintf(PRB, "0   // признак подкачки с диска: 0-RAM; 1-ASCII; 2-Binary\n");
-							fprintf(PRB, "1   // ф-ция нагружения по времени - f(t)\n// 1  кусочно-линейная ф-ция   (n+1), n - кол-во звеньев\n// t - параметры времени\n");
-							fprintf(PRB, " %g    %g\n", sum_steps, sum_steps+step);
-							fprintf(PRB, "<END>\n// Параметры ф-ции нагружения (нарастания нагрузки) по времени, которая определяет\n// порцию (долю) от максимальной по абсолютному значению прикладываемой нагрузки\n");
-							fprintf(PRB, " 0.0    1.0\n");
-							fprintf(PRB, "<END>\n");
-							fprintf(PRB, "1   // ф-ция нагружения от пространственных координат - f(x)\n// 1  равномерно распределённая  (1)\n// p - параметры нагрузки\n");
-							fprintf(PRB, " %g\n", grav);
-							fprintf(PRB, "<END>\n");
-							fprintf(PRB, " %g %g %g			// направления\n", nX, nY, nZ);
-							fprintf(PRB, "1.0				// кол-во повторов за расчётный период\n");
-							fprintf(PRB, "0   // \"+1\" - для объектов ..., \"-1\" - исключая объекты ..., \"0\" - для всех объектов\n");
-							fprintf(PRB, "//..............................................................................\n");
-						}
-						swap(temp, pchar[0]); 
+								fprintf(PRB, "103   // тип нагрузки - собственный вес\n<сила тяжести>   // название нагрузки\n");
+								fprintf(PRB, "0   // признак подкачки с диска: 0-RAM; 1-ASCII; 2-Binary\n");
+								fprintf(PRB, "1   // ф-ция нагружения по времени - f(t)\n// 1  кусочно-линейная ф-ция   (n+1), n - кол-во звеньев\n// t - параметры времени\n");
+								fprintf(PRB, " %g    %g\n", sum_steps, sum_steps+step);
+								fprintf(PRB, "<END>\n// Параметры ф-ции нагружения (нарастания нагрузки) по времени, которая определяет\n// порцию (долю) от максимальной по абсолютному значению прикладываемой нагрузки\n");
+								fprintf(PRB, " 0.0    1.0\n");
+								fprintf(PRB, "<END>\n");
+								fprintf(PRB, "1   // ф-ция нагружения от пространственных координат - f(x)\n// 1  равномерно распределённая  (1)\n// p - параметры нагрузки\n");
+								fprintf(PRB, " %g\n", grav);
+								fprintf(PRB, "<END>\n");
+								fprintf(PRB, " %g %g %g			// направления\n", nX, nY, nZ);
+								fprintf(PRB, "1.0				// кол-во повторов за расчётный период\n");
+								fprintf(PRB, "0   // \"+1\" - для объектов ..., \"-1\" - исключая объекты ..., \"0\" - для всех объектов\n");
+								fprintf(PRB, "//..............................................................................\n");
+							}
+							swap(temp, pchar[0]); 
+					}
 				}
-
-////////////////////////////////////////
-//...ищем поверхностную нагрузку в шаге;
 				ppos_cur = count_beg;
-				PPOS_CUR(id_NODES, pchar, ppos_cur, upper, "*Dsload");
-				if (pchar != NULL) {
-						ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
-						ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
 
+//////////////////////////////////////////////////////
+//...ищем все вхождения поверхностной нагрузки в шаге;
+				while (ppos_cur < upper) {
+					PPOS_CUR(id_NODES, pchar, ppos_cur, upper, "*Dsload");
+					if (pchar != NULL) {
+							ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
+							ONE_LINE(id_NODES, pchar, ppos_cur, upper, one_line, STR_SIZE);
 /////////////////////////////////////////////////////////
 //...зачитываем имя поверхностной нагрузки и ее атрибуты;
-						pchar = strstr(one_line, ","); swap(temp, pchar[0]); 
-						if (! ::strncmp (pchar+1, " TRVEC", 6) || ! ::strncmp (pchar+1, " TRSHR", 6)) {
-							double value = 0., nX = 0., nY = -1., nZ = 0.;
-							if ((ppos = strstr(pchar+1, ",")) != NULL) {
-								value = user_strtod(ppos+1);
-								if ((ppos = strstr(ppos+1, ",")) != NULL) {
-									nX	= user_strtod(ppos+1);
+							pchar = strstr(one_line, ","); swap(temp, pchar[0]); 
+							if (! ::strncmp (pchar+1, " TRVEC", 6) || ! ::strncmp (pchar+1, " TRSHR", 6)) {
+								double value = 0., nX = 0., nY = -1., nZ = 0.;
+								if ((ppos = strstr(pchar+1, ",")) != NULL) {
+									value = user_strtod(ppos+1);
 									if ((ppos = strstr(ppos+1, ",")) != NULL) {
-										nY	= user_strtod(ppos+1);
-										if ((ppos = strstr(ppos+1, ",")) != NULL) nZ = user_strtod(ppos+1);
+										nX	= user_strtod(ppos+1);
+										if ((ppos = strstr(ppos+1, ",")) != NULL) {
+											nY	= user_strtod(ppos+1);
+											if ((ppos = strstr(ppos+1, ",")) != NULL) nZ = user_strtod(ppos+1);
+										}
 									}
 								}
-							}
-
 //////////////////////////////////////////
 //...запись нагрузки - поверхностная сила;
-							fprintf(PRB, "107 // тип нагрузки - распределенная по поверхности (грани) нагрузка\n<вертикальная  распределенная по поверхности нагрузка>   // название нагрузки\n");
-							fprintf(PRB, "0   // признак подкачки с диска: 0-RAM; 1-ASCII; 2-Binary\n");
-							fprintf(PRB, "1   // ф-ция нагружения по времени - f(t)\n// 1  кусочно-линейная ф-ция   (n+1), n - кол-во звеньев\n// t - параметры времени\n");
-							fprintf(PRB, " %g    %g\n", sum_steps, sum_steps+step);
-							fprintf(PRB, "<END>\n// Параметры ф-ции нагружения (нарастания нагрузки) по времени, которая определяет\n// порцию (долю) от максимальной по абсолютному значению прикладываемой нагрузки\n");
-							fprintf(PRB, " 0.0    1.0\n");
-							fprintf(PRB, "<END>\n");
-							fprintf(PRB, "1   // ф-ция нагружения от пространственных координат - f(x)\n// 1  постоянная                 (1)  p = const\n// p - параметры нагрузки\n");
-							fprintf(PRB, " %g\n", value);
-							fprintf(PRB, "<END>\n");
-							fprintf(PRB, " %g %g %g			// направления\n", nX, nY, nZ);
-							fprintf(PRB, "1.0				// кол-во повторов за расчётный период\n");
-							fprintf(PRB, "1   // \"+1\" - для объектов ..., \"-1\" - исключая объекты ..., \"0\" - для всех объектов\n");
-							fprintf(PRB, "// №№ загруженных объектов:\n");
-							fprintf(PRB, "//_____1_____2_____3_____4_____5_____6_____7_____8_____9____10:");
-
+								fprintf(PRB, "107 // тип нагрузки - распределенная по поверхности (грани) нагрузка\n<вертикальная  распределенная по поверхности нагрузка>   // название нагрузки\n");
+								fprintf(PRB, "0   // признак подкачки с диска: 0-RAM; 1-ASCII; 2-Binary\n");
+								fprintf(PRB, "1   // ф-ция нагружения по времени - f(t)\n// 1  кусочно-линейная ф-ция   (n+1), n - кол-во звеньев\n// t - параметры времени\n");
+								fprintf(PRB, " %g    %g\n", sum_steps, sum_steps+step);
+								fprintf(PRB, "<END>\n// Параметры ф-ции нагружения (нарастания нагрузки) по времени, которая определяет\n// порцию (долю) от максимальной по абсолютному значению прикладываемой нагрузки\n");
+								fprintf(PRB, " 0.0    1.0\n");
+								fprintf(PRB, "<END>\n");
+								fprintf(PRB, "1   // ф-ция нагружения от пространственных координат - f(x)\n// 1  постоянная                 (1)  p = const\n// p - параметры нагрузки\n");
+								fprintf(PRB, " %g\n", value);
+								fprintf(PRB, "<END>\n");
+								fprintf(PRB, " %g %g %g			// направления\n", nX, nY, nZ);
+								fprintf(PRB, "1.0				// кол-во повторов за расчётный период\n");
+								fprintf(PRB, "1   // \"+1\" - для объектов ..., \"-1\" - исключая объекты ..., \"0\" - для всех объектов\n");
+								fprintf(PRB, "// №№ загруженных объектов:\n");
+								fprintf(PRB, "//_____1_____2_____3_____4_____5_____6_____7_____8_____9____10:");
 ////////////////////////////////////////////////////////////////////////////
 //...вычисляем номер множества с заданным именем среди зачитанных элементов;
-							ppos = ::strrchr(one_line, '.')+1; // - имя поверхности, на которой задано граничное условие;
-							count_length = strlen(ppos);
+								ppos = ::strrchr(one_line, '.')+1; // - имя поверхности, на которой задано граничное условие;
+								count_length = strlen(ppos);
 
-							for (count = 0; count < surfaces_list[0]; count++)  
-							if ( count_length < surfaces_list[count*3+2] && ! strncmp(ppos, id_NODES+surfaces_list[count*3+1]+1, count_length)) {
-								k_side = surfaces_list[count*3+3];
-
+								for (count = 0; count < surfaces_list[0]; count++)  
+								if ( count_length < surfaces_list[count*3+2] && ! strncmp(ppos, id_NODES+surfaces_list[count*3+1]+1, count_length)) {
+									k_side = surfaces_list[count*3+3];
 ////////////////////////////////////////////////
 //...идетификация нагруженных узлов поверхности;
-								for (count_el = 0; count_el < elements_list[0]; count_el++)  
-								if ( surfaces_list[count*3+2] == elements_list[count_el*2+2] && ! strncmp(id_NODES+surfaces_list[count*3+1], id_NODES+elements_list[count_el*2+1], surfaces_list[count*3+2])) {
-									k = (int)(count_el+nodes_list[0]);
-
+									for (count_el = 0; count_el < elements_list[0]; count_el++)  
+									if ( surfaces_list[count*3+2] == elements_list[count_el*2+2] && ! strncmp(id_NODES+surfaces_list[count*3+1], id_NODES+elements_list[count_el*2+1], surfaces_list[count*3+2])) {
+										k = (int)(count_el+nodes_list[0]);
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //...просматриваем все элементы, составляющие поверхность, и отмечаем узлы для печати (меняем знак);
-									if (nd->cond_ptr && nd->cond && nd->geom && nd->geom_ptr) {
-										l = nd->cond_ptr[k];
-										if (nd->cond[l] == (int)GL_ELEMENTS) {
-											for (j = 2; j <= nd->cond[l+1]; j++)
-												SetLoading_nodes(nd, elem_pernum[nd->cond[l+1+j]-elem_min], k_side, node_pernum, node_min);
-										}
-										else
-										if (nd->cond[l] == (int)GL_ELEMENTS_GENERATE) {
-											for (j = nd->cond[l+3]; j <= nd->cond[l+4]; j += nd->cond[l+5]) 
-												SetLoading_nodes(nd, elem_pernum[j-elem_min], k_side, node_pernum, node_min);
+										if (nd->cond_ptr && nd->cond) {
+											l = nd->cond_ptr[k];
+											if (nd->cond[l] == (int)GL_ELEMENTS) {
+												for (j = 2; j <= nd->cond[l+1]; j++)
+													SetLoading_nodes(nd, nd->cond[l+1+j], k_side);
+											}
+											else
+											if (nd->cond[l] == (int)GL_ELEMENTS_GENERATE) {
+												for (j = nd->cond[l+3]; j <= nd->cond[l+4]; j += nd->cond[l+5]) 
+													SetLoading_nodes(nd, j, k_side);
+											}
 										}
 									}
 								}
+///////////////////////////////////////
+//...печатаем индексы нагуженных узлов;
+								for (j_node = 0, k = 0; k < nd->N; k++)
+								if (nd->hit[k] < 0) {
+									if (! (j_node % j_max))	fprintf(PRB, "\n ");
+									fprintf(PRB, " %7i", -nd->hit[k]); j_node++;
+								}
+								fprintf(PRB, "\n");
+								fprintf(PRB, "//..............................................................................\n");
+								for (j_node = 0, k = 0; k < nd->N; k++) nd->hit[k] = abs(nd->hit[k]); //...возвращаем индексы;
 							}
-							for (j_node = 0, k = 0; k < nd->N; k++) //...индексы нагуженных узлов;
-							if (nd->hit[k] < 0) {
-								if (! (j_node % j_max))	fprintf(PRB, "\n ");
-								fprintf(PRB, " %7i", -nd->hit[k]); j_node++;
-							}
-							fprintf(PRB, "\n");
-							fprintf(PRB, "//..............................................................................\n");
-							for (j_node = 0, k = 0; k < nd->N; k++) nd->hit[k] = abs(nd->hit[k]); //...возвращаем индексы;
-						}
-						swap(temp, pchar[0]); 
+							swap(temp, pchar[0]); 
+					}
 				}
+				ppos_cur = count_beg;
+
+////////////////////////////////////////////////////////////////
+//...ищем все вхождения другой интересующей нас нагрузки в шаге;
+//...
+
+/////////////////////////////////
+//...переходим к следующему шагу;
 				sum_steps += step;
 				PPOS_CUR(id_NODES, pchar, ppos_cur, upper_limit, "*Step, name=");
 			}
 			fprintf(PRB, "0		//<<<<<<<<<<<<<<<<<<<<<<< the end of data\n");
 			fprintf(PRB, "//------------------------------------------------------------------------------\n");
-
-			delete_struct(node_pernum);
-			delete_struct(elem_pernum);
 
 /////////////////
 //...смена сетки;

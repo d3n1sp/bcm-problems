@@ -19,10 +19,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 /*
 // Author: Kharchenko S.A.
 // CSMatrix: Compute Nested Dissection ordering of the matrix in parallel via ParMeTiS with Schur partitioning
@@ -9186,8 +9182,3 @@ exitcycle:;
 	delete [] nzspord;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

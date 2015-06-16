@@ -185,9 +185,7 @@ public:
 	friend class CMvm;
 	friend class CMvmR;
 	friend class CMvmC;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 	friend class CSVector;
 };
 
@@ -503,9 +501,7 @@ public:
 	friend class CFctR;
 	friend class CFctDiagR;
 	friend class CSVector;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 };
 
 #endif
@@ -746,9 +742,7 @@ public:
 	friend class CFctC;
 	friend class CFctDiagC;
 	friend class CSVectorC;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 };
 
 #endif

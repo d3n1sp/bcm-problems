@@ -14,11 +14,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSVectorC: Reorder vector components
 //========================================================================================
@@ -655,7 +650,3 @@ ostream &operator<< (ostream &_stream, const CSVectorC &_v) { // Output vector
 	
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

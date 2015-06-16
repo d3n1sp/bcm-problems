@@ -1,9 +1,5 @@
 #include <iostream>
 
-//#ifndef __FV_2004__
-//#define __FV_2004__
-//#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // Classes declared in this file
 

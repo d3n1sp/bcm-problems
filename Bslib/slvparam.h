@@ -5,11 +5,6 @@
 #include<cstdlib>
 #include<cstring>
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 #ifndef __SlvParam
 #define __SlvParam
 
@@ -320,9 +315,4 @@ public:
 	friend class CFctC;
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

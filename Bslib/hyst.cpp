@@ -18,11 +18,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CHyst: Memory allocation zero data constructor
 //========================================================================================
@@ -190,7 +185,3 @@ ostream &operator<< (ostream &_stream, const CHyst &_hyst) { // Output hystogram
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

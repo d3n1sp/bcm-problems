@@ -26,11 +26,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CGSMatrixRS: Perform explicit point scaling of the matrix
 //========================================================================================
@@ -3648,8 +3643,3 @@ void CGSMatrixRS::FindSups (ofstream &_fout, int _nthresh, double *_thresh, int 
 	delete [] listarr;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

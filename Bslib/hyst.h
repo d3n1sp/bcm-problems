@@ -12,11 +12,6 @@
 #include "globals.h"
 #include "ExchangeMPI.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // hyst.h: Description of the hystogram data
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -61,9 +56,4 @@ public:
 // Friend classes
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

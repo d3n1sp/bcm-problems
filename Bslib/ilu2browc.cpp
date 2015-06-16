@@ -25,11 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CFctDiagC: Find supernodes with small singular values
 //========================================================================================
@@ -3435,8 +3430,3 @@ void CGSMatrixCS::UpdateDiagonal2Index (CSMatrixC &_mtrd, // Update diagonal dat
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

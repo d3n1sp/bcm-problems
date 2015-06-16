@@ -14,11 +14,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-using namespace flowvision;
-using namespace EqnSolver;
-#endif
-
 // Preliminary declaration of the routines
 
 extern "C" {

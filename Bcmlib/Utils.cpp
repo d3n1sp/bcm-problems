@@ -1164,4 +1164,198 @@ void subrcm_utils(int * xadj, int * iadj, int * mask, int nsubg, int * subg, int
    }
 }
 
+//////////////////////////////////////////////////////////////
+//...алгоритм вычисления с.з. и с.ф. общей матрицы QR-методом;
+int HQRfunction(double ** A, double * H_re, double * H_im, int dim_N, int Max_iter)
+{//...индексы в циклах были смещены в оригинале на единицу (фортрановский стандрат)!!!
+  if (! A || ! H_re || ! H_im) return(0);
+
+  int    i, j, ip, iq, it = 0, l, k, m, last = 0, nn, mmin, sorting = 1;
+  double f, s, g, c, r, q, p, radix = 2.,
+         sqrdx = radix*radix, t = 1./radix, d = 1./sqrdx, y, x, z, w, v, u;
+
+/////////////
+//...balance;
+  while (last == 0) for (last = i = 1; i <= dim_N; i++) {
+       for (r = c = 0., j = 1; j <= dim_N; j++) if (j != i) {
+           c += fabs(A[j-1][i-1]);
+           r += fabs(A[i-1][j-1]);
+       }
+       if (c && r) {
+           g = r*t;
+           f = 1.;
+           s = c+r;
+           while (c < g) {
+                  f *= radix;
+                  c *= sqrdx;
+           }
+           g = r*radix;
+           while (c > g) {
+                  f *= t;
+                  c *= d;
+           }
+           if ((c+r)*(g = 1./f) < 0.95*s) {
+              for (last = 0, j = 1; j <= dim_N; j++) A[i-1][j-1] *= g;
+              for (          j = 1; j <= dim_N; j++) A[j-1][i-1] *= f;
+           }
+       }
+  }
+
+////////////
+//...elmhes;
+  for (m = 2; m < dim_N; m++) {
+      for (x = 0., i = j = m; j <= dim_N; j++)
+      if  (fabs(A[j-1][m-2]) > fabs(x)) {
+           x = A[j-1][m-2];
+           i = j;
+      }
+      if (i != m) {
+         for (j = m-1;j <= dim_N; j++) swap(A[i-1][j-1], A[m-1][j-1]);
+         for (j = 1;  j <= dim_N; j++) swap(A[j-1][i-1], A[j-1][m-1]);
+      }
+      if (x) for (i = m+1; i <= dim_N; i++)
+      if ((y = A[i-1][m-2]) != 0.) {
+          A[i-1][m-2] = (y /= x);
+          for (j = m; j <= dim_N; j++) A[i-1][j-1] -= y*A[m-1][j-1];
+          for (j = 1; j <= dim_N; j++) A[j-1][m-1] += y*A[j-1][i-1];
+      }
+  }
+
+/////////
+//...hqr;
+  for (f = fabs(A[0][0]), i = 2;   i <= dim_N; i++)
+  for (                   j = i-1; j <= dim_N; j++) f += fabs(A[i-1][j-1]);
+  nn = dim_N; t = 0.;
+  while (nn >= 1) {
+         it  = 0;
+         do {
+            for (l = nn; l >= 2; l--) {
+                 s = fabs(A[l-2][l-2])+fabs(A[l-1][l-1]);
+                 if (s == 0.) s = f;
+                 if (fabs(A[l-1][l-2]) + s == s) break;
+            }
+            x = A[nn-1][nn-1];
+            if (l == nn) {
+                H_re[--nn] = x+t;
+                H_im[  nn] = 0.;
+            }
+            else {
+                y = A[nn-2][nn-2];
+                w = A[nn-1][nn-2]*A[nn-2][nn-1];
+                if (l == (nn-1)) {
+                    p = .5*(y-x);
+                    q = p*p+w;
+                    z = sqrt(fabs(q));
+                    x += t;
+                    if (q >= 0.) {
+                        z  = p+(p > 0. ? fabs(z) : -fabs(z));
+                        H_re[nn-2] = H_re[nn-1] = x+z; if (z) H_re[nn-1] = x-w/z;
+                        H_im[nn-2] = H_im[nn-1] = 0.;
+                    }
+                    else {
+                        H_re[nn-2] =  H_re[nn-1] = x+p;
+                        H_im[nn-2] =-(H_im[nn-1] = z);
+                    }
+                    nn -= 2;
+                }
+                else {
+                    if (it == Max_iter) printf("Too many iterations in HQR");
+                    if (it == 10 || it == 20) {
+                        t += x;
+                        for (i = 1; i <= nn; i++) A[i-1][i-1] -= x;
+                        s = fabs(A[nn-1][nn-2])+fabs(A[nn-2][nn-3]);
+                        y = x = .75*s;
+                        w =-.4375*s*s;
+                    }
+                    for (it++, m = nn-2; m >= l; m--) {
+                         z  = A[m-1][m-1];
+                         r  = x-z;
+                         s  = y-z;
+                         p  = (r*s-w)/A[m][m-1]+A[m-1][m];
+                         q  = A[m][m]-z-r-s;
+                         r  = A[m+1][m];
+                         p *= (s = 1./(fabs(p)+fabs(q)+fabs(r)));
+                         q *=  s;
+                         r *=  s; if (m == l) break;
+                         u  = fabs(A[m-1][m-2])*(fabs(q)+fabs(r));
+                         v  = fabs(p)*(fabs(A[m-2][m-2])+fabs(z)+fabs(A[m][m]));
+                         if (u+v == v) break;
+                    }
+                    for (i = m+2; i <= nn; i++) {
+                         A[i-1][i-3] = 0.;
+                         if (i != (m+2)) A[i-1][i-4] = 0.;
+                    }
+                    for (k = m; k <= nn-1; k++) {
+                         if (k != m) {
+                             p  = A[k-1][k-2];
+                             q  = A[k][k-2];
+                             if (k != nn-1) r = A[k+1][k-2]; else r = 0.;
+                             if ((x = fabs(p)+fabs(q)+fabs(r)) != 0.) {
+                                p *= (d = 1./x);
+                                q *=  d;
+                                r *=  d;
+                             }
+                         }
+                         s = sqrt(p*p+q*q+r*r);
+                         if ((s = (p > 0. ? s : -s)) != 0.) {
+                            if (k != m) A[k-1][k-2] = -s*x; else
+                            if (l != m) A[k-1][k-2] = -A[k-1][k-2];
+                                p += s;
+                                x  = p*(s = 1./s);
+                                y  = q*s;
+                                z  = r*s;
+                                q *= (p = 1./p);
+                                r *=  p;
+                                for (j = k; j <= nn; j++) {
+                                     p = A[k-1][j-1]+q*A[k][j-1];
+                                     if (k != (nn-1)) {
+                                         p += r*A[k+1][j-1];
+                                         A[k+1][j-1] -= p*z;
+                                     }
+                                     A[k][j-1]   -= p*y;
+                                     A[k-1][j-1] -= p*x;
+                                }
+                                for (mmin = nn < k+3 ? nn : k+3, i = l; i <= mmin; i++) {
+                                     p = x*A[i-1][k-1]+y*A[i-1][k];
+                                     if (k != nn-1) {
+                                         p += z*A[i-1][k+1];
+                                         A[i-1][k+1] -= p*r;
+                                     }
+                                     A[i-1][k]   -= p*q;
+                                     A[i-1][k-1] -= p;
+                                }
+                         }
+                    }
+                }
+            }
+         }
+         while (l < nn-1);
+  }
+
+///////////////////////////////////////////////////////////////////////////
+//...упорядочиваем найденные собственные значения в порядке возрастания Re;
+  for (iq = 1; sorting && iq < dim_N; iq++) {
+       for (d = abs(comp(H_re[(ip = iq)-1], H_im[(ip = iq)-1])), j = iq+1; j <= dim_N; j++) if (abs(comp(H_re[j-1], H_im[j-1])) <= d) d = abs(comp(H_re[(ip = j)-1], H_im[(ip = j)-1]));
+       if (ip != iq) {
+           swap(H_im[ip-1], H_im[iq-1]);
+           swap(H_re[ip-1], H_re[iq-1]);
+       }
+  }
+  return(1);
+}
+int HQRfunction(dd_real ** A, dd_real * H_re, dd_real * H_im, int dim_N, int Max_iter)
+{
+  if (! A || ! H_re || ! H_im) return(0);
+  return(1);
+}
+int HQRfunction(qd_real ** A, qd_real * H_re, qd_real * H_im, int dim_N, int Max_iter)
+{
+  if (! A || ! H_re || ! H_im) return(0);
+  return(1);
+}
+int HQRfunction(complex ** A, complex * H_re, complex * H_im, int dim_N, int Max_iter)
+{
+  if (! A || ! H_re || ! H_im) return(0);
+  return(1);
+}
 

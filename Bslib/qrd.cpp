@@ -17,11 +17,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CQrd: Constructor
 //========================================================================================
@@ -885,8 +880,3 @@ void CQrdC::CloseFiles () { // Close files
 	CloseDIOFiles (nfiles, files, fnames);
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

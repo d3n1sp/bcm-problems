@@ -11,11 +11,6 @@
 #include "globals.h"
 #include "hyst.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // FctDiag.h: Description of the diagonal part of the factorization support data
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -262,9 +257,4 @@ public:
 	friend class CGSMatrixCS;
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

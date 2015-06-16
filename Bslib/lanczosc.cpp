@@ -23,10 +23,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Used global functions
 
@@ -7572,7 +7568,3 @@ void CSVectorC::SOFLanNEFilterRelations (ofstream &_fout, // Perform filtering o
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

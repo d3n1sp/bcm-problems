@@ -14,11 +14,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSVector: Zero length vector constructor
 //========================================================================================
@@ -569,8 +564,3 @@ void CSVector::WriteVectBin (FILE * _file, int &_offset) { // Output vector to t
 	_offset += nparts;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

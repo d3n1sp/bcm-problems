@@ -1028,8 +1028,13 @@ Num_State CComput2D<T>::comput_kernel1(Num_Comput Num)
 	if (! this->solver.changed(EXTERN_STATE)) {
 		this->computing(-1, Num);
 
+/////////////////////////////////////////////////////
+//...формируем диагональ, блочную матрицу и печатаем;
 		this->solver.diagonal();
-		this->solver.lagrangian(max(1., this->get_param(this->size_of_param()-1)), 1.-1./max(1., this->get_param(this->size_of_param()-1)));
+
+		if (this->solver.mode(TESTI_GRAM))   this->solver.lagrangian(1., 0.); else
+		if (this->solver.mode(TESTI_ENERGY)) this->solver.lagrangian(0., 1.); else
+			this->solver.lagrangian(max(1., this->get_param(this->size_of_param()-1)), 1.-1./max(1., this->get_param(this->size_of_param()-1)));
 
 		if (! this->solver.mode(REDUCED_PRINT)) 
 			test_block_matrix(this->solver.n); else test_block_matrix(0);
@@ -1067,8 +1072,14 @@ Num_State CComput2D<T>::comput_kernel1(Num_Comput Num)
 //////////////////////////////////////////
 //...переносим результаты в функции формы;
 		this->shapes_init(OK_STATE);
-		if (this->solver.mode(REDUCED_PRINT) || this->solver.mode(PRINT_MODE)) for (int i = 0; i < min(this->N, 5); i++) //...тестовая печать;
-			this->B[this->solver.p[i]].shape->TestShape("res", this->solver.n+1, this->solver.p[i], EE*1000000.);
+		if (this->solver.mode(REDUCED_PRINT) || this->solver.mode(PRINT_MODE)) { //...тестовая печать;
+		if (this->solver.mode(FULLY_MODE)  && ! this->solver.mode(REDUCED_PRINT)) 
+			for (int i = 0; i < this->N; i++)
+				this->B[this->solver.p[i]].shape->TestShape("res", this->solver.n+1, this->solver.p[i], EE*1000000.);
+		else 
+			for (int i = 0; i < min(this->N, 5); i++)
+				this->B[this->solver.p[i]].shape->TestShape("res", this->solver.n+1, this->solver.p[i], EE*1000000.);
+		}
 	}
 	return OK_STATE;
 }

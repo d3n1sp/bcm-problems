@@ -25,11 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CFctDiagR: Find supernodes with small singular values
 //========================================================================================
@@ -4894,8 +4889,3 @@ CSMatrixRS CFctR::CreateBlock (int _isupbeg, int _isupend, const CGSMatrix &_gmt
 	return temp;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

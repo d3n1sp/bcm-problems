@@ -22,10 +22,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Author: Kharchenko S.A.
 // Compute the value of the polynomial
@@ -1286,7 +1282,3 @@ exit:
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

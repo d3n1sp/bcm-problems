@@ -24,11 +24,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Interface routines 
 
 void BlockGivens (int _ngiv, // Compute block Givens rotation
@@ -3166,8 +3161,3 @@ exitgmr:;
 	return iconvglob;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

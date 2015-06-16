@@ -28,11 +28,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSVector: Perform preconditioned Lanczos iterations
 //========================================================================================
@@ -5384,8 +5379,3 @@ exit:;
 	*this = sol;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

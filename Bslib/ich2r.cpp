@@ -21,11 +21,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrix: Allocate and init integer data for Ich2/Ilu2
 //========================================================================================
@@ -1918,7 +1913,3 @@ CSMatrixR CSMatrixR::Ich () const { // Incomplete Cholessky decomposition
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

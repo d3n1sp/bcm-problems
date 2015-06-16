@@ -16,10 +16,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Author: Kharchenko S.A.
 // Description: Implement fast Toeplitz 3D matrix by vector multiplication
@@ -1561,8 +1557,3 @@ void CFourier::Toeplitz3DComplexConjugate (int _n1, int _n2, int _n3, // Compute
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

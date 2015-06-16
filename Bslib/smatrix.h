@@ -525,15 +525,8 @@ public:
 	friend class CFctC;
 	friend class CFctDiagR;
 	friend class CFctDiagC;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
-#ifdef __FV_2004__
-//	friend class ::flowvision::CDecomp;
 	friend class CDecomp;
-#else
-	friend class CDecomp;
-#endif
 };
 
 #endif
@@ -1218,9 +1211,7 @@ public:
 	friend class CSVector;
 	friend class CFctR;
 	friend class CFctDiagR;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 	friend class CMvmR;
 private:
 // Factorization support functions
@@ -1494,9 +1485,7 @@ public:
 	friend class CSMatrixCS;
 	friend class CGSMatrixCS;
 	friend class CSVector;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 };
 
 #endif
@@ -1795,9 +1784,7 @@ public:
 	friend class CSVectorC;
 	friend class CFctC;
 	friend class CFctDiagC;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 };
 
 #endif

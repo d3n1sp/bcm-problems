@@ -23,16 +23,8 @@
 #include "globals.h"
 #include "slvparam.h"
 #include "corr.h"
-#ifdef __FV_2004__
-#include "../Grid/TimeDebug.h"
-#endif
 
 using namespace std;
-
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 class CLsqObjC
 {
@@ -2094,15 +2086,9 @@ void CSVector::Solver2Ind (ofstream &_fout, const CTree &_tree, // Solve unsymme
 //	gmtrdummy.Ilu2Schur2Index (_fout, _tree, _param,
 //							_gmtralfct, _gmtraufct,
 //							_gmtrl, _gmtru);
-#ifdef __FV_2004__
-   flowvision::STARTTIMER();
-#endif
 	gmtrdummy.Ilu2SchurDynamic2Index (_fout, _tree, _param,
 							_gmtralfct, _gmtraufct,
 							_gmtrl, _gmtru);
-#ifdef __FV_2004__
-   flowvision::STOPTIMER("          Fct time");
-#endif
 
 	double dtime1, dtime2;
 
@@ -2129,9 +2115,6 @@ void CSVector::Solver2Ind (ofstream &_fout, const CTree &_tree, // Solve unsymme
 
 	CMvmR mvm (_tree, _gmtral, nrhsloc);
 
-#ifdef __FV_2004__
-   flowvision::STARTTIMER();
-#endif
 	StartTimer ();
 
 	if (_param.ittype == 1) {
@@ -2226,9 +2209,6 @@ void CSVector::Solver2Ind (ofstream &_fout, const CTree &_tree, // Solve unsymme
 		};
 	};
 
-#ifdef __FV_2004__
-   flowvision::STOPTIMER("          Iter time");
-#endif
 	StopTimer (dtime1, dtime2);
 
 	if (_tree.myid == 0 && _param.msglev > 0) {
@@ -2302,9 +2282,6 @@ void CSVector::SolverSymm2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsy
 // Compute triangular L and U parts of the initial matrix if necessary
 //
 	StartTimer ();
-#ifdef __FV_2004__
-	flowvision::STARTTIMER();
-#endif
 
 	int nblkstree = _tree.GetNblkstree ();
 	int *pblkstree = _tree.GetBlkstree ();
@@ -2322,10 +2299,6 @@ void CSVector::SolverSymm2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsy
 
 //	_fout << " L = " << _gmtrl << endl;
 //	_fout << " U = " << _gmtru << endl;
-
-#ifdef __FV_2004__
-	flowvision::STOPTIMER("          Fct time");
-#endif
 
 	double dtime1, dtime2;
 
@@ -2352,9 +2325,6 @@ void CSVector::SolverSymm2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsy
 									CSMatrixR::AbsSolveBlockColumnL2Index, CSMatrixR::AbsSolveBlockRowU2Index,
 									&_param);
 
-#ifdef __FV_2004__
-	flowvision::STARTTIMER();
-#endif
 	StartTimer ();
 
 	if (_second) {
@@ -2381,9 +2351,6 @@ void CSVector::SolverSymm2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsy
 
 	};
 
-#ifdef __FV_2004__
-	flowvision::STOPTIMER("          Iter time");
-#endif
 	StopTimer (dtime1, dtime2);
 
 	if (_tree.myid == 0 && _param.msglev > 0) {
@@ -2461,9 +2428,6 @@ void CSVector::Solver2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsymmet
 // Compute triangular L and U parts of the initial matrix if necessary
 //
 	StartTimer ();
-#ifdef __FV_2004__
-	flowvision::STARTTIMER();
-#endif
 
 	int nblkstree = _tree.GetNblkstree ();
 	int *pblkstree = _tree.GetBlkstree ();
@@ -2481,10 +2445,6 @@ void CSVector::Solver2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsymmet
 
 //	_fout << " L = " << _gmtrl << endl;
 //	_fout << " U = " << _gmtru << endl;
-
-#ifdef __FV_2004__
-	flowvision::STOPTIMER("          Fct time");
-#endif
 
 	double dtime1, dtime2;
 
@@ -2511,9 +2471,6 @@ void CSVector::Solver2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsymmet
 									CSMatrixR::AbsSolveBlockColumnL2Index, CSMatrixR::AbsSolveBlockRowU2Index,
 									&_param);
 
-#ifdef __FV_2004__
-	flowvision::STARTTIMER();
-#endif
 	StartTimer ();
 
 	if (_param.ittype == 1) {
@@ -2590,9 +2547,6 @@ void CSVector::Solver2IndSchur (ofstream &_fout, CTree &_tree, // Solve unsymmet
 		};
 	};
 
-#ifdef __FV_2004__
-	flowvision::STOPTIMER("          Iter time");
-#endif
 	StopTimer (dtime1, dtime2);
 
 	if (_tree.myid == 0 && _param.msglev > 0) {
@@ -7361,8 +7315,3 @@ void AbstractSolver (void *_pgener, // Solve complex block system of equations i
 	delete [] arow;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

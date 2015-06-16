@@ -6,11 +6,6 @@
 
 #include "globals.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // Classes declared in this file
 
@@ -82,9 +77,4 @@ public:
 	friend class CSVectorC;
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

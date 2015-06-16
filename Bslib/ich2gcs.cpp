@@ -25,10 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Author: Kharchenko S.A.
 // CGSMatrixCS: Compute second order Incomplete Cholessky decomposition in parallel mode
@@ -1235,7 +1231,3 @@ NextNode:;
 
 };
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

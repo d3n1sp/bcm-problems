@@ -21,11 +21,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrixCS: Memory allocation zero data constructor
 //========================================================================================
@@ -3671,8 +3666,3 @@ ostream &operator<< (ostream &_stream, const CSMatrixCS &_a) { // Output matrix
 	return _stream;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

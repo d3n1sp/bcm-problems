@@ -22,11 +22,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrix: Compute Nested Dissection or profile optimization ordering of the matrix
 //========================================================================================
@@ -6965,8 +6960,3 @@ void CSMatrix::SparsifyExtendedSchurBinaryTree (const CTree &_tree, // Sparsify 
 	delete [] jamask;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

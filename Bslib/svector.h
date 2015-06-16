@@ -12,11 +12,6 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 #ifndef __SVector
 #define __SVector
 
@@ -579,14 +574,7 @@ public:
 	friend class CSMatrixC;
 	friend class CSMatrixCS;
 	friend class CSlvParam;
-#ifndef __FV_2004__
 	friend class CModel;
-#endif
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

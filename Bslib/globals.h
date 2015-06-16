@@ -11,19 +11,6 @@
 #include <assert.h>
 #include "complex.h"
 
-//#ifndef __FV_2004__
-//#define __FV_2004__
-//#endif
-
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
-//#define __FlowVisionOut
-
-// Preliminary declarations
-
 // Preliminary declarations
 
 const int CHAR_BUF_SIZE = 2000;
@@ -595,10 +582,5 @@ void ReallocateAndCopy (int _nold, int _nnew, _T *&_arr) {
 	delete [] _arr;
 	_arr = arrnew;
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif
 
 #endif

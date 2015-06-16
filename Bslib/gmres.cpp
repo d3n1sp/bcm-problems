@@ -23,11 +23,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // Description: Compute block Givens rotation
 // BlockGivens()
@@ -6576,8 +6571,3 @@ exitgmr:;
 	*this = sol;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

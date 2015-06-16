@@ -20,11 +20,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CNode: Memory allocation zero data constructor
 //========================================================================================
@@ -4581,8 +4576,3 @@ ostream &operator<< (ostream &_stream, const CTree &_tree) { // Output tree
 	return _stream;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

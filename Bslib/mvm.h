@@ -13,11 +13,6 @@
 #include "globals.h"
 #include "ExchangeMPI.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Mvm.h: Description of the multiplication support data
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -481,9 +476,4 @@ public:
 // Friend classes
 };
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

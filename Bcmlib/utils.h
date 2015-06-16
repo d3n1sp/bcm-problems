@@ -16,6 +16,8 @@
 #include <iostream>
 #include <fstream>
 #include "complex.h"
+#include "dd_real.h"
+#include "qd_real.h"
 
 ///////////////////////////////////////////
 //...identification of the program version;
@@ -366,4 +368,10 @@ void subrcm_utils(int * xadj, int * iadj, int * mask, int nsubg, int * subg, int
 //   nsubg      - the size of the subgraph;
 //   subg[n]    - contains the nodes in subgraph (which may be disconnected);
 /////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//...алгоритм вычисления с.з. и с.ф. общей матрицы QR-методом;
+int HQRfunction(double  ** A, double  * H_re, double  * H_im, int dim_N, int Max_iter = 30);
+int HQRfunction(dd_real ** A, dd_real * H_re, dd_real * H_im, int dim_N, int Max_iter = 30);
+int HQRfunction(qd_real ** A, qd_real * H_re, qd_real * H_im, int dim_N, int Max_iter = 30);
+int HQRfunction(complex ** A, complex * H_re, complex * H_im, int dim_N, int Max_iter = 30);
 #endif

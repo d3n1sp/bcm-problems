@@ -9,10 +9,6 @@
 
 #include "globals.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //...reordering algorithms (reverse Cuthill-Mckee ordering);
@@ -248,7 +244,3 @@ void subrcm(int * xadj, int * iadj, int * mask, int nsubg, int * subg, int * per
    }
 }
 
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

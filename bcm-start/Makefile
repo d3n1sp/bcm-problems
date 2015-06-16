@@ -9,7 +9,7 @@ r       = exe
 CC      = mpicxx -c -O3 -I../Bcmlib -I../qd -I../Bslib
 CFCF    =
 LINK    = mpicxx -L/usr/lib -Wl,-rpath,\$$ORIGIN
-mpirun := mpirun -np 1
+mpirun := mpirun -np 4
 
 RUN     = bcm-start
 RUNOBJS = bcm-start.$o

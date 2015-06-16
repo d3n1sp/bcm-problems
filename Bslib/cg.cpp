@@ -24,11 +24,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A. 
 // Description: Perform preconditioned CG iterations
 // CSVector::Cg()
@@ -1181,8 +1176,3 @@ exit:
 	*this = sol;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

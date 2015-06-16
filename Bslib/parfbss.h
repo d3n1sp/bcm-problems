@@ -5,15 +5,6 @@
 // Goal: Stores system of equations data and solves system of linear equations in parallel mode
 //------------------------------------------------------------------------------------------------
 
-//#ifndef __FV_2004__
-//#define __FV_2004__
-//#endif
-
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 #ifndef __PARFBSS_SOLVER__
 #define __PARFBSS_SOLVER__
 
@@ -37,9 +28,4 @@ int ParFBSS_Solution (int _ObjId, double **_Solution);
 int ParFBSS_Distribution (int _ObjId, int *_NIOpt, int **_LISTOpt);
 int ParFBSS_Destroy (int _ObjId);
 
-#endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
 #endif

@@ -7,10 +7,6 @@
 #include "globals.h"
 #include "ExchangeMPI.h"
 
-#ifdef __FV_2004__
-//#include "smatrix.h"
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // Classes declared in this file
 
@@ -20,23 +16,9 @@
 #ifndef __Decomp
 #define __Decomp
 
-#ifdef __FV_2004__
-namespace flowvision {
-
 class CMPIComm;
 class CSolverPar;
 class CCpuTree;
-
-namespace EqnSolver {
-
-//using namespace EqnSolver;
-#else
-
-class CMPIComm;
-class CSolverPar;
-class CCpuTree;
-
-#endif
 
 // Preliminary declarations
 
@@ -203,10 +185,5 @@ public:
 };
 
 extern CDecompHCells HCellsShow;
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif
 
 #endif

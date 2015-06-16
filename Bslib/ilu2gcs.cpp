@@ -25,10 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Author: Kharchenko S.A.
 // CGSMatrixCS: Perform explicit point scaling of the matrix
@@ -4832,8 +4828,3 @@ void CFctSchurC::DestroyWorkData () { // Destroy fct working data
 	delete ((CFctDiagC *)pfctdiag);
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

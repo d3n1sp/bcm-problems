@@ -20,11 +20,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrixCS: Allocate double complex data and init scaling for Ilu2
 //========================================================================================
@@ -2910,8 +2905,3 @@ void CSMatrixCS::Ilu2 (ofstream &_fout, const CSlvParam _param, // Second order 
 	_fout << "     Time  = " << tottim << " sec.   Perf = " << perf << " Mflops." << endl;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

@@ -9,11 +9,6 @@
 
 #include "globals.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 #define   iSWAP(A, B)     { int          iSWAP_temp = (A); (A) = (B); (B) =   iSWAP_temp; }
 
 inline int    min(int    A, int    B) { return A < B ? A : B;};
@@ -1850,8 +1845,3 @@ void GPSKCQ(int N,        // -- NUMBER OF ELEMENTS TO BE SORTED.
 err:
       ERGPS = 1; return;
 }
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

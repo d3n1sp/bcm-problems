@@ -344,8 +344,7 @@ Num_State CHeat3D::gram2(CGrid * nd, int i, int id_local)
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m+1], -g2*hh*f);
 				}
 				if (solver.mode(REGUL_BOUNDARY) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
-					solver.to_equationDD(i, solver.hh[i][0][m+2], solver.hh[i][0][m+2], f);
-					solver.to_equationDD(k, solver.hh[k][0][m+2], solver.hh[k][0][m+2], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					if (fabs(hh) > EE) {
 					  if (id_dir == 6) solver.to_equationHH(i, 0, solver.hh[i][0][m+2],  hh*f);
 					  if (id_dir == 5) solver.to_equationHL(k, 0, solver.hh[k][0][m+2], -hh*f);
@@ -878,8 +877,7 @@ Num_State CHeat3D::gram3(CGrid * nd, int i, int id_local)
 				  solver.to_equationHL(k, 0, solver.hh[k][0][m], -hh*f);
 				}
 				if (solver.mode(REGUL_BOUNDARY) && (id_dir == 5 || id_dir == 6)) {//...регуляризация матрицы через граничное условие;
-					solver.to_equationDD(i, solver.hh[i][0][m+2], solver.hh[i][0][m+2], f);
-					solver.to_equationDD(k, solver.hh[k][0][m+2], solver.hh[k][0][m+2], f);
+					solver.to_transferDD(i, j, solver.hh[i][0][m+2], solver.hh[k][0][m+2], f);
 					if (fabs(hh) > EE) {
 					  if (id_dir == 6) solver.to_equationHH(i, 0, solver.hh[i][0][m+2],  hh*f);
 					  if (id_dir == 5) solver.to_equationHL(k, 0, solver.hh[k][0][m+2], -hh*f);
@@ -888,8 +886,8 @@ Num_State CHeat3D::gram3(CGrid * nd, int i, int id_local)
 
 /////////////////////////////
 //...энергетиеские слагаемые;
-				solver.to_equationER(i, solver.hh[i][0][m], solver.hh[i][0][m+1],  f);
-				solver.to_equationEL(k, solver.hh[k][0][m], solver.hh[k][0][m+1], -f);
+				solver.to_equationER(i, solver.hh[i][0][m], solver.hh[i][0][m+1], -f); //...поменяли знак (нормаль внутрь);
+				solver.to_equationEL(k, solver.hh[k][0][m], solver.hh[k][0][m+1],  f);
 				
 				B[k].mp[1] += TX;
 				B[k].mp[2] += TY;
@@ -1118,8 +1116,8 @@ Num_State CHeat3D::transfer4(CGrid * nd, int i, int k, int id_local)
 
 /////////////////////////////
 //...энергетиеские слагаемые;
-				solver.to_equationER(i, solver.hh[i][0][m], solver.hh[i][0][m+1],  f);
-				solver.to_equationEL(k, solver.hh[k][0][m], solver.hh[k][0][m+1], -f);
+				solver.to_equationER(i, solver.hh[i][0][m], solver.hh[i][0][m+1], -f); //...поменяли знак (нормаль внутрь);
+				solver.to_equationEL(k, solver.hh[k][0][m], solver.hh[k][0][m+1],  f);
 			}
 		}
 		return(OK_STATE);

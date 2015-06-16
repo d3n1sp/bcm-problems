@@ -31,11 +31,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CGSMatrixR: Second order Incomplete LU decomposition
 //========================================================================================
@@ -5751,8 +5746,3 @@ void CFctSchurR::DestroyWorkData () { // Destroy fct working data
 
 };
 
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

@@ -23,12 +23,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-//using namespace flowvision::EqnSolver;
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // Description: Compute distributions of the cells over CPU's for regular 3D mesh
 // CDecomp::DistributeCellsOverCPUsForSortedTree()
@@ -498,11 +492,7 @@ int CDecomp::DistributeCellsOverCPUs (CMPIComm &_comm, // Compute distributions 
 
 		for (i=0;i<_Nproc;i++) memory2cpu[i] = 1.0e0;
 
-	#ifdef __FV_2004__
-		EqnSolver::CTree treeloc (_Nproc, nchilds, _ProcWeight, memory2cpu);
-	#else
 		CTree treeloc (_Nproc, nchilds, _ProcWeight, memory2cpu);
-	#endif
 
 		treeloc.SetMyid (myid);
 
@@ -590,16 +580,10 @@ int CDecomp::DistributeCellsOverCPUs (CMPIComm &_comm, // Compute distributions 
 
 	catch (char *strerr) {
 		std::cout << " Error happenned: " << strerr << std::endl;
-#ifdef __FV_2004__
-		ErrSolverMessage (false, FVE_MATRIXSOLVERERROR, strerr);
-#endif
 		return 1;
 	}
 	catch (...) {
 		std::cout << " Unknown error happenned: " << std::endl;
-#ifdef __FV_2004__
-		ErrSolverMessage (false, FVE_MATRIXSOLVERERROR, " Unknown solver error happenned ");
-#endif
 		return 1;
 	};
 	_CpuTree.SetComm (_comm);
@@ -685,11 +669,7 @@ int CDecomp::DistributeCellsOverCPUsForSortedTree (CMPIComm &_comm, // Compute d
 
 		for (i=0;i<_Nproc;i++) memory2cpu[i] = 1.0e0;
 
-#ifdef __FV_2004__
-		EqnSolver::CTree treeloc (_Nproc, nchilds, _ProcWeight, memory2cpu);
-#else
 		CTree treeloc (_Nproc, nchilds, _ProcWeight, memory2cpu);
-#endif
 
 		treeloc.SetMyid (myid);
 
@@ -771,16 +751,10 @@ int CDecomp::DistributeCellsOverCPUsForSortedTree (CMPIComm &_comm, // Compute d
 
 	catch (char *strerr) {
 		std::cout << " Error happenned: " << strerr << std::endl;
-#ifdef __FV_2004__
-		ErrSolverMessage (false, FVE_MATRIXSOLVERERROR, strerr);
-#endif
 		return 1;
 	}
 	catch (...) {
 		std::cout << " Unknown error happenned: " << std::endl;
-#ifdef __FV_2004__
-		ErrSolverMessage (false, FVE_MATRIXSOLVERERROR, " Unknown solver error happenned ");
-#endif
 		return 1;
 	};
 
@@ -1065,13 +1039,8 @@ int CDecomp::DistributeCellsOverCPUsNestedDessection (CMPIComm &_comm, // Comput
 	for (i=0;i<nprocext;i++) memory2cpu[i] = 1.0e0;
 	for (i=0;i<nprocext;i++) procweight[i] = 1.0e0;
 
-#ifdef __FV_2004__
-	EqnSolver::CTree treeloc (nproc_power2, nchilds, _ProcWeight, memory2cpu);
-	EqnSolver::CTree treelocexthc (nprocext, nchilds, procweight, memory2cpu);
-#else
 	CTree treeloc (nproc_power2, nchilds, _ProcWeight, memory2cpu);
 	CTree treelocexthc (nprocext, nchilds, procweight, memory2cpu);
-#endif
 
 	treeloc.SetMyid (myid);
 	treelocexthc.SetMyid (myid);
@@ -4653,8 +4622,3 @@ ostream &operator<< (ostream &_stream, const CDecompHCells &_obj) { // Output hc
 	return _stream;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

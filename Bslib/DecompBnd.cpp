@@ -25,11 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-//using namespace flowvision::EqnSolver;
-namespace flowvision {
-namespace EqnSolver {
-#endif
 
 // Author: Kharchenko S.A.
 // CSMatrix: Compute in parallel decomposition into the set of volume and boundary blocks
@@ -6242,8 +6237,3 @@ void CSMatrix::PartSchurSubmatrix (int _decomptype, int _icolor, // Partition Sc
 	delete [] ordblk;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

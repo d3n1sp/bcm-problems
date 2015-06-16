@@ -24,11 +24,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrixR: Perform transformation of the data for nonlinear solver
 //========================================================================================
@@ -2331,8 +2326,3 @@ void CSVector::NewtonSolveSchur2Index (ofstream &_fout, CTree &_tree, // Perform
 	*this = _x;
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

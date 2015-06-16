@@ -2718,6 +2718,3 @@ void CParMETIS::PartKway (CMPIComm &_comm, int *_vtxdist, int *_xadj, int *_adjn
 //                         _options, _edgecut, _part, ((MPI_Comm *) pcomm)); 
 }
 
-#ifdef __FV_2004__
-} // namespace flowvision
-#endif

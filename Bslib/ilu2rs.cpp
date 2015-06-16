@@ -19,12 +19,6 @@
 #include "globals.h"
 
 using namespace std;
-
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CSMatrixRS: Allocate double data and init scaling for Ilu2
 //========================================================================================
@@ -2273,8 +2267,3 @@ void CSMatrixRS::Ilu2DynamicByBlocks (ofstream &_fout, CSlvParam &_param, // Sec
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif

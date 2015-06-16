@@ -25,11 +25,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // CFctDiagR: Init scaling for the current block row
 //========================================================================================
@@ -5842,8 +5837,3 @@ void CFct::ReInitGlobalArraysByBlockData2Index (CSMatrix &_mtra) { // ReInit glo
 	};
 
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

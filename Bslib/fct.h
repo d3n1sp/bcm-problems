@@ -11,11 +11,6 @@
 #include "globals.h"
 #include "hyst.h"
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Fct.h: Description of the factorization support data
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -728,8 +723,3 @@ public:
 };
 
 #endif
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif// 

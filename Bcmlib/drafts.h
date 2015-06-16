@@ -148,7 +148,7 @@ double TakeSphere_shear_two(double c0, double nju1, double nju2, double E1, doub
 	return(GH);
 }
 
-inline double TakeSphere_volm_sym(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2)
+double TakeSphere_volm_sym(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2)
 {
 	CCohes3D draft; 
 	CLame3D ldraft; double KH;
@@ -178,7 +178,7 @@ double TakeSphere_shear_sym(double c0, double nju1, double nju2, double E1, doub
 	return(GH);
 }
 
-inline double TakeSphere_shear(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2)
+double TakeSphere_shear(double c0, double nju1, double nju2, double E1, double E2, double l1, double l2)
 {
 	CCohes3D draft; 
 	CLame3D ldraft; double GH;

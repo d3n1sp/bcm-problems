@@ -21,11 +21,6 @@
 
 using namespace std;
 
-#ifdef __FV_2004__
-namespace flowvision {
-namespace EqnSolver {
-#endif
-
 // Author: Kharchenko S.A.
 // Description: Memory allocation zero data constructor
 // CFct::CFct()
@@ -1664,8 +1659,3 @@ CFctSchurC::~CFctSchurC () { // Destructor
 
 //	cout << " On return from CFctSchurC destructor " << endl;
 };
-
-#ifdef __FV_2004__
-} // namespace EqnSolver
-} // namespace flowvision
-#endif
