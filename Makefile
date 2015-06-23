@@ -1,7 +1,7 @@
 
-MPIRUN := mpirun -np 4 -hostfile ~/ib.hosts
+MPIRUN := mpirun -np 4
 
-mpirun: 
+mpirun:
 	make -C bcm-start mpirun="$(MPIRUN)" mpirun
 
 clean:
